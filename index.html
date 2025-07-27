@@ -1679,4 +1679,92 @@
                         }
                     }
                     
-                    //
+                                        // Actualizar contadores
+                    document.getElementById('totalVentasHoy').textContent = `$${totalHoy.toFixed(2)}`;
+                    document.getElementById('totalVentasMes').textContent = `$${totalMes.toFixed(2)}`;
+                    document.getElementById('numeroFacturas').textContent = numeroFacturas;
+
+                    // Opcional: actualizar tabla últimas ventas
+                    const tbody = document.querySelector('#tablaUltimasVentas tbody');
+                    tbody.innerHTML = '';
+
+                    for (let i = ventasData.length - 1; i > 0 && i > ventasData.length - 6; i--) {
+                        const venta = ventasData[i];
+                        const fila = document.createElement('tr');
+                        fila.innerHTML = `
+                            <td>${venta[0]}</td>
+                            <td>${venta[1]}</td>
+                            <td>${venta[2]}</td>
+                            <td>${venta[3]}</td>
+                            <td>$${parseFloat(venta[4] || 0).toFixed(2)}</td>
+                        `;
+                        tbody.appendChild(fila);
+                    }
+                }
+
+                // Inventario para tabla de stock bajo
+                const tbodyStock = document.querySelector('#tablaStockBajo tbody');
+                tbodyStock.innerHTML = '';
+
+                for (const tipo in inventarioData) {
+                    const stock = inventarioData[tipo].stock;
+                    if (stock < 10) {
+                        const fila = document.createElement('tr');
+                        fila.innerHTML = `
+                            <td>${tipo}</td>
+                            <td>${stock.toFixed(1)}</td>
+                            <td>${stock === 0 ? '🔴 Agotado' : stock < 5 ? '🟠 Crítico' : '🟡 Bajo'}</td>
+                        `;
+                        tbodyStock.appendChild(fila);
+                    }
+                }
+
+                document.getElementById('totalInventario').textContent = `$${Object.values(inventarioData).reduce((acc, v) => acc + v.valorTotal, 0).toFixed(2)}`;
+                updateConnectionStatus('connected', 'Reportes cargados');
+            } catch (error) {
+                console.error('Error al cargar reportes:', error);
+                mostrarAlerta('Error al cargar reportes', 'danger');
+                updateConnectionStatus('disconnected', 'Error en reportes');
+            } finally {
+                btnCargar.disabled = false;
+                btnCargar.innerHTML = '🔄 ACTUALIZAR REPORTES';
+            }
+        }
+
+        // Mostrar alertas
+        function mostrarAlerta(mensaje, tipo) {
+            const colores = {
+                success: 'alert-success',
+                warning: 'alert-warning',
+                danger: 'alert-danger'
+            };
+
+            const alerta = document.createElement('div');
+            alerta.className = `alert ${colores[tipo] || 'alert-warning'}`;
+            alerta.innerHTML = mensaje;
+
+            const content = document.querySelector('.content');
+            content.insertBefore(alerta, content.firstChild);
+
+            setTimeout(() => alerta.remove(), 5000);
+        }
+
+        // Actualizar estado de conexión
+        function updateConnectionStatus(estado, mensaje) {
+            const status = document.getElementById('connectionStatus');
+            status.className = 'connection-status';
+
+            if (estado === 'connected') {
+                status.classList.add('status-connected');
+            } else if (estado === 'disconnected') {
+                status.classList.add('status-disconnected');
+            } else {
+                status.classList.add('status-loading');
+            }
+
+            status.innerHTML = `<span>🔧</span><span>${mensaje}</span>`;
+        }
+    </script>
+</body>
+</html>
+
