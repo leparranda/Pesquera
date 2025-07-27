@@ -696,7 +696,7 @@
         // URLs de la API
         const SHEETS_API_BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
         
-// Inicialización de Google API
+        // Inicialización de Google API
         function initializeGapi() {
             gapi.load('auth2', () => {
                 gapi.auth2.init({
@@ -1469,8 +1469,8 @@
             
             await escribirHoja('Configuracion', datosConfig);
         }
-
-        // Generar HTML de factura
+        
+        // Generar HTML de factura (CONTINUACIÓN)
         function generarHTMLFactura(venta, productos, cliente, telefono) {
             const facturaHTML = `
                 <div class="factura">
@@ -1482,4 +1482,340 @@
                         <p>Fecha: ${venta.fecha} - Hora: ${new Date().toLocaleTimeString()}</p>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                        <div>
+                            <h4>DATOS DEL CLIENTE:</h4>
+                            <p><strong>Nombre:</strong> ${cliente}</p>
+                            <p><strong>Teléfono:</strong> ${telefono}</p>
+                        </div>
+                        <div>
+                            <h4>DATOS DE VENTA:</h4>
+                            <p><strong>Fecha:</strong> ${venta.fecha}</p>
+                            <p><strong>Factura:</strong> #${venta.numero.toString().padStart(6, '0')}</p>
+                        </div>
+                    </div>
+                    
+                    <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #3498db; color: white;">
+                                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">PRODUCTO</th>
+                                <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">CANTIDAD (LBS)</th>
+                                <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">PRECIO UNIT.</th>
+                                <th style="padding: 10px; text-align: right; border: 1px solid #ddd;">SUBTOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${productos.map(producto => `
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">${producto.tipo}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${producto.cantidad.toFixed(1)}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">$${producto.precio.toFixed(2)}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">$${producto.subtotal.toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    
+                    <div style="text-align: right; padding: 20px; background: #f8f9fa; border-radius: 10px; margin-top: 20px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: #28a745;">
+                            TOTAL A PAGAR: $${venta.total.toFixed(2)}
+                        </div>
+                        <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
+                            ¡Gracias por su compra! Pescado fresco del día.
+                        </p>
+                    </div>
+                    
+                    <div class="no-print" style="text-align: center; margin-top: 20px;">
+                        <button class="btn btn-warning" onclick="window.print()">🖨️ IMPRIMIR FACTURA</button>
+                        <button class="btn" onclick="limpiarFactura()">❌ CERRAR</button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('facturaGenerada').innerHTML = facturaHTML;
+        }
+
+        // Limpiar venta
+        function limpiarVenta() {
+            ventaActual = [];
+            document.getElementById('nombreCliente').value = '';
+            document.getElementById('telefonoCliente').value = '';
+            actualizarTablaVentaActual();
+            cargarInventarioParaVentas();
+        }
+
+        // Limpiar factura
+        function limpiarFactura() {
+            document.getElementById('facturaGenerada').innerHTML = '';
+        }
+
+        // Cargar reportes
+        async function cargarReportes() {
+            const btnCargar = document.getElementById('btnCargarReportes');
+            btnCargar.disabled = true;
+            btnCargar.innerHTML = '<span class="loading"></span> CARGANDO...';
+            
+            try {
+                updateConnectionStatus('loading', 'Cargando reportes...');
+                
+                const ventasData = await leerHoja('Ventas');
+                
+                if (ventasData.length > 1) {
+                    const hoy = new Date().toLocaleDateString();
+                    const mesActual = new Date().getMonth();
+                    const añoActual = new Date().getFullYear();
+                    
+                    let totalHoy = 0;
+                    let totalMes = 0;
+                    let numeroFacturas = ventasData.length - 1; // -1 por el encabezado
+                    
+                    // Procesar ventas
+                    for (let i = 1; i < ventasData.length; i++) {
+                        const venta = ventasData[i];
+                        if (venta[1] && venta[4]) {
+                            const fechaVenta = venta[1];
+                            const totalVenta = parseFloat(venta[4]) || 0;
+                            
+                            // Ventas de hoy
+                            if (fechaVenta === hoy) {
+                                totalHoy += totalVenta;
+                            }
+                            
+                            // Ventas del mes
+                            try {
+                                const fecha = new Date(fechaVenta.split('/').reverse().join('-'));
+                                if (fecha.getMonth() === mesActual && fecha.getFullYear() === añoActual) {
+                                    totalMes += totalVenta;
+                                }
+                            } catch (e) {
+                                console.log('Error al procesar fecha:', fechaVenta);
+                            }
+                        }
+                    }
+                    
+                    // Actualizar estadísticas
+                    document.getElementById('totalVentasHoy').textContent = `$${totalHoy.toFixed(2)}`;
+                    document.getElementById('totalVentasMes').textContent = `$${totalMes.toFixed(2)}`;
+                    document.getElementById('numeroFacturas').textContent = numeroFacturas;
+                    
+                    // Mostrar últimas ventas
+                    actualizarTablaUltimasVentas(ventasData);
+                }
+                
+                // Calcular valor del inventario
+                const valorInventario = Object.values(inventarioData).reduce((sum, item) => sum + (item.valorTotal || 0), 0);
+                document.getElementById('totalInventario').textContent = `$${valorInventario.toFixed(2)}`;
+                
+                // Actualizar stock bajo
+                actualizarTablaStockBajo();
+                
+                updateConnectionStatus('connected', 'Reportes actualizados');
+                
+            } catch (error) {
+                updateConnectionStatus('disconnected', `Error: ${error.message}`);
+                mostrarAlerta(`Error al cargar reportes: ${error.message}`, 'danger');
+            } finally {
+                btnCargar.disabled = false;
+                btnCargar.innerHTML = '🔄 ACTUALIZAR REPORTES';
+            }
+        }
+
+        // Actualizar tabla de últimas ventas
+        function actualizarTablaUltimasVentas(ventasData) {
+            const tbody = document.querySelector('#tablaUltimasVentas tbody');
+            tbody.innerHTML = '';
+            
+            // Mostrar las últimas 10 ventas
+            const ventasRecientes = ventasData.slice(-11, -1).reverse(); // -11 para obtener 10, -1 para excluir encabezados
+            
+            ventasRecientes.forEach(venta => {
+                if (venta[0]) {
+                    const fila = tbody.insertRow();
+                    fila.innerHTML = `
+                        <td>#${venta[0]}</td>
+                        <td>${venta[1] || 'N/A'}</td>
+                        <td>${venta[2] || 'N/A'}</td>
+                        <td>${venta[3] || 'N/A'}</td>
+                        <td>$${parseFloat(venta[4] || 0).toFixed(2)}</td>
+                    `;
+                }
+            });
+            
+            if (tbody.children.length === 0) {
+                const fila = tbody.insertRow();
+                fila.innerHTML = '<td colspan="5" style="text-align: center; color: #666;">No hay ventas registradas</td>';
+            }
+        }
+
+        // Actualizar tabla de stock bajo
+        function actualizarTablaStockBajo() {
+            const tbody = document.querySelector('#tablaStockBajo tbody');
+            tbody.innerHTML = '';
+            
+            let hayStockBajo = false;
+            
+            for (const [tipo, datos] of Object.entries(inventarioData)) {
+                if (datos.stock < 10) {
+                    hayStockBajo = true;
+                    const fila = tbody.insertRow();
+                    
+                    let estado = '';
+                    let claseEstado = '';
+                    
+                    if (datos.stock === 0) {
+                        estado = '🔴 Agotado';
+                        claseEstado = 'style="background-color: #f8d7da;"';
+                    } else if (datos.stock < 5) {
+                        estado = '🟠 Crítico';
+                        claseEstado = 'style="background-color: #fff3cd;"';
+                    } else {
+                        estado = '🟡 Bajo';
+                        claseEstado = 'style="background-color: #fff3cd;"';
+                    }
+                    
+                    fila.innerHTML = `
+                        <td>${tipo}</td>
+                        <td>${datos.stock.toFixed(1)} lbs</td>
+                        <td ${claseEstado}>${estado}</td>
+                    `;
+                }
+            }
+            
+            if (!hayStockBajo) {
+                const fila = tbody.insertRow();
+                fila.innerHTML = '<td colspan="3" style="text-align: center; color: #28a745;">✅ Todos los productos tienen stock suficiente</td>';
+            }
+        }
+
+        // Eliminar precio
+        async function eliminarPrecio(tipo) {
+            if (!confirm(`¿Eliminar precio de ${tipo}?`)) {
+                return;
+            }
+            
+            try {
+                delete preciosData[tipo];
+                
+                // Actualizar en Google Sheets
+                const datosPrecios = [
+                    ['Tipo', 'PrecioCompra', 'Margen', 'PrecioVenta', 'Ganancia'],
+                    ...Object.entries(preciosData).map(([tipoPez, datos]) => [
+                        tipoPez,
+                        datos.precioCompra,
+                        datos.margen,
+                        datos.precioVenta,
+                        datos.ganancia
+                    ])
+                ];
+                
+                await escribirHoja('Precios', datosPrecios);
+                
+                actualizarTablaPrecios();
+                mostrarAlerta(`Precio de ${tipo} eliminado`, 'success');
+                
+            } catch (error) {
+                mostrarAlerta(`Error al eliminar precio: ${error.message}`, 'danger');
+            }
+        }
+
+        // Mostrar alertas
+        function mostrarAlerta(mensaje, tipo = 'success') {
+            const alertaDiv = document.createElement('div');
+            alertaDiv.className = `alert alert-${tipo}`;
+            alertaDiv.textContent = mensaje;
+            
+            // Insertar al inicio del contenido
+            const content = document.querySelector('.content');
+            const firstChild = content.firstChild;
+            content.insertBefore(alertaDiv, firstChild);
+            
+            // Eliminar después de 4 segundos
+            setTimeout(() => {
+                if (alertaDiv.parentNode) {
+                    alertaDiv.remove();
+                }
+            }, 4000);
+        }
+
+        // Event listener para cambio de producto en ventas
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar configuración
+            if (spreadsheetId) {
+                document.getElementById('spreadsheetId').value = spreadsheetId;
+            }
+            
+            document.getElementById('nombreEmpresa').value = config.nombreEmpresa;
+            document.getElementById('direccionEmpresa').value = config.direccionEmpresa;
+            document.getElementById('telefonoEmpresa').value = config.telefonoEmpresa;
+            
+            // Event listener para precio automático en ventas
+            const selectVenta = document.getElementById('tipoPescadoVenta');
+            if (selectVenta) {
+                selectVenta.addEventListener('change', function() {
+                    const tipo = this.value;
+                    const precioInput = document.getElementById('precioVentaProducto');
+                    
+                    if (tipo && preciosData[tipo]) {
+                        precioInput.value = preciosData[tipo].precioVenta.toFixed(2);
+                    } else {
+                        precioInput.value = '';
+                    }
+                });
+            }
+            
+            // Deshabilitar pestañas inicialmente
+            disableTabs();
+            
+            // Inicializar Google API
+            initializeGapi();
+        });
+
+        // Funciones de utilidad
+        function formatearFecha(fecha) {
+            return fecha.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+
+        // Función para exportar datos
+        async function exportarDatos() {
+            try {
+                const datos = {
+                    fecha: new Date().toISOString(),
+                    inventario: inventarioData,
+                    precios: preciosData,
+                    configuracion: config
+                };
+                
+                const dataStr = JSON.stringify(datos, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `backup_pesquera_${formatearFecha(new Date()).replace(/\//g, '-')}.json`;
+                link.click();
+                
+                mostrarAlerta('Datos exportados correctamente', 'success');
+                
+            } catch (error) {
+                mostrarAlerta(`Error al exportar datos: ${error.message}`, 'danger');
+            }
+        }
+
+        // Función para verificar el estado de autenticación al cargar
+        window.addEventListener('load', function() {
+            // Pequeño delay para asegurar que Google API esté cargada
+            setTimeout(() => {
+                if (typeof gapi !== 'undefined') {
+                    initializeGapi();
+                } else {
+                    updateConnectionStatus('disconnected', 'Error al cargar Google API');
+                    mostrarAlerta('Error al cargar Google API. Verifique su conexión a internet.', 'danger');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
