@@ -638,6 +638,7 @@
         // Configuración de la API
         const API_KEY = 'AIzaSyDaSczY-zFyFzB7V4iL7kMVcMCGP5GFn7I';
         const SHEETS_API_BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxctQL70DoI6Vpr5WI-aqaN5r1bf3UjJxb8RjP9hjIAjEykcGBm6R-4IdUqK94iBwk_/exec';
         
         // Variables globales
         let spreadsheetId = localStorage.getItem('spreadsheetId') || '';
@@ -765,50 +766,53 @@
                 throw new Error('Configure el ID del Google Sheet primero');
             }
             
-            const range = `${nombreHoja}!A:Z`;
-            const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${range}?valueInputOption=RAW&key=${API_KEY}`;
-            
-            const response = await fetch(url, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    values: datos
-                })
-            });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`Error al escribir en ${nombreHoja}: ${errorData.error.message}`);
-            }
-            
-            return await response.json();
-        }
-        
-        async function agregarFilaHoja(nombreHoja, fila) {
-            if (!spreadsheetId) {
-                throw new Error('Configure el ID del Google Sheet primero');
-            }
-            
-            const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${nombreHoja}!A:A:append?valueInputOption=RAW&key=${API_KEY}`;
-            
-            const response = await fetch(url, {
+            const response = await fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    values: [fila]
+                    action: 'escribirHoja',
+                    spreadsheetId: spreadsheetId,
+                    nombreHoja: nombreHoja,
+                    datos: datos
                 })
             });
             
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`Error al agregar fila en ${nombreHoja}: ${errorData.error.message}`);
+            const result = await response.json();
+            
+            if (result.error) {
+                throw new Error(result.error);
             }
             
-            return await response.json();
+            return result;
+        }
+   
+        async function agregarFilaHoja(nombreHoja, fila) {
+            if (!spreadsheetId) {
+                throw new Error('Configure el ID del Google Sheet primero');
+            }
+            
+            const response = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'agregarFila',
+                    spreadsheetId: spreadsheetId,
+                    nombreHoja: nombreHoja,
+                    fila: fila
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.error) {
+                throw new Error(result.error);
+            }
+            
+            return result;
         }
         
         // =================== FUNCIONES PRINCIPALES ===================
