@@ -655,6 +655,61 @@
         };
         
         console.log('✅ Variables inicializadas correctamente');
+        // 1. NUEVA función para llamadas JSONP (agrega esta función)
+        function llamarAPIConJSONP(data = null) {
+          return new Promise((resolve, reject) => {
+            const callbackName = 'jsonp_callback_' + Math.random().toString(36).substr(2, 9);
+            const script = document.createElement('script');
+            
+            // Crear función callback global
+            window[callbackName] = function(response) {
+              // Limpiar
+              delete window[callbackName];
+              if (document.body.contains(script)) {
+                document.body.removeChild(script);
+              }
+              
+              // Resolver o rechazar según la respuesta
+              if (response.error) {
+                reject(new Error(response.error));
+              } else {
+                resolve(response);
+              }
+            };
+            
+            // Configurar parámetros
+            const params = new URLSearchParams({
+              callback: callbackName
+            });
+            
+            if (data) {
+              params.append('data', JSON.stringify(data));
+            }
+            
+            // Configurar script
+            script.src = `${APPS_SCRIPT_URL}?${params}`;
+            script.onerror = () => {
+              delete window[callbackName];
+              if (document.body.contains(script)) {
+                document.body.removeChild(script);
+              }
+              reject(new Error('Error en la solicitud JSONP'));
+            };
+            
+            // Timeout de 30 segundos
+            setTimeout(() => {
+              if (window[callbackName]) {
+                delete window[callbackName];
+                if (document.body.contains(script)) {
+                  document.body.removeChild(script);
+                }
+                reject(new Error('Timeout en la solicitud JSONP'));
+              }
+            }, 30000);
+            
+            document.body.appendChild(script);
+          });
+        }
         
         // =================== FUNCIONES DE UTILIDAD ===================
         
@@ -762,95 +817,87 @@
         }
         
         async function escribirHoja(nombreHoja, datos) {
-            if (!spreadsheetId) {
-                throw new Error('Configure el ID del Google Sheet primero');
-            }
-            
-            const response = await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: 'escribirHoja',
-                    spreadsheetId: spreadsheetId,
-                    nombreHoja: nombreHoja,
-                    datos: datos
-                })
-            });
-            
-            const result = await response.json();
-            
-            if (result.error) {
-                throw new Error(result.error);
-            }
-            
-            return result;
+          if (!spreadsheetId) {
+            throw new Error('Configure el ID del Google Sheet primero');
+          }
+          
+          const requestData = {
+            action: 'escribirHoja',
+            spreadsheetId: spreadsheetId,
+            nombreHoja: nombreHoja,
+            datos: datos
+          };
+          
+          return await llamarAPIConJSONP(requestData);
         }
    
         async function agregarFilaHoja(nombreHoja, fila) {
-            if (!spreadsheetId) {
-                throw new Error('Configure el ID del Google Sheet primero');
-            }
-            
-            const response = await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: 'agregarFila',
-                    spreadsheetId: spreadsheetId,
-                    nombreHoja: nombreHoja,
-                    fila: fila
-                })
-            });
-            
-            const result = await response.json();
-            
-            if (result.error) {
-                throw new Error(result.error);
-            }
-            
-            return result;
+          if (!spreadsheetId) {
+            throw new Error('Configure el ID del Google Sheet primero');
+          }
+          
+          const requestData = {
+            action: 'agregarFila',
+            spreadsheetId: spreadsheetId,
+            nombreHoja: nombreHoja,
+            fila: fila
+          };
+          
+          return await llamarAPIConJSONP(requestData);
         }
+
         
         // =================== FUNCIONES PRINCIPALES ===================
         
         // Prueba básica para diagnosticar problemas
         window.pruebaBasica = async function() {
-            console.log('🧪 Iniciando prueba básica del sistema...');
-            mostrarAlerta('🧪 Iniciando diagnóstico del sistema...', 'warning');
+          console.log('🧪 Iniciando prueba básica del sistema...');
+          mostrarAlerta('🧪 Iniciando diagnóstico del sistema...', 'warning');
+          
+          try {
+            console.log('🌐 Probando fetch básico...');
+            const testUrl = 'https://httpbin.org/json';
+            const testResponse = await fetch(testUrl);
+            console.log('✅ Fetch básico funciona:', testResponse.ok);
+            mostrarAlerta('✅ Fetch básico: FUNCIONA', 'success');
+          } catch (fetchError) {
+            console.error('❌ Error en fetch básico:', fetchError);
+            mostrarAlerta('❌ Error: Su navegador no puede hacer peticiones HTTP', 'danger');
+            return;
+          }
+          
+          try {
+            console.log('🔗 Probando acceso a Google Sheets API...');
+            const apiTestUrl = `https://sheets.googleapis.com/v4/spreadsheets?key=${API_KEY}`;
+            const apiResponse = await fetch(apiTestUrl);
+            console.log('📡 Respuesta API Google:', apiResponse.status, apiResponse.statusText);
             
-            try {
-                console.log('🌐 Probando fetch básico...');
-                const testUrl = 'https://httpbin.org/json';
-                const testResponse = await fetch(testUrl);
-                console.log('✅ Fetch básico funciona:', testResponse.ok);
-                mostrarAlerta('✅ Fetch básico: FUNCIONA', 'success');
-            } catch (fetchError) {
-                console.error('❌ Error en fetch básico:', fetchError);
-                mostrarAlerta('❌ Error: Su navegador no puede hacer peticiones HTTP', 'danger');
-                return;
+            if (apiResponse.status === 403) {
+              mostrarAlerta('🔑 Error 403: Problema con la API Key', 'danger');
+            } else if (apiResponse.status === 400) {
+              mostrarAlerta('✅ API Key funciona correctamente', 'success');
+            } else {
+              mostrarAlerta(`📡 Respuesta API: ${apiResponse.status}`, 'warning');
             }
+          } catch (apiError) {
+            console.error('❌ Error en API Google:', apiError);
+            mostrarAlerta('❌ No se puede conectar a Google Sheets API', 'danger');
+          }
+          
+          try {
+            console.log('🚀 Probando Apps Script con JSONP...');
+            const appsScriptResponse = await llamarAPIConJSONP();
+            console.log('✅ Apps Script respuesta:', appsScriptResponse);
             
-            try {
-                console.log('🔗 Probando acceso a Google Sheets API...');
-                const apiTestUrl = `https://sheets.googleapis.com/v4/spreadsheets?key=${API_KEY}`;
-                const apiResponse = await fetch(apiTestUrl);
-                console.log('📡 Respuesta API Google:', apiResponse.status, apiResponse.statusText);
-                
-                if (apiResponse.status === 403) {
-                    mostrarAlerta('🔑 Error 403: Problema con la API Key', 'danger');
-                } else if (apiResponse.status === 400) {
-                    mostrarAlerta('✅ API Key funciona correctamente', 'success');
-                } else {
-                    mostrarAlerta(`📡 Respuesta API: ${apiResponse.status}`, 'warning');
-                }
-            } catch (apiError) {
-                console.error('❌ Error en API Google:', apiError);
-                mostrarAlerta('❌ No se puede conectar a Google Sheets API', 'danger');
+            if (appsScriptResponse.success || appsScriptResponse.message) {
+              mostrarAlerta('✅ Apps Script con JSONP: FUNCIONA', 'success');
+            } else {
+              mostrarAlerta('⚠️ Apps Script responde pero con formato inesperado', 'warning');
             }
+          } catch (appsScriptError) {
+            console.error('❌ Error en Apps Script:', appsScriptError);
+            mostrarAlerta(`❌ Error en Apps Script: ${appsScriptError.message}`, 'danger');
+          }
         };
         
         // Probar conexión con Google Sheets
