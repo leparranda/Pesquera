@@ -340,11 +340,21 @@
                         <label>ID del Google Sheet:</label>
                         <input type="text" id="spreadsheetId" placeholder="ID del Google Sheet">
                         <small style="color: #666; font-size: 12px;">
-                            Obtenga el ID de la URL: https://docs.google.com/spreadsheets/d/<strong>ID_AQUI</strong>/edit
+                            Obtenga el ID de la URL: https://docs.google.com/spreadsheets/d/<strong>ID_AQUI</strong>/edit<br>
+                            <strong style="color: #e74c3c;">IMPORTANTE:</strong> El Google Sheet debe ser público (compartido con "cualquier persona con el enlace")
                         </small>
+                    </div>
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ffc107;">
+                        <strong>🔒 Pasos para hacer público su Google Sheet:</strong><br>
+                        1. Abra su Google Sheet<br>
+                        2. Haga clic en "Compartir" (botón azul)<br>
+                        3. Cambie a "Cualquier persona con el enlace"<br>
+                        4. Seleccione "Editor" como permiso<br>
+                        5. Haga clic en "Copiar enlace" y luego "Listo"
                     </div>
                     <button class="btn btn-success" onclick="probarConexion()">🔌 PROBAR CONEXIÓN</button>
                     <button class="btn btn-success" onclick="guardarConfiguracion()">💾 GUARDAR CONFIGURACIÓN</button>
+                    <button class="btn btn-warning" onclick="pruebaBasica()">🧪 PRUEBA BÁSICA</button>
                 </div>
                 
                 <div class="config-section">
@@ -711,8 +721,58 @@
             return await response.json();
         }
         
+        // Prueba básica para diagnosticar problemas
+        async function pruebaBasica() {
+            console.log('🧪 Iniciando prueba básica del sistema...');
+            
+            mostrarAlerta('🧪 Iniciando diagnóstico del sistema...', 'warning');
+            
+            // Verificar variables básicas
+            console.log('🔑 API_KEY:', API_KEY ? 'Configurada' : 'NO CONFIGURADA');
+            console.log('📊 SHEETS_API_BASE:', SHEETS_API_BASE);
+            console.log('📋 spreadsheetId:', spreadsheetId || 'NO CONFIGURADO');
+            
+            // Verificar el ID del input
+            const inputId = document.getElementById('spreadsheetId');
+            console.log('📝 Input ID elemento:', inputId ? 'Encontrado' : 'NO ENCONTRADO');
+            console.log('📝 Input ID valor:', inputId ? inputId.value : 'N/A');
+            
+            // Probar fetch básico
+            try {
+                console.log('🌐 Probando fetch básico...');
+                const testUrl = 'https://httpbin.org/json';
+                const testResponse = await fetch(testUrl);
+                console.log('✅ Fetch básico funciona:', testResponse.ok);
+            } catch (fetchError) {
+                console.error('❌ Error en fetch básico:', fetchError);
+                mostrarAlerta('❌ Error: Su navegador no puede hacer peticiones HTTP', 'danger');
+                return;
+            }
+            
+            // Probar acceso a Google Sheets API sin sheet específico
+            try {
+                console.log('🔗 Probando acceso a Google Sheets API...');
+                const apiTestUrl = `https://sheets.googleapis.com/v4/spreadsheets?key=${API_KEY}`;
+                const apiResponse = await fetch(apiTestUrl);
+                console.log('📡 Respuesta API Google:', apiResponse.status, apiResponse.statusText);
+                
+                if (apiResponse.status === 403) {
+                    mostrarAlerta('🔑 Error 403: Problema con la API Key', 'danger');
+                } else if (apiResponse.status === 400) {
+                    mostrarAlerta('✅ API Key funciona (Error 400 es normal sin parámetros)', 'success');
+                }
+            } catch (apiError) {
+                console.error('❌ Error en API Google:', apiError);
+                mostrarAlerta('❌ No se puede conectar a Google Sheets API', 'danger');
+            }
+            
+            mostrarAlerta('🔍 Revise la consola del navegador (F12) para más detalles', 'warning');
+        }
+        
         // Probar conexión con Google Sheets
         async function probarConexion() {
+            console.log('🔌 Iniciando prueba de conexión...');
+            
             const idSheet = document.getElementById('spreadsheetId').value.trim();
             
             if (!idSheet) {
@@ -720,47 +780,72 @@
                 return;
             }
             
+            console.log('📋 ID del Sheet:', idSheet);
             updateConnectionStatus('loading', 'Probando conexión...');
             
             try {
                 // Probar acceso al sheet
                 const url = `${SHEETS_API_BASE}/${idSheet}?key=${API_KEY}`;
+                console.log('🌐 URL de prueba:', url);
+                
                 const response = await fetch(url);
+                console.log('📡 Respuesta del servidor:', response.status, response.statusText);
                 
                 if (!response.ok) {
                     const errorData = await response.json();
+                    console.error('❌ Error en respuesta:', errorData);
                     throw new Error(errorData.error.message);
                 }
                 
                 const data = await response.json();
+                console.log('✅ Datos recibidos:', data);
                 
                 updateConnectionStatus('connected', `Conectado a: ${data.properties.title}`);
-                mostrarAlerta('Conexión exitosa con Google Sheets', 'success');
+                mostrarAlerta('✅ Conexión exitosa con Google Sheets', 'success');
                 
                 // Verificar si existen las hojas necesarias
                 const hojasExistentes = data.sheets.map(sheet => sheet.properties.title);
                 const hojasRequeridas = ['Inventario', 'Precios', 'Ventas', 'Configuracion'];
                 const hojasFaltantes = hojasRequeridas.filter(hoja => !hojasExistentes.includes(hoja));
                 
+                console.log('📊 Hojas existentes:', hojasExistentes);
+                console.log('📋 Hojas requeridas:', hojasRequeridas);
+                console.log('⚠️ Hojas faltantes:', hojasFaltantes);
+                
                 if (hojasFaltantes.length > 0) {
-                    mostrarAlerta(`Faltan las siguientes hojas: ${hojasFaltantes.join(', ')}. Use el botón "Crear Estructura" para crearlas automáticamente.`, 'warning');
+                    mostrarAlerta(`⚠️ Faltan las siguientes hojas: ${hojasFaltantes.join(', ')}. Use el botón "Crear Estructura" para crearlas automáticamente.`, 'warning');
+                } else {
+                    mostrarAlerta('🎉 Todas las hojas necesarias están disponibles', 'success');
                 }
                 
             } catch (error) {
+                console.error('💥 Error completo:', error);
                 updateConnectionStatus('disconnected', `Error: ${error.message}`);
-                mostrarAlerta(`Error de conexión: ${error.message}`, 'danger');
+                mostrarAlerta(`❌ Error de conexión: ${error.message}`, 'danger');
+                
+                // Diagnóstico adicional
+                if (error.message.includes('403')) {
+                    mostrarAlerta('🔒 Error 403: Verifique que el Google Sheet sea público', 'danger');
+                } else if (error.message.includes('404')) {
+                    mostrarAlerta('🔍 Error 404: ID del Google Sheet no encontrado', 'danger');
+                } else if (error.message.includes('CORS')) {
+                    mostrarAlerta('🌐 Error CORS: Problema de navegador', 'danger');
+                }
             }
         }
         
         // Crear estructura de hojas automáticamente
         async function crearEstructuraHojas() {
+            console.log('🏗️ Iniciando creación de estructura...');
+            
             if (!spreadsheetId) {
-                mostrarAlerta('Configure el ID del Google Sheet primero', 'warning');
+                mostrarAlerta('⚠️ Configure el ID del Google Sheet primero', 'warning');
                 return;
             }
             
             try {
                 updateConnectionStatus('loading', 'Creando estructura...');
+                console.log('📊 Creando estructura para spreadsheet:', spreadsheetId);
                 
                 // Datos para cada hoja
                 const estructuras = {
@@ -779,22 +864,34 @@
                     ]
                 };
                 
+                console.log('📋 Estructuras a crear:', estructuras);
+                
                 // Crear cada hoja
+                let hojasCreadas = 0;
                 for (const [nombreHoja, datos] of Object.entries(estructuras)) {
                     try {
+                        console.log(`📝 Creando hoja: ${nombreHoja}`);
                         await escribirHoja(nombreHoja, datos);
-                        console.log(`Hoja ${nombreHoja} creada/actualizada`);
+                        console.log(`✅ Hoja ${nombreHoja} creada/actualizada exitosamente`);
+                        hojasCreadas++;
                     } catch (error) {
-                        console.error(`Error al crear hoja ${nombreHoja}:`, error);
+                        console.error(`❌ Error al crear hoja ${nombreHoja}:`, error);
+                        mostrarAlerta(`Error al crear hoja ${nombreHoja}: ${error.message}`, 'danger');
                     }
                 }
                 
-                updateConnectionStatus('connected', 'Estructura creada correctamente');
-                mostrarAlerta('Estructura de hojas creada exitosamente', 'success');
+                if (hojasCreadas === Object.keys(estructuras).length) {
+                    updateConnectionStatus('connected', 'Estructura creada correctamente');
+                    mostrarAlerta('🎉 Estructura de hojas creada exitosamente', 'success');
+                    console.log('🏆 Todas las hojas fueron creadas exitosamente');
+                } else {
+                    mostrarAlerta(`⚠️ Se crearon ${hojasCreadas} de ${Object.keys(estructuras).length} hojas`, 'warning');
+                }
                 
             } catch (error) {
+                console.error('💥 Error general al crear estructura:', error);
                 updateConnectionStatus('disconnected', `Error: ${error.message}`);
-                mostrarAlerta(`Error al crear estructura: ${error.message}`, 'danger');
+                mostrarAlerta(`❌ Error al crear estructura: ${error.message}`, 'danger');
             }
         }
         
