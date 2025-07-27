@@ -849,55 +849,48 @@
         
         // =================== FUNCIONES PRINCIPALES ===================
         
-        // Prueba básica para diagnosticar problemas
+        // REEMPLAZA tu función window.pruebaBasica con esta versión simplificada
         window.pruebaBasica = async function() {
           console.log('🧪 Iniciando prueba básica del sistema...');
-          mostrarAlerta('🧪 Iniciando diagnóstico del sistema...', 'warning');
-          
-          try {
-            console.log('🌐 Probando fetch básico...');
-            const testUrl = 'https://httpbin.org/json';
-            const testResponse = await fetch(testUrl);
-            console.log('✅ Fetch básico funciona:', testResponse.ok);
-            mostrarAlerta('✅ Fetch básico: FUNCIONA', 'success');
-          } catch (fetchError) {
-            console.error('❌ Error en fetch básico:', fetchError);
-            mostrarAlerta('❌ Error: Su navegador no puede hacer peticiones HTTP', 'danger');
-            return;
-          }
-          
-          try {
-            console.log('🔗 Probando acceso a Google Sheets API...');
-            const apiTestUrl = `https://sheets.googleapis.com/v4/spreadsheets?key=${API_KEY}`;
-            const apiResponse = await fetch(apiTestUrl);
-            console.log('📡 Respuesta API Google:', apiResponse.status, apiResponse.statusText);
-            
-            if (apiResponse.status === 403) {
-              mostrarAlerta('🔑 Error 403: Problema con la API Key', 'danger');
-            } else if (apiResponse.status === 400) {
-              mostrarAlerta('✅ API Key funciona correctamente', 'success');
-            } else {
-              mostrarAlerta(`📡 Respuesta API: ${apiResponse.status}`, 'warning');
-            }
-          } catch (apiError) {
-            console.error('❌ Error en API Google:', apiError);
-            mostrarAlerta('❌ No se puede conectar a Google Sheets API', 'danger');
-          }
+          mostrarAlerta('🧪 Probando solo Google Apps Script con JSONP...', 'warning');
           
           try {
             console.log('🚀 Probando Apps Script con JSONP...');
+            console.log('📍 URL que se va a probar:', APPS_SCRIPT_URL);
+            
+            // Solo probar JSONP - sin Google Sheets API por ahora
             const appsScriptResponse = await llamarAPIConJSONP();
             console.log('✅ Apps Script respuesta:', appsScriptResponse);
             
             if (appsScriptResponse.success || appsScriptResponse.message) {
-              mostrarAlerta('✅ Apps Script con JSONP: FUNCIONA', 'success');
+              mostrarAlerta('✅ Apps Script con JSONP: FUNCIONA PERFECTAMENTE', 'success');
+              console.log('🎉 El sistema está listo para usar');
             } else {
               mostrarAlerta('⚠️ Apps Script responde pero con formato inesperado', 'warning');
+              console.log('🔍 Respuesta recibida:', appsScriptResponse);
             }
           } catch (appsScriptError) {
             console.error('❌ Error en Apps Script:', appsScriptError);
+            console.error('🔍 Detalles del error:', {
+              message: appsScriptError.message,
+              url: APPS_SCRIPT_URL,
+              timestamp: new Date().toISOString()
+            });
             mostrarAlerta(`❌ Error en Apps Script: ${appsScriptError.message}`, 'danger');
+            
+            // Mostrar ayuda específica
+            if (appsScriptError.message.includes('Error al cargar script JSONP')) {
+              mostrarAlerta('💡 SOLUCIÓN: Verifica que hayas hecho un nuevo deployment del Apps Script y copiado la URL correcta', 'warning');
+            }
           }
+        };
+        
+        // TAMBIÉN agrega esta función para probar la URL directamente
+        window.probarURLDirecta = function() {
+          const url = APPS_SCRIPT_URL;
+          console.log('🌐 Abriendo URL en nueva pestaña:', url);
+          mostrarAlerta('📝 Abriendo Apps Script en nueva pestaña. Deberías ver un JSON con el mensaje de funcionamiento.', 'info');
+          window.open(url, '_blank');
         };
         
         // Probar conexión con Google Sheets
