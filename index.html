@@ -673,6 +673,7 @@
     <script>
         // Configuración OAuth2
         const CLIENT_ID = '91745823849-t7eg6qk5sh395bnoaglauvdvu4ksj4hi.apps.googleusercontent.com';
+        const REDIRECT_URI = 'https://leparranda.github.io/Pesquera/';
         const CLIENT_SECRET = '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';
         const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
         
@@ -695,7 +696,7 @@
         // URLs de la API
         const SHEETS_API_BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
         
-        // Inicialización de Google API
+// Inicialización de Google API
         function initializeGapi() {
             gapi.load('auth2', () => {
                 gapi.auth2.init({
@@ -705,4 +706,780 @@
                     console.log('Google API inicializada');
                     checkAuthStatus();
                 }).catch(error => {
-                    console.error('Error al inicial
+                    console.error('Error al inicializar Google API:', error);
+                    updateConnectionStatus('disconnected', 'Error al inicializar Google API');
+                });
+            });
+        }
+
+        // Verificar estado de autenticación
+        function checkAuthStatus() {
+            const authInstance = gapi.auth2.getAuthInstance();
+            if (authInstance.isSignedIn.get()) {
+                handleSignIn();
+            } else {
+                updateConnectionStatus('disconnected', 'No autenticado');
+                showAuthSection();
+            }
+        }
+
+        // Iniciar sesión
+        function signIn() {
+            const signInBtn = document.getElementById('signInBtn');
+            signInBtn.disabled = true;
+            signInBtn.innerHTML = '<span class="loading"></span> INICIANDO SESIÓN...';
+            
+            const authInstance = gapi.auth2.getAuthInstance();
+            authInstance.signIn().then(handleSignIn).catch(error => {
+                console.error('Error al iniciar sesión:', error);
+                mostrarAlerta('Error al iniciar sesión: ' + error.error, 'danger');
+                signInBtn.disabled = false;
+                signInBtn.innerHTML = '🚀 INICIAR SESIÓN CON GOOGLE';
+            });
+        }
+
+        // Manejar inicio de sesión exitoso
+        function handleSignIn() {
+            const authInstance = gapi.auth2.getAuthInstance();
+            const user = authInstance.currentUser.get();
+            
+            if (user.isSignedIn()) {
+                currentUser = user;
+                isAuthenticated = true;
+                accessToken = user.getAuthResponse().access_token;
+                
+                // Mostrar información del usuario
+                const profile = user.getBasicProfile();
+                showUserInfo(profile);
+                
+                // Habilitar pestañas
+                enableTabs();
+                
+                // Ocultar banner de autenticación
+                document.getElementById('authBanner').classList.add('hidden');
+                
+                updateConnectionStatus('connected', `Conectado como: ${profile.getName()}`);
+                mostrarAlerta('Autenticación exitosa', 'success');
+                
+                // Cargar datos si hay spreadsheet configurado
+                if (spreadsheetId) {
+                    cargarTodosLosDatos();
+                }
+            }
+        }
+
+        // Cerrar sesión
+        function signOut() {
+            const authInstance = gapi.auth2.getAuthInstance();
+            authInstance.signOut().then(() => {
+                isAuthenticated = false;
+                accessToken = '';
+                currentUser = null;
+                
+                // Deshabilitar pestañas
+                disableTabs();
+                
+                // Mostrar sección de autenticación
+                showAuthSection();
+                
+                // Mostrar banner
+                document.getElementById('authBanner').classList.remove('hidden');
+                
+                updateConnectionStatus('disconnected', 'Sesión cerrada');
+                mostrarAlerta('Sesión cerrada correctamente', 'success');
+            });
+        }
+
+        // Mostrar información del usuario
+        function showUserInfo(profile) {
+            const userInfo = document.getElementById('userInfo');
+            const userDetails = document.getElementById('userDetails');
+            const authSection = document.getElementById('authSection');
+            
+            userDetails.innerHTML = `
+                <p><strong>Nombre:</strong> ${profile.getName()}</p>
+                <p><strong>Email:</strong> ${profile.getEmail()}</p>
+                <img src="${profile.getImageUrl()}" style="width: 50px; height: 50px; border-radius: 50%; margin-top: 10px;">
+            `;
+            
+            authSection.style.display = 'none';
+            userInfo.style.display = 'block';
+        }
+
+        // Mostrar sección de autenticación
+        function showAuthSection() {
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('userInfo').style.display = 'none';
+        }
+
+        // Habilitar/deshabilitar pestañas
+        function enableTabs() {
+            const tabs = ['tabInventario', 'tabPrecios', 'tabVentas', 'tabReportes'];
+            tabs.forEach(tabId => {
+                const tab = document.getElementById(tabId);
+                if (tab) {
+                    tab.style.opacity = '1';
+                    tab.style.pointerEvents = 'auto';
+                }
+            });
+        }
+
+        function disableTabs() {
+            const tabs = ['tabInventario', 'tabPrecios', 'tabVentas', 'tabReportes'];
+            tabs.forEach(tabId => {
+                const tab = document.getElementById(tabId);
+                if (tab) {
+                    tab.style.opacity = '0.5';
+                    tab.style.pointerEvents = 'none';
+                }
+            });
+        }
+
+        // Mostrar sección
+        function showSection(sectionName) {
+            // Verificar autenticación para secciones protegidas
+            if (sectionName !== 'autenticacion' && !isAuthenticated) {
+                mostrarAlerta('Debe autenticarse primero', 'warning');
+                return;
+            }
+            
+            // Ocultar todas las secciones
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // Ocultar todos los tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Mostrar la sección seleccionada
+            document.getElementById(sectionName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Cargar datos según la sección
+            switch(sectionName) {
+                case 'inventario':
+                    cargarInventario();
+                    break;
+                case 'precios':
+                    cargarPrecios();
+                    cargarInventarioParaPrecios();
+                    break;
+                case 'ventas':
+                    cargarInventarioParaVentas();
+                    cargarPrecios();
+                    break;
+                case 'reportes':
+                    cargarReportes();
+                    break;
+            }
+        }
+
+        // Actualizar estado de conexión
+        function updateConnectionStatus(status, message) {
+            const statusElements = ['connectionStatus', 'inventarioStatus', 'preciosStatus', 'ventasStatus', 'reportesStatus'];
+            
+            statusElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.className = `connection-status status-${status}`;
+                    
+                    let icon = '';
+                    switch(status) {
+                        case 'connected': icon = '✅'; break;
+                        case 'disconnected': icon = '❌'; break;
+                        case 'loading': icon = '<span class="loading"></span>'; break;
+                    }
+                    
+                    element.innerHTML = `${icon} ${message}`;
+                }
+            });
+        }
+
+        // Guardar configuración
+        function guardarConfiguracion() {
+            const newSpreadsheetId = document.getElementById('spreadsheetId').value.trim();
+            
+            if (!newSpreadsheetId) {
+                mostrarAlerta('Ingrese el ID del Google Sheet', 'warning');
+                return;
+            }
+            
+            spreadsheetId = newSpreadsheetId;
+            localStorage.setItem('spreadsheetId', spreadsheetId);
+            
+            mostrarAlerta('Configuración guardada', 'success');
+            
+            if (isAuthenticated) {
+                cargarTodosLosDatos();
+            }
+        }
+
+        // Guardar datos de empresa
+        function guardarDatosEmpresa() {
+            config.nombreEmpresa = document.getElementById('nombreEmpresa').value;
+            config.direccionEmpresa = document.getElementById('direccionEmpresa').value;
+            config.telefonoEmpresa = document.getElementById('telefonoEmpresa').value;
+            
+            localStorage.setItem('nombreEmpresa', config.nombreEmpresa);
+            localStorage.setItem('direccionEmpresa', config.direccionEmpresa);
+            localStorage.setItem('telefonoEmpresa', config.telefonoEmpresa);
+            
+            mostrarAlerta('Datos de empresa guardados', 'success');
+        }
+
+        // Funciones de Google Sheets API
+        async function leerHoja(nombreHoja) {
+            if (!isAuthenticated || !spreadsheetId) {
+                throw new Error('No autenticado o sin configurar Google Sheet');
+            }
+            
+            const range = `${nombreHoja}!A:Z`;
+            const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${range}`;
+            
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Error al leer ${nombreHoja}: ${errorData.error.message}`);
+            }
+            
+            const data = await response.json();
+            return data.values || [];
+        }
+
+        async function escribirHoja(nombreHoja, datos, rango = null) {
+            if (!isAuthenticated || !spreadsheetId) {
+                throw new Error('No autenticado o sin configurar Google Sheet');
+            }
+            
+            const rangeToWrite = rango || `${nombreHoja}!A:Z`;
+            const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${rangeToWrite}:clear`;
+            
+            // Limpiar la hoja primero
+            await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            // Escribir nuevos datos
+            const writeUrl = `${SHEETS_API_BASE}/${spreadsheetId}/values/${rangeToWrite}?valueInputOption=RAW`;
+            
+            const response = await fetch(writeUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    values: datos
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Error al escribir en ${nombreHoja}: ${errorData.error.message}`);
+            }
+            
+            return await response.json();
+        }
+
+        async function agregarFilaHoja(nombreHoja, fila) {
+            if (!isAuthenticated || !spreadsheetId) {
+                throw new Error('No autenticado o sin configurar Google Sheet');
+            }
+            
+            const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${nombreHoja}!A:A:append?valueInputOption=RAW`;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    values: [fila]
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Error al agregar fila en ${nombreHoja}: ${errorData.error.message}`);
+            }
+            
+            return await response.json();
+        }
+
+        // Cargar todos los datos
+        async function cargarTodosLosDatos() {
+            try {
+                updateConnectionStatus('loading', 'Cargando datos...');
+                
+                await Promise.all([
+                    cargarInventario(),
+                    cargarPrecios()
+                ]);
+                
+                updateConnectionStatus('connected', 'Datos cargados correctamente');
+            } catch (error) {
+                updateConnectionStatus('disconnected', `Error: ${error.message}`);
+                mostrarAlerta(`Error al cargar datos: ${error.message}`, 'danger');
+            }
+        }
+
+        // Cargar inventario
+        async function cargarInventario() {
+            try {
+                const datos = await leerHoja('Inventario');
+                
+                inventarioData = {};
+                if (datos.length > 1) {
+                    for (let i = 1; i < datos.length; i++) {
+                        const fila = datos[i];
+                        if (fila[0]) {
+                            inventarioData[fila[0]] = {
+                                stock: parseFloat(fila[1]) || 0,
+                                precioPromedio: parseFloat(fila[2]) || 0,
+                                valorTotal: parseFloat(fila[3]) || 0,
+                                ultimaActualizacion: fila[4] || ''
+                            };
+                        }
+                    }
+                }
+                
+                actualizarTablaInventario();
+            } catch (error) {
+                console.error('Error al cargar inventario:', error);
+                mostrarAlerta(`Error al cargar inventario: ${error.message}`, 'danger');
+            }
+        }
+
+        // Cargar precios
+        async function cargarPrecios() {
+            try {
+                const datos = await leerHoja('Precios');
+                
+                preciosData = {};
+                if (datos.length > 1) {
+                    for (let i = 1; i < datos.length; i++) {
+                        const fila = datos[i];
+                        if (fila[0]) {
+                            preciosData[fila[0]] = {
+                                precioCompra: parseFloat(fila[1]) || 0,
+                                margen: parseFloat(fila[2]) || 0,
+                                precioVenta: parseFloat(fila[3]) || 0,
+                                ganancia: parseFloat(fila[4]) || 0
+                            };
+                        }
+                    }
+                }
+                
+                actualizarTablaPrecios();
+            } catch (error) {
+                console.error('Error al cargar precios:', error);
+                mostrarAlerta(`Error al cargar precios: ${error.message}`, 'danger');
+            }
+        }
+
+        // Agregar inventario
+        async function agregarInventario() {
+            const tipo = document.getElementById('tipoPescadoInventario').value;
+            const libras = parseFloat(document.getElementById('librasRecibidas').value);
+            const precio = parseFloat(document.getElementById('precioCompra').value);
+            
+            if (!tipo || !libras || !precio) {
+                mostrarAlerta('Complete todos los campos', 'warning');
+                return;
+            }
+            
+            const btnAgregar = document.getElementById('btnAgregarInventario');
+            btnAgregar.disabled = true;
+            btnAgregar.innerHTML = '<span class="loading"></span> AGREGANDO...';
+            
+            try {
+                // Calcular nuevo inventario
+                if (!inventarioData[tipo]) {
+                    inventarioData[tipo] = { stock: 0, precioPromedio: 0, valorTotal: 0 };
+                }
+                
+                const stockAnterior = inventarioData[tipo].stock;
+                const valorAnterior = inventarioData[tipo].valorTotal;
+                
+                inventarioData[tipo].stock += libras;
+                inventarioData[tipo].valorTotal = valorAnterior + (libras * precio);
+                inventarioData[tipo].precioPromedio = inventarioData[tipo].valorTotal / inventarioData[tipo].stock;
+                inventarioData[tipo].ultimaActualizacion = new Date().toLocaleDateString();
+                
+                // Preparar datos para escribir
+                const datosInventario = [
+                    ['Tipo', 'Stock', 'PrecioPromedio', 'ValorTotal', 'UltimaActualizacion'],
+                    ...Object.entries(inventarioData).map(([tipoPez, datos]) => [
+                        tipoPez,
+                        datos.stock,
+                        datos.precioPromedio,
+                        datos.valorTotal,
+                        datos.ultimaActualizacion
+                    ])
+                ];
+                
+                await escribirHoja('Inventario', datosInventario);
+                
+                // Limpiar formulario
+                document.getElementById('tipoPescadoInventario').value = '';
+                document.getElementById('librasRecibidas').value = '';
+                document.getElementById('precioCompra').value = '';
+                
+                actualizarTablaInventario();
+                mostrarAlerta('Inventario actualizado correctamente', 'success');
+                
+            } catch (error) {
+                mostrarAlerta(`Error al actualizar inventario: ${error.message}`, 'danger');
+            } finally {
+                btnAgregar.disabled = false;
+                btnAgregar.innerHTML = '+ AGREGAR AL INVENTARIO';
+            }
+        }
+
+        // Actualizar tabla de inventario
+        function actualizarTablaInventario() {
+            const tbody = document.querySelector('#tablaInventario tbody');
+            tbody.innerHTML = '';
+            
+            for (const [tipo, datos] of Object.entries(inventarioData)) {
+                const fila = tbody.insertRow();
+                
+                let estado = '✅ Disponible';
+                let claseEstado = '';
+                
+                if (datos.stock === 0) {
+                    estado = '🔴 Agotado';
+                    claseEstado = 'style="background-color: #f8d7da;"';
+                } else if (datos.stock < 5) {
+                    estado = '🟠 Crítico';
+                    claseEstado = 'style="background-color: #fff3cd;"';
+                } else if (datos.stock < 10) {
+                    estado = '🟡 Bajo';
+                    claseEstado = 'style="background-color: #fff3cd;"';
+                }
+                
+                fila.innerHTML = `
+                    <td>${tipo}</td>
+                    <td>${datos.stock.toFixed(1)}</td>
+                    <td>$${datos.precioPromedio.toFixed(2)}</td>
+                    <td>$${datos.valorTotal.toFixed(2)}</td>
+                    <td>${datos.ultimaActualizacion || 'N/A'}</td>
+                    <td ${claseEstado}>${estado}</td>
+                `;
+            }
+        }
+
+        // Cargar inventario para precios
+        function cargarInventarioParaPrecios() {
+            const select = document.getElementById('tipoPescadoPrecio');
+            select.innerHTML = '<option value="">Seleccionar...</option>';
+            
+            for (const tipo in inventarioData) {
+                select.innerHTML += `<option value="${tipo}">${tipo}</option>`;
+            }
+        }
+
+        // Configurar precio
+        async function configurarPrecio() {
+            const tipo = document.getElementById('tipoPescadoPrecio').value;
+            const margen = parseFloat(document.getElementById('margenGanancia').value);
+            const precioManual = parseFloat(document.getElementById('precioVentaManual').value);
+            
+            if (!tipo) {
+                mostrarAlerta('Seleccione un tipo de pescado', 'warning');
+                return;
+            }
+            
+            if (!inventarioData[tipo]) {
+                mostrarAlerta('Este pescado no existe en el inventario', 'warning');
+                return;
+            }
+            
+            const btnConfigurar = document.getElementById('btnConfigurarPrecio');
+            btnConfigurar.disabled = true;
+            btnConfigurar.innerHTML = '<span class="loading"></span> GUARDANDO...';
+            
+            try {
+                const precioCompra = inventarioData[tipo].precioPromedio;
+                let precioVenta;
+                
+                if (precioManual) {
+                    precioVenta = precioManual;
+                } else if (margen) {
+                    precioVenta = precioCompra * (1 + margen / 100);
+                } else {
+                    mostrarAlerta('Ingrese un margen o precio manual', 'warning');
+                    return;
+                }
+                
+                preciosData[tipo] = {
+                    precioCompra: precioCompra,
+                    margen: margen || ((precioVenta - precioCompra) / precioCompra * 100),
+                    precioVenta: precioVenta,
+                    ganancia: precioVenta - precioCompra
+                };
+                
+                // Preparar datos para escribir
+                const datosPrecios = [
+                    ['Tipo', 'PrecioCompra', 'Margen', 'PrecioVenta', 'Ganancia'],
+                    ...Object.entries(preciosData).map(([tipoPez, datos]) => [
+                        tipoPez,
+                        datos.precioCompra,
+                        datos.margen,
+                        datos.precioVenta,
+                        datos.ganancia
+                    ])
+                ];
+                
+                await escribirHoja('Precios', datosPrecios);
+                
+                // Limpiar formulario
+                document.getElementById('tipoPescadoPrecio').value = '';
+                document.getElementById('margenGanancia').value = '30';
+                document.getElementById('precioVentaManual').value = '';
+                
+                actualizarTablaPrecios();
+                mostrarAlerta('Precio configurado correctamente', 'success');
+                
+            } catch (error) {
+                mostrarAlerta(`Error al configurar precio: ${error.message}`, 'danger');
+            } finally {
+                btnConfigurar.disabled = false;
+                btnConfigurar.innerHTML = '💾 GUARDAR PRECIO';
+            }
+        }
+
+        // Actualizar tabla de precios
+        function actualizarTablaPrecios() {
+            const tbody = document.querySelector('#tablaPrecios tbody');
+            tbody.innerHTML = '';
+            
+            for (const [tipo, datos] of Object.entries(preciosData)) {
+                const fila = tbody.insertRow();
+                fila.innerHTML = `
+                    <td>${tipo}</td>
+                    <td>$${datos.precioCompra.toFixed(2)}</td>
+                    <td>${datos.margen.toFixed(1)}%</td>
+                    <td>$${datos.precioVenta.toFixed(2)}</td>
+                    <td>$${datos.ganancia.toFixed(2)}</td>
+                    <td><button class="btn btn-danger" onclick="eliminarPrecio('${tipo}')">Eliminar</button></td>
+                `;
+            }
+        }
+
+        // Cargar inventario para ventas
+        function cargarInventarioParaVentas() {
+            const select = document.getElementById('tipoPescadoVenta');
+            select.innerHTML = '<option value="">Seleccionar...</option>';
+            
+            for (const tipo in inventarioData) {
+                if (inventarioData[tipo].stock > 0 && preciosData[tipo]) {
+                    select.innerHTML += `<option value="${tipo}">${tipo} (${inventarioData[tipo].stock.toFixed(1)} lbs disponibles)</option>`;
+                }
+            }
+        }
+
+        // Agregar producto a venta
+        function agregarProductoVenta() {
+            const tipo = document.getElementById('tipoPescadoVenta').value;
+            const cantidad = parseFloat(document.getElementById('cantidadVenta').value);
+            const precio = parseFloat(document.getElementById('precioVentaProducto').value);
+            
+            if (!tipo || !cantidad || !precio) {
+                mostrarAlerta('Complete todos los campos del producto', 'warning');
+                return;
+            }
+            
+            if (cantidad > inventarioData[tipo].stock) {
+                mostrarAlerta(`Solo hay ${inventarioData[tipo].stock.toFixed(1)} libras disponibles de ${tipo}`, 'warning');
+                return;
+            }
+            
+            const subtotal = cantidad * precio;
+            
+            ventaActual.push({
+                tipo: tipo,
+                cantidad: cantidad,
+                precio: precio,
+                subtotal: subtotal
+            });
+            
+            // Limpiar campos
+            document.getElementById('tipoPescadoVenta').value = '';
+            document.getElementById('cantidadVenta').value = '';
+            document.getElementById('precioVentaProducto').value = '';
+            
+            actualizarTablaVentaActual();
+        }
+
+        // Actualizar tabla de venta actual
+        function actualizarTablaVentaActual() {
+            const tbody = document.querySelector('#tablaVentaActual tbody');
+            tbody.innerHTML = '';
+            
+            let total = 0;
+            
+            ventaActual.forEach((producto, index) => {
+                const fila = tbody.insertRow();
+                fila.innerHTML = `
+                    <td>${producto.tipo}</td>
+                    <td>${producto.cantidad.toFixed(1)}</td>
+                    <td>$${producto.precio.toFixed(2)}</td>
+                    <td>$${producto.subtotal.toFixed(2)}</td>
+                    <td><button class="btn btn-danger" onclick="eliminarProductoVenta(${index})">Eliminar</button></td>
+                `;
+                total += producto.subtotal;
+            });
+            
+            document.getElementById('totalVenta').textContent = total.toFixed(2);
+        }
+
+        // Eliminar producto de venta
+        function eliminarProductoVenta(index) {
+            ventaActual.splice(index, 1);
+            actualizarTablaVentaActual();
+        }
+
+        // Generar factura
+        async function generarFactura() {
+            if (ventaActual.length === 0) {
+                mostrarAlerta('Agregue al menos un producto a la venta', 'warning');
+                return;
+            }
+            
+            const cliente = document.getElementById('nombreCliente').value || 'Cliente General';
+            const telefono = document.getElementById('telefonoCliente').value || 'N/A';
+            
+            const btnGenerar = document.getElementById('btnGenerarFactura');
+            btnGenerar.disabled = true;
+            btnGenerar.innerHTML = '<span class="loading"></span> GENERANDO...';
+            
+            try {
+                // Verificar stock
+                for (const producto of ventaActual) {
+                    if (producto.cantidad > inventarioData[producto.tipo].stock) {
+                        mostrarAlerta(`Stock insuficiente para ${producto.tipo}`, 'danger');
+                        return;
+                    }
+                }
+                
+                const total = ventaActual.reduce((sum, producto) => sum + producto.subtotal, 0);
+                
+                // Obtener número de factura
+                const numeroFactura = await obtenerSiguienteNumeroFactura();
+                
+                // Actualizar inventario
+                ventaActual.forEach(producto => {
+                    inventarioData[producto.tipo].stock -= producto.cantidad;
+                    inventarioData[producto.tipo].valorTotal = inventarioData[producto.tipo].stock * inventarioData[producto.tipo].precioPromedio;
+                });
+                
+                // Guardar venta
+                const venta = {
+                    numero: numeroFactura,
+                    fecha: new Date().toLocaleDateString(),
+                    cliente: cliente,
+                    productos: ventaActual.map(p => `${p.tipo} (${p.cantidad.toFixed(1)} lbs)`).join(', '),
+                    total: total
+                };
+                
+                await Promise.all([
+                    guardarVenta(venta),
+                    actualizarInventarioEnSheets(),
+                    actualizarNumeroFactura(numeroFactura + 1)
+                ]);
+                
+                // Generar HTML de factura
+                generarHTMLFactura(venta, ventaActual, cliente, telefono);
+                
+                // Limpiar venta
+                limpiarVenta();
+                
+                mostrarAlerta(`Factura #${numeroFactura} generada correctamente`, 'success');
+                
+            } catch (error) {
+                mostrarAlerta(`Error al generar factura: ${error.message}`, 'danger');
+            } finally {
+                btnGenerar.disabled = false;
+                btnGenerar.innerHTML = '🖨️ GENERAR FACTURA';
+            }
+        }
+
+        // Obtener siguiente número de factura
+        async function obtenerSiguienteNumeroFactura() {
+            try {
+                const datos = await leerHoja('Configuracion');
+                let numeroActual = 1;
+                
+                if (datos.length > 1 && datos[1][0]) {
+                    numeroActual = parseInt(datos[1][0]) || 1;
+                }
+                
+                return numeroActual;
+            } catch (error) {
+                return 1;
+            }
+        }
+
+        // Guardar venta
+        async function guardarVenta(venta) {
+            const filaNuevaVenta = [
+                venta.numero,
+                venta.fecha,
+                venta.cliente,
+                venta.productos,
+                venta.total
+            ];
+            
+            await agregarFilaHoja('Ventas', filaNuevaVenta);
+        }
+
+        // Actualizar inventario en sheets
+        async function actualizarInventarioEnSheets() {
+            const datosInventario = [
+                ['Tipo', 'Stock', 'PrecioPromedio', 'ValorTotal', 'UltimaActualizacion'],
+                ...Object.entries(inventarioData).map(([tipoPez, datos]) => [
+                    tipePez,
+                    datos.stock,
+                    datos.precioPromedio,
+                    datos.valorTotal,
+                    datos.ultimaActualizacion
+                ])
+            ];
+            
+            await escribirHoja('Inventario', datosInventario);
+        }
+
+        // Actualizar número de factura
+        async function actualizarNumeroFactura(nuevoNumero) {
+            const datosConfig = [
+                ['UltimoNumeroFactura', 'NombreEmpresa', 'DireccionEmpresa', 'TelefonoEmpresa'],
+                [nuevoNumero, config.nombreEmpresa, config.direccionEmpresa, config.telefonoEmpresa]
+            ];
+            
+            await escribirHoja('Configuracion', datosConfig);
+        }
+
+        // Generar HTML de factura
+        function generarHTMLFactura(venta, productos, cliente, telefono) {
+            const facturaHTML = `
+                <div class="factura">
+                    <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #3498db;">
+                        <h2>🐟 ${config.nombreEmpresa}</h2>
+                        <p>${config.direccionEmpresa}</p>
+                        <p>📞 ${config.telefonoEmpresa}</p>
+                        <p><strong>FACTURA #${venta.numero.toString().padStart(6, '0')}</strong></p>
+                        <p>Fecha: ${venta.fecha} - Hora: ${new Date().toLocaleTimeString()}</p>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1
