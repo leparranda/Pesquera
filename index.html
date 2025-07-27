@@ -654,149 +654,89 @@
         };
         
         console.log('✅ Variables inicializadas correctamente');
-        console.log('🔑 API_KEY configurada:', API_KEY ? 'SÍ' : 'NO');
-        console.log('📊 spreadsheetId:', spreadsheetId || 'NO CONFIGURADO');
         
+        // =================== FUNCIONES DE UTILIDAD ===================
         
-        // =================== FUNCIONES PRINCIPALES ===================
-        
-        // Prueba básica para diagnosticar problemas
-        window.pruebaBasica = async function() {
-            console.log('🧪 Iniciando prueba básica del sistema...');
+        // Función para mostrar alertas
+        function mostrarAlerta(mensaje, tipo = 'info') {
+            // Eliminar alertas existentes
+            const alertasExistentes = document.querySelectorAll('.alert');
+            alertasExistentes.forEach(alerta => alerta.remove());
             
-            mostrarAlerta('🧪 Iniciando diagnóstico del sistema...', 'warning');
+            // Crear nueva alerta
+            const alerta = document.createElement('div');
+            alerta.className = `alert alert-${tipo}`;
+            alerta.textContent = mensaje;
             
-            // Verificar variables básicas
-            console.log('🔑 API_KEY:', API_KEY ? 'Configurada' : 'NO CONFIGURADA');
-            console.log('📊 SHEETS_API_BASE:', SHEETS_API_BASE);
-            console.log('📋 spreadsheetId:', spreadsheetId || 'NO CONFIGURADO');
-            
-            // Verificar el ID del input
-            const inputId = document.getElementById('spreadsheetId');
-            console.log('📝 Input ID elemento:', inputId ? 'Encontrado' : 'NO ENCONTRADO');
-            console.log('📝 Input ID valor:', inputId ? inputId.value : 'N/A');
-            
-            // Probar fetch básico
-            try {
-                console.log('🌐 Probando fetch básico...');
-                const testUrl = 'https://httpbin.org/json';
-                const testResponse = await fetch(testUrl);
-                console.log('✅ Fetch básico funciona:', testResponse.ok);
-                mostrarAlerta('✅ Fetch básico: FUNCIONA', 'success');
-            } catch (fetchError) {
-                console.error('❌ Error en fetch básico:', fetchError);
-                mostrarAlerta('❌ Error: Su navegador no puede hacer peticiones HTTP', 'danger');
-                return;
+            // Insertar al principio del contenido actual
+            const seccionActiva = document.querySelector('.section.active');
+            if (seccionActiva) {
+                seccionActiva.insertBefore(alerta, seccionActiva.firstChild);
             }
             
-            // Probar acceso a Google Sheets API sin sheet específico
-            try {
-                console.log('🔗 Probando acceso a Google Sheets API...');
-                const apiTestUrl = `https://sheets.googleapis.com/v4/spreadsheets?key=${API_KEY}`;
-                const apiResponse = await fetch(apiTestUrl);
-                console.log('📡 Respuesta API Google:', apiResponse.status, apiResponse.statusText);
-                
-                if (apiResponse.status === 403) {
-                    mostrarAlerta('🔑 Error 403: Problema con la API Key', 'danger');
-                } else if (apiResponse.status === 400) {
-                    mostrarAlerta('✅ API Key funciona correctamente', 'success');
-                } else {
-                    mostrarAlerta(`📡 Respuesta API: ${apiResponse.status}`, 'warning');
+            // Auto-eliminar después de 5 segundos
+            setTimeout(() => {
+                if (alerta.parentNode) {
+                    alerta.remove();
                 }
-            } catch (apiError) {
-                console.error('❌ Error en API Google:', apiError);
-                mostrarAlerta('❌ No se puede conectar a Google Sheets API', 'danger');
-            }
-            
-            mostrarAlerta('🔍 Revise la consola del navegador (F12) para más detalles', 'warning');
-        };
+            }, 5000);
+        }
         
-        // Probar conexión con Google Sheets
-        window.probarConexion = async function() {
-            console.log('🔌 Iniciando prueba de conexión...');
+        // Función para actualizar el estado de conexión
+        function updateConnectionStatus(estado, mensaje) {
+            const statusElements = [
+                'connectionStatus',
+                'inventarioStatus', 
+                'preciosStatus',
+                'ventasStatus',
+                'reportesStatus'
+            ];
             
-            const idSheet = document.getElementById('spreadsheetId').value.trim();
+            statusElements.forEach(elementId => {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.className = `connection-status status-${estado}`;
+                    
+                    let icono = '🔧';
+                    if (estado === 'connected') icono = '✅';
+                    else if (estado === 'loading') icono = '⏳';
+                    else if (estado === 'disconnected') icono = '❌';
+                    
+                    element.innerHTML = `<span>${icono}</span><span>${mensaje}</span>`;
+                }
+            });
+        }
+        
+        // Función para cambiar secciones
+        window.showSection = function(seccionId) {
+            // Ocultar todas las secciones
+            const secciones = document.querySelectorAll('.section');
+            secciones.forEach(seccion => seccion.classList.remove('active'));
             
-            if (!idSheet) {
-                mostrarAlerta('⚠️ Ingrese el ID del Google Sheet', 'warning');
-                return;
+            // Desactivar todas las pestañas
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Activar la sección seleccionada
+            const seccionSeleccionada = document.getElementById(seccionId);
+            if (seccionSeleccionada) {
+                seccionSeleccionada.classList.add('active');
             }
             
-            console.log('📋 ID del Sheet:', idSheet);
-            updateConnectionStatus('loading', 'Probando conexión...');
+            // Activar la pestaña correspondiente
+            const tabSeleccionada = event.target;
+            if (tabSeleccionada) {
+                tabSeleccionada.classList.add('active');
+            }
             
-            try {
-                // Probar acceso al sheet
-                const url = `${SHEETS_API_BASE}/${idSheet}?key=${API_KEY}`;
-                console.log('🌐 URL de prueba:', url);
-                
-                const response = await fetch(url);
-                console.log('📡 Respuesta del servidor:', response.status, response.statusText);
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('❌ Error en respuesta:', errorData);
-                    throw new Error(errorData.error.message);
-                }
-                
-                const data = await response.json();
-                console.log('✅ Datos recibidos:', data);
-                
-                updateConnectionStatus('connected', `Conectado a: ${data.properties.title}`);
-                mostrarAlerta('✅ Conexión exitosa con Google Sheets', 'success');
-                
-                // Verificar si existen las hojas necesarias
-                const hojasExistentes = data.sheets.map(sheet => sheet.properties.title);
-                const hojasRequeridas = ['Inventario', 'Precios', 'Ventas', 'Configuracion'];
-                const hojasFaltantes = hojasRequeridas.filter(hoja => !hojasExistentes.includes(hoja));
-                
-                console.log('📊 Hojas existentes:', hojasExistentes);
-                console.log('📋 Hojas requeridas:', hojasRequeridas);
-                console.log('⚠️ Hojas faltantes:', hojasFaltantes);
-                
-                if (hojasFaltantes.length > 0) {
-                    mostrarAlerta(`⚠️ Faltan las siguientes hojas: ${hojasFaltantes.join(', ')}. Use el botón "Crear Estructura" para crearlas automáticamente.`, 'warning');
-                } else {
-                    mostrarAlerta('🎉 Todas las hojas necesarias están disponibles', 'success');
-                }
-                
-            } catch (error) {
-                console.error('💥 Error completo:', error);
-                updateConnectionStatus('disconnected', `Error: ${error.message}`);
-                mostrarAlerta(`❌ Error de conexión: ${error.message}`, 'danger');
-                
-                // Diagnóstico adicional
-                if (error.message.includes('403')) {
-                    mostrarAlerta('🔒 Error 403: Verifique que el Google Sheet sea público', 'danger');
-                } else if (error.message.includes('404')) {
-                    mostrarAlerta('🔍 Error 404: ID del Google Sheet no encontrado', 'danger');
-                } else if (error.message.includes('CORS')) {
-                    mostrarAlerta('🌐 Error CORS: Problema de navegador', 'danger');
-                }
+            // Cargar datos específicos de la sección
+            if (seccionId === 'precios' && isConfigured) {
+                cargarInventarioParaPrecios();
+            }
+            if (seccionId === 'ventas' && isConfigured) {
+                cargarInventarioParaVentas();
             }
         };
-        
-        // Guardar configuración
-        window.guardarConfiguracion = function() {
-            console.log('💾 Guardando configuración...');
-            
-            const newSpreadsheetId = document.getElementById('spreadsheetId').value.trim();
-            
-            if (!newSpreadsheetId) {
-                mostrarAlerta('⚠️ Ingrese el ID del Google Sheet', 'warning');
-                return;
-            }
-            
-            spreadsheetId = newSpreadsheetId;
-            localStorage.setItem('spreadsheetId', spreadsheetId);
-            isConfigured = true;
-            
-            console.log('✅ Configuración guardada:', spreadsheetId);
-            mostrarAlerta('💾 Configuración guardada correctamente', 'success');
-            cargarTodosLosDatos();
-        };
-        
-        console.log('🎯 Funciones principales definidas correctamente');
         
         // =================== FUNCIONES DE API ===================
         
@@ -871,35 +811,25 @@
             return await response.json();
         }
         
+        // =================== FUNCIONES PRINCIPALES ===================
+        
         // Prueba básica para diagnosticar problemas
-        async function pruebaBasica() {
+        window.pruebaBasica = async function() {
             console.log('🧪 Iniciando prueba básica del sistema...');
-            
             mostrarAlerta('🧪 Iniciando diagnóstico del sistema...', 'warning');
             
-            // Verificar variables básicas
-            console.log('🔑 API_KEY:', API_KEY ? 'Configurada' : 'NO CONFIGURADA');
-            console.log('📊 SHEETS_API_BASE:', SHEETS_API_BASE);
-            console.log('📋 spreadsheetId:', spreadsheetId || 'NO CONFIGURADO');
-            
-            // Verificar el ID del input
-            const inputId = document.getElementById('spreadsheetId');
-            console.log('📝 Input ID elemento:', inputId ? 'Encontrado' : 'NO ENCONTRADO');
-            console.log('📝 Input ID valor:', inputId ? inputId.value : 'N/A');
-            
-            // Probar fetch básico
             try {
                 console.log('🌐 Probando fetch básico...');
                 const testUrl = 'https://httpbin.org/json';
                 const testResponse = await fetch(testUrl);
                 console.log('✅ Fetch básico funciona:', testResponse.ok);
+                mostrarAlerta('✅ Fetch básico: FUNCIONA', 'success');
             } catch (fetchError) {
                 console.error('❌ Error en fetch básico:', fetchError);
                 mostrarAlerta('❌ Error: Su navegador no puede hacer peticiones HTTP', 'danger');
                 return;
             }
             
-            // Probar acceso a Google Sheets API sin sheet específico
             try {
                 console.log('🔗 Probando acceso a Google Sheets API...');
                 const apiTestUrl = `https://sheets.googleapis.com/v4/spreadsheets?key=${API_KEY}`;
@@ -909,85 +839,61 @@
                 if (apiResponse.status === 403) {
                     mostrarAlerta('🔑 Error 403: Problema con la API Key', 'danger');
                 } else if (apiResponse.status === 400) {
-                    mostrarAlerta('✅ API Key funciona (Error 400 es normal sin parámetros)', 'success');
+                    mostrarAlerta('✅ API Key funciona correctamente', 'success');
+                } else {
+                    mostrarAlerta(`📡 Respuesta API: ${apiResponse.status}`, 'warning');
                 }
             } catch (apiError) {
                 console.error('❌ Error en API Google:', apiError);
                 mostrarAlerta('❌ No se puede conectar a Google Sheets API', 'danger');
             }
-            
-            mostrarAlerta('🔍 Revise la consola del navegador (F12) para más detalles', 'warning');
-        }
+        };
         
         // Probar conexión con Google Sheets
-        async function probarConexion() {
+        window.probarConexion = async function() {
             console.log('🔌 Iniciando prueba de conexión...');
             
             const idSheet = document.getElementById('spreadsheetId').value.trim();
             
             if (!idSheet) {
-                mostrarAlerta('Ingrese el ID del Google Sheet', 'warning');
+                mostrarAlerta('⚠️ Ingrese el ID del Google Sheet', 'warning');
                 return;
             }
             
-            console.log('📋 ID del Sheet:', idSheet);
             updateConnectionStatus('loading', 'Probando conexión...');
             
             try {
-                // Probar acceso al sheet
                 const url = `${SHEETS_API_BASE}/${idSheet}?key=${API_KEY}`;
-                console.log('🌐 URL de prueba:', url);
-                
                 const response = await fetch(url);
-                console.log('📡 Respuesta del servidor:', response.status, response.statusText);
                 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    console.error('❌ Error en respuesta:', errorData);
                     throw new Error(errorData.error.message);
                 }
                 
                 const data = await response.json();
-                console.log('✅ Datos recibidos:', data);
-                
                 updateConnectionStatus('connected', `Conectado a: ${data.properties.title}`);
                 mostrarAlerta('✅ Conexión exitosa con Google Sheets', 'success');
                 
-                // Verificar si existen las hojas necesarias
+                // Verificar hojas necesarias
                 const hojasExistentes = data.sheets.map(sheet => sheet.properties.title);
                 const hojasRequeridas = ['Inventario', 'Precios', 'Ventas', 'Configuracion'];
                 const hojasFaltantes = hojasRequeridas.filter(hoja => !hojasExistentes.includes(hoja));
                 
-                console.log('📊 Hojas existentes:', hojasExistentes);
-                console.log('📋 Hojas requeridas:', hojasRequeridas);
-                console.log('⚠️ Hojas faltantes:', hojasFaltantes);
-                
                 if (hojasFaltantes.length > 0) {
-                    mostrarAlerta(`⚠️ Faltan las siguientes hojas: ${hojasFaltantes.join(', ')}. Use el botón "Crear Estructura" para crearlas automáticamente.`, 'warning');
+                    mostrarAlerta(`⚠️ Faltan las siguientes hojas: ${hojasFaltantes.join(', ')}. Use el botón "Crear Estructura".`, 'warning');
                 } else {
                     mostrarAlerta('🎉 Todas las hojas necesarias están disponibles', 'success');
                 }
                 
             } catch (error) {
-                console.error('💥 Error completo:', error);
                 updateConnectionStatus('disconnected', `Error: ${error.message}`);
                 mostrarAlerta(`❌ Error de conexión: ${error.message}`, 'danger');
-                
-                // Diagnóstico adicional
-                if (error.message.includes('403')) {
-                    mostrarAlerta('🔒 Error 403: Verifique que el Google Sheet sea público', 'danger');
-                } else if (error.message.includes('404')) {
-                    mostrarAlerta('🔍 Error 404: ID del Google Sheet no encontrado', 'danger');
-                } else if (error.message.includes('CORS')) {
-                    mostrarAlerta('🌐 Error CORS: Problema de navegador', 'danger');
-                }
             }
-        }
+        };
         
-        // Crear estructura de hojas automáticamente
+        // Crear estructura de hojas
         window.crearEstructuraHojas = async function() {
-            console.log('🏗️ Iniciando creación de estructura...');
-            
             if (!spreadsheetId) {
                 mostrarAlerta('⚠️ Configure el ID del Google Sheet primero', 'warning');
                 return;
@@ -995,9 +901,7 @@
             
             try {
                 updateConnectionStatus('loading', 'Creando estructura...');
-                console.log('📊 Creando estructura para spreadsheet:', spreadsheetId);
                 
-                // Datos para cada hoja
                 const estructuras = {
                     'Inventario': [
                         ['Tipo', 'Stock', 'PrecioPromedio', 'ValorTotal', 'UltimaActualizacion']
@@ -1014,18 +918,12 @@
                     ]
                 };
                 
-                console.log('📋 Estructuras a crear:', estructuras);
-                
-                // Crear cada hoja
                 let hojasCreadas = 0;
                 for (const [nombreHoja, datos] of Object.entries(estructuras)) {
                     try {
-                        console.log(`📝 Creando hoja: ${nombreHoja}`);
                         await escribirHoja(nombreHoja, datos);
-                        console.log(`✅ Hoja ${nombreHoja} creada/actualizada exitosamente`);
                         hojasCreadas++;
                     } catch (error) {
-                        console.error(`❌ Error al crear hoja ${nombreHoja}:`, error);
                         mostrarAlerta(`Error al crear hoja ${nombreHoja}: ${error.message}`, 'danger');
                     }
                 }
@@ -1033,24 +931,20 @@
                 if (hojasCreadas === Object.keys(estructuras).length) {
                     updateConnectionStatus('connected', 'Estructura creada correctamente');
                     mostrarAlerta('🎉 Estructura de hojas creada exitosamente', 'success');
-                    console.log('🏆 Todas las hojas fueron creadas exitosamente');
-                } else {
-                    mostrarAlerta(`⚠️ Se crearon ${hojasCreadas} de ${Object.keys(estructuras).length} hojas`, 'warning');
                 }
                 
             } catch (error) {
-                console.error('💥 Error general al crear estructura:', error);
                 updateConnectionStatus('disconnected', `Error: ${error.message}`);
                 mostrarAlerta(`❌ Error al crear estructura: ${error.message}`, 'danger');
             }
-        }
+        };
         
         // Guardar configuración
         window.guardarConfiguracion = function() {
             const newSpreadsheetId = document.getElementById('spreadsheetId').value.trim();
             
             if (!newSpreadsheetId) {
-                mostrarAlerta('Ingrese el ID del Google Sheet', 'warning');
+                mostrarAlerta('⚠️ Ingrese el ID del Google Sheet', 'warning');
                 return;
             }
             
@@ -1058,7 +952,7 @@
             localStorage.setItem('spreadsheetId', spreadsheetId);
             isConfigured = true;
             
-            mostrarAlerta('Configuración guardada', 'success');
+            mostrarAlerta('💾 Configuración guardada correctamente', 'success');
             cargarTodosLosDatos();
         };
         
@@ -1072,8 +966,10 @@
             localStorage.setItem('direccionEmpresa', config.direccionEmpresa);
             localStorage.setItem('telefonoEmpresa', config.telefonoEmpresa);
             
-            mostrarAlerta('Datos de empresa guardados', 'success');
-        }
+            mostrarAlerta('💾 Datos de empresa guardados', 'success');
+        };
+        
+        // =================== FUNCIONES DE DATOS ===================
         
         // Cargar todos los datos
         async function cargarTodosLosDatos() {
@@ -1153,8 +1049,10 @@
             }
         }
         
+        // =================== FUNCIONES DE INVENTARIO ===================
+        
         // Agregar inventario
-        async function agregarInventario() {
+        window.agregarInventario = async function() {
             if (!isConfigured) {
                 mostrarAlerta('Configure el sistema primero', 'warning');
                 return;
@@ -1179,7 +1077,6 @@
                     inventarioData[tipo] = { stock: 0, precioPromedio: 0, valorTotal: 0 };
                 }
                 
-                const stockAnterior = inventarioData[tipo].stock;
                 const valorAnterior = inventarioData[tipo].valorTotal;
                 
                 inventarioData[tipo].stock += libras;
@@ -1215,7 +1112,7 @@
                 btnAgregar.disabled = false;
                 btnAgregar.innerHTML = '+ AGREGAR AL INVENTARIO';
             }
-        }
+        };
         
         // Actualizar tabla de inventario
         function actualizarTablaInventario() {
@@ -1250,6 +1147,8 @@
             }
         }
         
+        // =================== FUNCIONES DE PRECIOS ===================
+        
         // Cargar inventario para precios
         function cargarInventarioParaPrecios() {
             const select = document.getElementById('tipoPescadoPrecio');
@@ -1261,7 +1160,7 @@
         }
         
         // Configurar precio
-        async function configurarPrecio() {
+        window.configurarPrecio = async function() {
             if (!isConfigured) {
                 mostrarAlerta('Configure el sistema primero', 'warning');
                 return;
@@ -1333,7 +1232,7 @@
                 btnConfigurar.disabled = false;
                 btnConfigurar.innerHTML = '💾 GUARDAR PRECIO';
             }
-        }
+        };
         
         // Actualizar tabla de precios
         function actualizarTablaPrecios() {
@@ -1353,6 +1252,37 @@
             }
         }
         
+        // Eliminar precio
+        window.eliminarPrecio = async function(tipo) {
+            if (!confirm(`¿Está seguro de eliminar el precio de ${tipo}?`)) {
+                return;
+            }
+            
+            try {
+                delete preciosData[tipo];
+                
+                const datosPrecios = [
+                    ['Tipo', 'PrecioCompra', 'Margen', 'PrecioVenta', 'Ganancia'],
+                    ...Object.entries(preciosData).map(([tipoPez, datos]) => [
+                        tipoPez,
+                        datos.precioCompra,
+                        datos.margen,
+                        datos.precioVenta,
+                        datos.ganancia
+                    ])
+                ];
+                
+                await escribirHoja('Precios', datosPrecios);
+                actualizarTablaPrecios();
+                mostrarAlerta('Precio eliminado correctamente', 'success');
+                
+            } catch (error) {
+                mostrarAlerta(`Error al eliminar precio: ${error.message}`, 'danger');
+            }
+        };
+        
+        // =================== FUNCIONES DE VENTAS ===================
+        
         // Cargar inventario para ventas
         function cargarInventarioParaVentas() {
             const select = document.getElementById('tipoPescadoVenta');
@@ -1363,10 +1293,22 @@
                     select.innerHTML += `<option value="${tipo}">${tipo} (${inventarioData[tipo].stock.toFixed(1)} lbs disponibles)</option>`;
                 }
             }
+            
+            // Event listener para cargar precio automáticamente
+            select.addEventListener('change', function() {
+                const tipoSeleccionado = this.value;
+                const precioInput = document.getElementById('precioVentaProducto');
+                
+                if (tipoSeleccionado && preciosData[tipoSeleccionado]) {
+                    precioInput.value = preciosData[tipoSeleccionado].precioVenta.toFixed(2);
+                } else {
+                    precioInput.value = '';
+                }
+            });
         }
         
         // Agregar producto a venta
-        function agregarProductoVenta() {
+        window.agregarProductoVenta = function() {
             const tipo = document.getElementById('tipoPescadoVenta').value;
             const cantidad = parseFloat(document.getElementById('cantidadVenta').value);
             const precio = parseFloat(document.getElementById('precioVentaProducto').value);
@@ -1396,7 +1338,7 @@
             document.getElementById('precioVentaProducto').value = '';
             
             actualizarTablaVentaActual();
-        }
+        };
         
         // Actualizar tabla de venta actual
         function actualizarTablaVentaActual() {
@@ -1421,13 +1363,13 @@
         }
         
         // Eliminar producto de venta
-        function eliminarProductoVenta(index) {
+        window.eliminarProductoVenta = function(index) {
             ventaActual.splice(index, 1);
             actualizarTablaVentaActual();
-        }
+        };
         
         // Generar factura
-        async function generarFactura() {
+        window.generarFactura = async function() {
             if (!isConfigured) {
                 mostrarAlerta('Configure el sistema primero', 'warning');
                 return;
@@ -1494,7 +1436,7 @@
                 btnGenerar.disabled = false;
                 btnGenerar.innerHTML = '🖨️ GENERAR FACTURA';
             }
-        }
+        };
         
         // Obtener siguiente número de factura
         async function obtenerSiguienteNumeroFactura() {
@@ -1539,6 +1481,7 @@
             ];
             
             await escribirHoja('Inventario', datosInventario);
+            actualizarTablaInventario();
         }
         
         // Actualizar número de factura
@@ -1590,8 +1533,8 @@
                                 <tr>
                                     <td style="padding: 10px; border: 1px solid #ddd;">${producto.tipo}</td>
                                     <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${producto.cantidad.toFixed(1)}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${producto.precio.toFixed(2)}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${producto.subtotal.toFixed(2)}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">$${producto.precio.toFixed(2)}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">$${producto.subtotal.toFixed(2)}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -1599,7 +1542,7 @@
                     
                     <div style="text-align: right; padding: 20px; background: #f8f9fa; border-radius: 10px; margin-top: 20px;">
                         <div style="font-size: 1.5em; font-weight: bold; color: #28a745;">
-                            TOTAL A PAGAR: ${venta.total.toFixed(2)}
+                            TOTAL A PAGAR: $${venta.total.toFixed(2)}
                         </div>
                         <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
                             ¡Gracias por su compra! Pescado fresco del día.
@@ -1626,12 +1569,14 @@
         }
         
         // Limpiar factura
-        function limpiarFactura() {
+        window.limpiarFactura = function() {
             document.getElementById('facturaGenerada').innerHTML = '';
-        }
+        };
+        
+        // =================== FUNCIONES DE REPORTES ===================
         
         // Cargar reportes
-        async function cargarReportes() {
+        window.cargarReportes = async function() {
             if (!isConfigured) {
                 mostrarAlerta('Configure el sistema primero', 'warning');
                 return;
@@ -1656,11 +1601,21 @@
                     let numeroFacturas = ventasData.length - 1; // -1 por el encabezado
                     
                     // Procesar ventas
+                    const ventasParaTabla = [];
                     for (let i = 1; i < ventasData.length; i++) {
                         const venta = ventasData[i];
                         if (venta[1] && venta[4]) {
                             const fechaVenta = venta[1];
                             const totalVenta = parseFloat(venta[4]) || 0;
+                            
+                            // Agregar a tabla de últimas ventas
+                            ventasParaTabla.push({
+                                numero: venta[0],
+                                fecha: fechaVenta,
+                                cliente: venta[2] || 'N/A',
+                                productos: venta[3] || 'N/A',
+                                total: totalVenta
+                            });
                             
                             // Ventas de hoy
                             if (fechaVenta === hoy) {
@@ -1679,92 +1634,126 @@
                         }
                     }
                     
-                                        // Actualizar contadores
+                    // Calcular valor total del inventario
+                    let totalInventario = 0;
+                    for (const tipo in inventarioData) {
+                        totalInventario += inventarioData[tipo].valorTotal;
+                    }
+                    
+                    // Actualizar estadísticas
                     document.getElementById('totalVentasHoy').textContent = `$${totalHoy.toFixed(2)}`;
                     document.getElementById('totalVentasMes').textContent = `$${totalMes.toFixed(2)}`;
+                    document.getElementById('totalInventario').textContent = `$${totalInventario.toFixed(2)}`;
                     document.getElementById('numeroFacturas').textContent = numeroFacturas;
-
-                    // Opcional: actualizar tabla últimas ventas
-                    const tbody = document.querySelector('#tablaUltimasVentas tbody');
-                    tbody.innerHTML = '';
-
-                    for (let i = ventasData.length - 1; i > 0 && i > ventasData.length - 6; i--) {
-                        const venta = ventasData[i];
-                        const fila = document.createElement('tr');
-                        fila.innerHTML = `
-                            <td>${venta[0]}</td>
-                            <td>${venta[1]}</td>
-                            <td>${venta[2]}</td>
-                            <td>${venta[3]}</td>
-                            <td>$${parseFloat(venta[4] || 0).toFixed(2)}</td>
-                        `;
-                        tbody.appendChild(fila);
-                    }
+                    
+                    // Actualizar tabla de últimas ventas (últimas 10)
+                    actualizarTablaUltimasVentas(ventasParaTabla.slice(-10).reverse());
+                    
+                    // Actualizar tabla de stock bajo
+                    actualizarTablaStockBajo();
+                    
+                    updateConnectionStatus('connected', 'Reportes cargados correctamente');
+                    mostrarAlerta('Reportes actualizados correctamente', 'success');
+                    
+                } else {
+                    document.getElementById('totalVentasHoy').textContent = '$0.00';
+                    document.getElementById('totalVentasMes').textContent = '$0.00';
+                    document.getElementById('numeroFacturas').textContent = '0';
+                    
+                    mostrarAlerta('No hay datos de ventas disponibles', 'warning');
                 }
-
-                // Inventario para tabla de stock bajo
-                const tbodyStock = document.querySelector('#tablaStockBajo tbody');
-                tbodyStock.innerHTML = '';
-
-                for (const tipo in inventarioData) {
-                    const stock = inventarioData[tipo].stock;
-                    if (stock < 10) {
-                        const fila = document.createElement('tr');
-                        fila.innerHTML = `
-                            <td>${tipo}</td>
-                            <td>${stock.toFixed(1)}</td>
-                            <td>${stock === 0 ? '🔴 Agotado' : stock < 5 ? '🟠 Crítico' : '🟡 Bajo'}</td>
-                        `;
-                        tbodyStock.appendChild(fila);
-                    }
-                }
-
-                document.getElementById('totalInventario').textContent = `$${Object.values(inventarioData).reduce((acc, v) => acc + v.valorTotal, 0).toFixed(2)}`;
-                updateConnectionStatus('connected', 'Reportes cargados');
+                
             } catch (error) {
-                console.error('Error al cargar reportes:', error);
-                mostrarAlerta('Error al cargar reportes', 'danger');
-                updateConnectionStatus('disconnected', 'Error en reportes');
+                updateConnectionStatus('disconnected', `Error: ${error.message}`);
+                mostrarAlerta(`Error al cargar reportes: ${error.message}`, 'danger');
             } finally {
                 btnCargar.disabled = false;
                 btnCargar.innerHTML = '🔄 ACTUALIZAR REPORTES';
             }
-        }
-
-        // Mostrar alertas
-        function mostrarAlerta(mensaje, tipo) {
-            const colores = {
-                success: 'alert-success',
-                warning: 'alert-warning',
-                danger: 'alert-danger'
-            };
-
-            const alerta = document.createElement('div');
-            alerta.className = `alert ${colores[tipo] || 'alert-warning'}`;
-            alerta.innerHTML = mensaje;
-
-            const content = document.querySelector('.content');
-            content.insertBefore(alerta, content.firstChild);
-
-            setTimeout(() => alerta.remove(), 5000);
-        }
-
-        // Actualizar estado de conexión
-        function updateConnectionStatus(estado, mensaje) {
-            const status = document.getElementById('connectionStatus');
-            status.className = 'connection-status';
-
-            if (estado === 'connected') {
-                status.classList.add('status-connected');
-            } else if (estado === 'disconnected') {
-                status.classList.add('status-disconnected');
-            } else {
-                status.classList.add('status-loading');
+        };
+        
+        // Actualizar tabla de últimas ventas
+        function actualizarTablaUltimasVentas(ventas) {
+            const tbody = document.querySelector('#tablaUltimasVentas tbody');
+            tbody.innerHTML = '';
+            
+            if (ventas.length === 0) {
+                const fila = tbody.insertRow();
+                fila.innerHTML = '<td colspan="5" style="text-align: center;">No hay ventas registradas</td>';
+                return;
             }
-
-            status.innerHTML = `<span>🔧</span><span>${mensaje}</span>`;
+            
+            ventas.forEach(venta => {
+                const fila = tbody.insertRow();
+                fila.innerHTML = `
+                    <td>#${venta.numero.toString().padStart(6, '0')}</td>
+                    <td>${venta.fecha}</td>
+                    <td>${venta.cliente}</td>
+                    <td>${venta.productos}</td>
+                    <td>$${venta.total.toFixed(2)}</td>
+                `;
+            });
         }
+        
+        // Actualizar tabla de stock bajo
+        function actualizarTablaStockBajo() {
+            const tbody = document.querySelector('#tablaStockBajo tbody');
+            tbody.innerHTML = '';
+            
+            const stockBajo = Object.entries(inventarioData).filter(([tipo, datos]) => datos.stock < 10);
+            
+            if (stockBajo.length === 0) {
+                const fila = tbody.insertRow();
+                fila.innerHTML = '<td colspan="3" style="text-align: center;">✅ Todos los productos tienen stock suficiente</td>';
+                return;
+            }
+            
+            stockBajo.forEach(([tipo, datos]) => {
+                const fila = tbody.insertRow();
+                
+                let estado = '🟡 Stock Bajo';
+                let claseEstado = 'style="background-color: #fff3cd;"';
+                
+                if (datos.stock === 0) {
+                    estado = '🔴 Agotado';
+                    claseEstado = 'style="background-color: #f8d7da;"';
+                } else if (datos.stock < 5) {
+                    estado = '🟠 Crítico';
+                    claseEstado = 'style="background-color: #f8d7da;"';
+                }
+                
+                fila.innerHTML = `
+                    <td>${tipo}</td>
+                    <td>${datos.stock.toFixed(1)} lbs</td>
+                    <td ${claseEstado}>${estado}</td>
+                `;
+            });
+        }
+        
+        // =================== INICIALIZACIÓN ===================
+        
+        // Cargar configuración guardada al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 DOM cargado, inicializando sistema...');
+            
+            // Cargar configuración guardada
+            if (spreadsheetId) {
+                document.getElementById('spreadsheetId').value = spreadsheetId;
+                updateConnectionStatus('connected', 'Configuración cargada desde localStorage');
+                cargarTodosLosDatos();
+            } else {
+                updateConnectionStatus('disconnected', 'Configure el sistema para comenzar');
+            }
+            
+            // Cargar datos de empresa
+            document.getElementById('nombreEmpresa').value = config.nombreEmpresa;
+            document.getElementById('direccionEmpresa').value = config.direccionEmpresa;
+            document.getElementById('telefonoEmpresa').value = config.telefonoEmpresa;
+            
+            console.log('✅ Sistema inicializado correctamente');
+        });
+        
+        console.log('🎯 Todas las funciones definidas correctamente');
     </script>
 </body>
 </html>
-
