@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Pesquera - Google Sheets API</title>
+    <title>Sistema Pesquera</title>
     <style>
         * {
             margin: 0;
@@ -313,7 +313,7 @@
     <div class="container">
         <div class="header">
             <h1>🐟 SISTEMA PESQUERA</h1>
-            <p>Control de Inventario y Facturación - Google Sheets API</p>
+            <p>Control de Inventario y Facturación</p>
         </div>
         
         <div class="tabs">
@@ -412,7 +412,7 @@
                     </div>
                     <div class="form-group">
                         <label>Precio de Compra (por libra):</label>
-                        <input type="number" id="precioCompra" step="500" min="500">
+                        <input type="number" id="precioCompra" step="500" min="500" placeholder="Ej: 12000">
                     </div>
                     <div class="form-group">
                         <label>&nbsp;</label>
@@ -632,7 +632,33 @@
         };
         
         console.log('✅ Variables inicializadas correctamente');
-        // 1. NUEVA función para llamadas JSONP (agrega esta función)
+
+        // =================== FUNCIONES DE FORMATO PARA PESOS COLOMBIANOS ===================
+
+        // Función para formatear números como pesos colombianos
+        function formatearPesos(numero) {
+            if (isNaN(numero) || numero === null || numero === undefined) {
+                return '$0';
+            }
+            
+            // Redondear a número entero para pesos colombianos
+            const numeroRedondeado = Math.round(numero);
+            
+            // Formatear con separadores de miles (puntos)
+            return '$' + numeroRedondeado.toLocaleString('es-CO');
+        }
+        
+        // Función para formatear números sin símbolo de moneda
+        function formatearNumero(numero) {
+            if (isNaN(numero) || numero === null || numero === undefined) {
+                return '0';
+            }
+            
+            const numeroRedondeado = Math.round(numero);
+            return numeroRedondeado.toLocaleString('es-CO');
+        }
+
+        
         function llamarAPIConJSONP(data = null) {
           return new Promise((resolve, reject) => {
             const callbackName = 'jsonp_callback_' + Math.random().toString(36).substr(2, 9);
@@ -1160,8 +1186,8 @@
                 fila.innerHTML = `
                     <td>${tipo}</td>
                     <td>${datos.stock.toFixed(1)}</td>
-                    <td>${datos.precioPromedio.toFixed(2)}</td>
-                    <td>${datos.valorTotal.toFixed(2)}</td>
+                    <td>${formatearPesos(datos.precioPromedio)}</td>
+                    <td>${formatearPesos(datos.valorTotal)}</td>
                     <td>${datos.ultimaActualizacion || 'N/A'}</td>
                     <td ${claseEstado}>${estado}</td>
                 `;
@@ -1264,10 +1290,10 @@
                 const fila = tbody.insertRow();
                 fila.innerHTML = `
                     <td>${tipo}</td>
-                    <td>${datos.precioCompra.toFixed(2)}</td>
+                    <td>${formatearPesos(datos.precioCompra)}</td>
                     <td>${datos.margen.toFixed(1)}%</td>
-                    <td>${datos.precioVenta.toFixed(2)}</td>
-                    <td>${datos.ganancia.toFixed(2)}</td>
+                    <td>${formatearPesos(datos.precioVenta)}</td>
+                    <td>${formatearPesos(datos.ganancia)}</td>
                     <td><button class="btn btn-danger" onclick="eliminarPrecio('${tipo}')">Eliminar</button></td>
                 `;
             }
@@ -1373,14 +1399,14 @@
                 fila.innerHTML = `
                     <td>${producto.tipo}</td>
                     <td>${producto.cantidad.toFixed(1)}</td>
-                    <td>${producto.precio.toFixed(2)}</td>
-                    <td>${producto.subtotal.toFixed(2)}</td>
+                    <td>${formatearPesos(producto.precio)}</td>
+                    <td>${formatearPesos(producto.subtotal)}</td>
                     <td><button class="btn btn-danger" onclick="eliminarProductoVenta(${index})">Eliminar</button></td>
                 `;
                 total += producto.subtotal;
             });
             
-            document.getElementById('totalVenta').textContent = total.toFixed(2);
+            document.getElementById('totalVenta').textContent = formatearNumero(total);
         }
         
         // Eliminar producto de venta
@@ -1554,8 +1580,8 @@
                                 <tr>
                                     <td style="padding: 10px; border: 1px solid #ddd;">${producto.tipo}</td>
                                     <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${producto.cantidad.toFixed(1)}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">$${producto.precio.toFixed(2)}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">$${producto.subtotal.toFixed(2)}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${formatearPesos(producto.precio)}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${formatearPesos(producto.subtotal)}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -1563,7 +1589,7 @@
                     
                     <div style="text-align: right; padding: 20px; background: #f8f9fa; border-radius: 10px; margin-top: 20px;">
                         <div style="font-size: 1.5em; font-weight: bold; color: #28a745;">
-                            TOTAL A PAGAR: $${venta.total.toFixed(2)}
+                            TOTAL A PAGAR: ${formatearPesos(venta.total)}
                         </div>
                         <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
                             ¡Gracias por su compra! Pescado fresco del día.
@@ -1662,9 +1688,9 @@
                     }
                     
                     // Actualizar estadísticas
-                    document.getElementById('totalVentasHoy').textContent = `$${totalHoy.toFixed(2)}`;
-                    document.getElementById('totalVentasMes').textContent = `$${totalMes.toFixed(2)}`;
-                    document.getElementById('totalInventario').textContent = `$${totalInventario.toFixed(2)}`;
+                    document.getElementById('totalVentasHoy').textContent = formatearPesos(totalHoy);
+                    document.getElementById('totalVentasMes').textContent = formatearPesos(totalMes);
+                    document.getElementById('totalInventario').textContent = formatearPesos(totalInventario);
                     document.getElementById('numeroFacturas').textContent = numeroFacturas;
                     
                     // Actualizar tabla de últimas ventas (últimas 10)
@@ -1711,7 +1737,7 @@
                     <td>${venta.fecha}</td>
                     <td>${venta.cliente}</td>
                     <td>${venta.productos}</td>
-                    <td>$${venta.total.toFixed(2)}</td>
+                    <td>${formatearPesos(venta.total)}</td>
                 `;
             });
         }
