@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Pesquera - Google Sheets OAuth2</title>
+    <title>Sistema Pesquera - Google Sheets API</title>
     <style>
         * {
             margin: 0;
@@ -40,18 +40,6 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
-        .auth-banner {
-            background: linear-gradient(45deg, #e74c3c, #c0392b);
-            color: white;
-            padding: 15px;
-            text-align: center;
-            display: block;
-        }
-        
-        .auth-banner.hidden {
-            display: none;
-        }
-        
         .tabs {
             display: flex;
             background: #f8f9fa;
@@ -84,11 +72,6 @@
         .tab:hover:not(.active) {
             background: #f1f3f4;
             transform: translateY(-1px);
-        }
-        
-        .tab:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
         }
         
         .content {
@@ -301,27 +284,6 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         
-        .auth-section {
-            text-align: center;
-            padding: 40px;
-            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
-            border-radius: 15px;
-            margin: 20px 0;
-        }
-        
-        .auth-section h3 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-        
-        .user-info {
-            background: linear-gradient(45deg, #d4edda, #c3e6cb);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        
         .no-print {
             display: block;
         }
@@ -351,33 +313,29 @@
     <div class="container">
         <div class="header">
             <h1>🐟 SISTEMA PESQUERA</h1>
-            <p>Control de Inventario y Facturación - Google Sheets OAuth2</p>
-        </div>
-        
-        <div class="auth-banner" id="authBanner">
-            🔐 <strong>Autenticación requerida:</strong> Inicie sesión con Google para acceder al sistema
+            <p>Control de Inventario y Facturación - Google Sheets API</p>
         </div>
         
         <div class="tabs">
-            <div class="tab active" onclick="showSection('autenticacion')">🔐 AUTENTICACIÓN</div>
-            <div class="tab" onclick="showSection('inventario')" id="tabInventario">📦 INVENTARIO</div>
-            <div class="tab" onclick="showSection('precios')" id="tabPrecios">💰 PRECIOS</div>
-            <div class="tab" onclick="showSection('ventas')" id="tabVentas">🧾 VENTAS</div>
-            <div class="tab" onclick="showSection('reportes')" id="tabReportes">📊 REPORTES</div>
+            <div class="tab active" onclick="showSection('configuracion')">⚙️ CONFIGURACIÓN</div>
+            <div class="tab" onclick="showSection('inventario')">📦 INVENTARIO</div>
+            <div class="tab" onclick="showSection('precios')">💰 PRECIOS</div>
+            <div class="tab" onclick="showSection('ventas')">🧾 VENTAS</div>
+            <div class="tab" onclick="showSection('reportes')">📊 REPORTES</div>
         </div>
         
         <div class="content">
-            <!-- SECCIÓN AUTENTICACIÓN -->
-            <div id="autenticacion" class="section active">
-                <h2>🔐 Autenticación con Google</h2>
+            <!-- SECCIÓN CONFIGURACIÓN -->
+            <div id="configuracion" class="section active">
+                <h2>⚙️ Configuración del Sistema</h2>
                 
                 <div class="connection-status" id="connectionStatus">
-                    <span class="loading"></span>
-                    <span>Verificando autenticación...</span>
+                    <span>🔧</span>
+                    <span>Configure el sistema para comenzar</span>
                 </div>
                 
                 <div class="config-section">
-                    <h3>📋 Configuración del Sistema</h3>
+                    <h3>📋 Configuración de Google Sheets</h3>
                     <div class="form-group">
                         <label>ID del Google Sheet:</label>
                         <input type="text" id="spreadsheetId" placeholder="ID del Google Sheet">
@@ -385,25 +343,8 @@
                             Obtenga el ID de la URL: https://docs.google.com/spreadsheets/d/<strong>ID_AQUI</strong>/edit
                         </small>
                     </div>
+                    <button class="btn btn-success" onclick="probarConexion()">🔌 PROBAR CONEXIÓN</button>
                     <button class="btn btn-success" onclick="guardarConfiguracion()">💾 GUARDAR CONFIGURACIÓN</button>
-                </div>
-                
-                <div id="authSection" class="auth-section">
-                    <h3>🔑 Iniciar Sesión con Google</h3>
-                    <p style="margin-bottom: 20px; color: #666;">
-                        Para acceder al sistema, debe autenticarse con su cuenta de Google que tiene acceso al Google Sheet.
-                    </p>
-                    <button class="btn btn-success" id="signInBtn" onclick="signIn()">
-                        🚀 INICIAR SESIÓN CON GOOGLE
-                    </button>
-                </div>
-                
-                <div id="userInfo" class="user-info" style="display: none;">
-                    <h4>👤 Usuario Autenticado</h4>
-                    <div id="userDetails"></div>
-                    <button class="btn btn-danger" onclick="signOut()" style="margin-top: 15px;">
-                        🚪 CERRAR SESIÓN
-                    </button>
                 </div>
                 
                 <div class="config-section">
@@ -426,7 +367,7 @@
                 </div>
                 
                 <div class="config-section">
-                    <h3>📊 Estructura requerida del Google Sheet</h3>
+                    <h3>📊 Estructura del Google Sheet</h3>
                     <p style="margin-bottom: 15px;">Su Google Sheet debe tener estas 4 pestañas con los siguientes encabezados:</p>
                     
                     <div style="background: white; padding: 15px; border-radius: 8px; margin: 10px 0; font-family: monospace; font-size: 14px;">
@@ -449,6 +390,8 @@
                         <code>A1: UltimoNumeroFactura | B1: NombreEmpresa | C1: DireccionEmpresa | D1: TelefonoEmpresa</code><br>
                         <code>A2: 1 | B2: Su Empresa | C2: Su Dirección | D2: Su Teléfono</code>
                     </div>
+                    
+                    <button class="btn btn-warning" onclick="crearEstructuraHojas()">🏗️ CREAR ESTRUCTURA AUTOMÁTICAMENTE</button>
                 </div>
             </div>
             
@@ -456,7 +399,10 @@
             <div id="inventario" class="section">
                 <h2>📦 Control de Inventario</h2>
                 
-                <div class="connection-status" id="inventarioStatus"></div>
+                <div class="connection-status" id="inventarioStatus">
+                    <span>🔧</span>
+                    <span>Configure el sistema primero</span>
+                </div>
                 
                 <div class="form-row">
                     <div class="form-group">
@@ -508,7 +454,10 @@
             <div id="precios" class="section">
                 <h2>💰 Configuración de Precios de Venta</h2>
                 
-                <div class="connection-status" id="preciosStatus"></div>
+                <div class="connection-status" id="preciosStatus">
+                    <span>🔧</span>
+                    <span>Configure el sistema primero</span>
+                </div>
                 
                 <div class="form-row">
                     <div class="form-group">
@@ -552,7 +501,10 @@
             <div id="ventas" class="section">
                 <h2>🧾 Registro de Ventas</h2>
                 
-                <div class="connection-status" id="ventasStatus"></div>
+                <div class="connection-status" id="ventasStatus">
+                    <span>🔧</span>
+                    <span>Configure el sistema primero</span>
+                </div>
                 
                 <div class="form-row">
                     <div class="form-group">
@@ -614,7 +566,10 @@
             <div id="reportes" class="section">
                 <h2>📊 Reportes y Estadísticas</h2>
                 
-                <div class="connection-status" id="reportesStatus"></div>
+                <div class="connection-status" id="reportesStatus">
+                    <span>🔧</span>
+                    <span>Configure el sistema primero</span>
+                </div>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
                     <div style="background: linear-gradient(45deg, #f8f9fa, #e9ecef); padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
@@ -665,26 +620,18 @@
             </div>
         </div>
     </div>
-
-    <!-- Google APIs -->
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <script>
-        // Configuración OAuth2
-        const CLIENT_ID = '91745823849-t7eg6qk5sh395bnoaglauvdvu4ksj4hi.apps.googleusercontent.com';
-        const REDIRECT_URI = 'https://leparranda.github.io/Pesquera/';
-        const CLIENT_SECRET = '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';
-        const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
+        // Configuración de la API
+        const API_KEY = 'AIzaSyDaSczY-zFyFzB7V4iL7kMVcMCGP5GFn7I';
+        const SHEETS_API_BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
         
         // Variables globales
-        let isAuthenticated = false;
-        let accessToken = '';
         let spreadsheetId = localStorage.getItem('spreadsheetId') || '';
+        let isConfigured = false;
         let ventaActual = [];
         let inventarioData = {};
         let preciosData = {};
-        let currentUser = null;
         
         // Configuración de empresa
         let config = {
@@ -693,254 +640,16 @@
             telefonoEmpresa: localStorage.getItem('telefonoEmpresa') || '(000) 000-0000'
         };
         
-        // URLs de la API
-        const SHEETS_API_BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
-        
-        // Inicialización de Google API
-        function initializeGapi() {
-            gapi.load('auth2', () => {
-                gapi.auth2.init({
-                    client_id: CLIENT_ID,
-                    scope: SCOPES
-                }).then(() => {
-                    console.log('Google API inicializada');
-                    checkAuthStatus();
-                }).catch(error => {
-                    console.error('Error al inicializar Google API:', error);
-                    updateConnectionStatus('disconnected', 'Error al inicializar Google API');
-                });
-            });
-        }
-
-        // Verificar estado de autenticación
-        function checkAuthStatus() {
-            const authInstance = gapi.auth2.getAuthInstance();
-            if (authInstance.isSignedIn.get()) {
-                handleSignIn();
-            } else {
-                updateConnectionStatus('disconnected', 'No autenticado');
-                showAuthSection();
-            }
-        }
-
-        // Iniciar sesión
-        function signIn() {
-            const signInBtn = document.getElementById('signInBtn');
-            signInBtn.disabled = true;
-            signInBtn.innerHTML = '<span class="loading"></span> INICIANDO SESIÓN...';
-            
-            const authInstance = gapi.auth2.getAuthInstance();
-            authInstance.signIn().then(handleSignIn).catch(error => {
-                console.error('Error al iniciar sesión:', error);
-                mostrarAlerta('Error al iniciar sesión: ' + error.error, 'danger');
-                signInBtn.disabled = false;
-                signInBtn.innerHTML = '🚀 INICIAR SESIÓN CON GOOGLE';
-            });
-        }
-
-        // Manejar inicio de sesión exitoso
-        function handleSignIn() {
-            const authInstance = gapi.auth2.getAuthInstance();
-            const user = authInstance.currentUser.get();
-            
-            if (user.isSignedIn()) {
-                currentUser = user;
-                isAuthenticated = true;
-                accessToken = user.getAuthResponse().access_token;
-                
-                // Mostrar información del usuario
-                const profile = user.getBasicProfile();
-                showUserInfo(profile);
-                
-                // Habilitar pestañas
-                enableTabs();
-                
-                // Ocultar banner de autenticación
-                document.getElementById('authBanner').classList.add('hidden');
-                
-                updateConnectionStatus('connected', `Conectado como: ${profile.getName()}`);
-                mostrarAlerta('Autenticación exitosa', 'success');
-                
-                // Cargar datos si hay spreadsheet configurado
-                if (spreadsheetId) {
-                    cargarTodosLosDatos();
-                }
-            }
-        }
-
-        // Cerrar sesión
-        function signOut() {
-            const authInstance = gapi.auth2.getAuthInstance();
-            authInstance.signOut().then(() => {
-                isAuthenticated = false;
-                accessToken = '';
-                currentUser = null;
-                
-                // Deshabilitar pestañas
-                disableTabs();
-                
-                // Mostrar sección de autenticación
-                showAuthSection();
-                
-                // Mostrar banner
-                document.getElementById('authBanner').classList.remove('hidden');
-                
-                updateConnectionStatus('disconnected', 'Sesión cerrada');
-                mostrarAlerta('Sesión cerrada correctamente', 'success');
-            });
-        }
-
-        // Mostrar información del usuario
-        function showUserInfo(profile) {
-            const userInfo = document.getElementById('userInfo');
-            const userDetails = document.getElementById('userDetails');
-            const authSection = document.getElementById('authSection');
-            
-            userDetails.innerHTML = `
-                <p><strong>Nombre:</strong> ${profile.getName()}</p>
-                <p><strong>Email:</strong> ${profile.getEmail()}</p>
-                <img src="${profile.getImageUrl()}" style="width: 50px; height: 50px; border-radius: 50%; margin-top: 10px;">
-            `;
-            
-            authSection.style.display = 'none';
-            userInfo.style.display = 'block';
-        }
-
-        // Mostrar sección de autenticación
-        function showAuthSection() {
-            document.getElementById('authSection').style.display = 'block';
-            document.getElementById('userInfo').style.display = 'none';
-        }
-
-        // Habilitar/deshabilitar pestañas
-        function enableTabs() {
-            const tabs = ['tabInventario', 'tabPrecios', 'tabVentas', 'tabReportes'];
-            tabs.forEach(tabId => {
-                const tab = document.getElementById(tabId);
-                if (tab) {
-                    tab.style.opacity = '1';
-                    tab.style.pointerEvents = 'auto';
-                }
-            });
-        }
-
-        function disableTabs() {
-            const tabs = ['tabInventario', 'tabPrecios', 'tabVentas', 'tabReportes'];
-            tabs.forEach(tabId => {
-                const tab = document.getElementById(tabId);
-                if (tab) {
-                    tab.style.opacity = '0.5';
-                    tab.style.pointerEvents = 'none';
-                }
-            });
-        }
-
-        // Mostrar sección
-        function showSection(sectionName) {
-            // Verificar autenticación para secciones protegidas
-            if (sectionName !== 'autenticacion' && !isAuthenticated) {
-                mostrarAlerta('Debe autenticarse primero', 'warning');
-                return;
-            }
-            
-            // Ocultar todas las secciones
-            const sections = document.querySelectorAll('.section');
-            sections.forEach(section => section.classList.remove('active'));
-            
-            // Ocultar todos los tabs
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            
-            // Mostrar la sección seleccionada
-            document.getElementById(sectionName).classList.add('active');
-            event.target.classList.add('active');
-            
-            // Cargar datos según la sección
-            switch(sectionName) {
-                case 'inventario':
-                    cargarInventario();
-                    break;
-                case 'precios':
-                    cargarPrecios();
-                    cargarInventarioParaPrecios();
-                    break;
-                case 'ventas':
-                    cargarInventarioParaVentas();
-                    cargarPrecios();
-                    break;
-                case 'reportes':
-                    cargarReportes();
-                    break;
-            }
-        }
-
-        // Actualizar estado de conexión
-        function updateConnectionStatus(status, message) {
-            const statusElements = ['connectionStatus', 'inventarioStatus', 'preciosStatus', 'ventasStatus', 'reportesStatus'];
-            
-            statusElements.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.className = `connection-status status-${status}`;
-                    
-                    let icon = '';
-                    switch(status) {
-                        case 'connected': icon = '✅'; break;
-                        case 'disconnected': icon = '❌'; break;
-                        case 'loading': icon = '<span class="loading"></span>'; break;
-                    }
-                    
-                    element.innerHTML = `${icon} ${message}`;
-                }
-            });
-        }
-
-        // Guardar configuración
-        function guardarConfiguracion() {
-            const newSpreadsheetId = document.getElementById('spreadsheetId').value.trim();
-            
-            if (!newSpreadsheetId) {
-                mostrarAlerta('Ingrese el ID del Google Sheet', 'warning');
-                return;
-            }
-            
-            spreadsheetId = newSpreadsheetId;
-            localStorage.setItem('spreadsheetId', spreadsheetId);
-            
-            mostrarAlerta('Configuración guardada', 'success');
-            
-            if (isAuthenticated) {
-                cargarTodosLosDatos();
-            }
-        }
-
-        // Guardar datos de empresa
-        function guardarDatosEmpresa() {
-            config.nombreEmpresa = document.getElementById('nombreEmpresa').value;
-            config.direccionEmpresa = document.getElementById('direccionEmpresa').value;
-            config.telefonoEmpresa = document.getElementById('telefonoEmpresa').value;
-            
-            localStorage.setItem('nombreEmpresa', config.nombreEmpresa);
-            localStorage.setItem('direccionEmpresa', config.direccionEmpresa);
-            localStorage.setItem('telefonoEmpresa', config.telefonoEmpresa);
-            
-            mostrarAlerta('Datos de empresa guardados', 'success');
-        }
-
-        // Funciones de Google Sheets API
+        // Funciones de la API de Google Sheets
         async function leerHoja(nombreHoja) {
-            if (!isAuthenticated || !spreadsheetId) {
-                throw new Error('No autenticado o sin configurar Google Sheet');
+            if (!spreadsheetId) {
+                throw new Error('Configure el ID del Google Sheet primero');
             }
             
             const range = `${nombreHoja}!A:Z`;
-            const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${range}`;
+            const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${range}?key=${API_KEY}`;
             
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
+            const response = await fetch(url);
             
             if (!response.ok) {
                 const errorData = await response.json();
@@ -950,31 +659,18 @@
             const data = await response.json();
             return data.values || [];
         }
-
-        async function escribirHoja(nombreHoja, datos, rango = null) {
-            if (!isAuthenticated || !spreadsheetId) {
-                throw new Error('No autenticado o sin configurar Google Sheet');
+        
+        async function escribirHoja(nombreHoja, datos) {
+            if (!spreadsheetId) {
+                throw new Error('Configure el ID del Google Sheet primero');
             }
             
-            const rangeToWrite = rango || `${nombreHoja}!A:Z`;
-            const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${rangeToWrite}:clear`;
+            const range = `${nombreHoja}!A:Z`;
+            const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${range}?valueInputOption=RAW&key=${API_KEY}`;
             
-            // Limpiar la hoja primero
-            await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            // Escribir nuevos datos
-            const writeUrl = `${SHEETS_API_BASE}/${spreadsheetId}/values/${rangeToWrite}?valueInputOption=RAW`;
-            
-            const response = await fetch(writeUrl, {
+            const response = await fetch(url, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -989,18 +685,17 @@
             
             return await response.json();
         }
-
+        
         async function agregarFilaHoja(nombreHoja, fila) {
-            if (!isAuthenticated || !spreadsheetId) {
-                throw new Error('No autenticado o sin configurar Google Sheet');
+            if (!spreadsheetId) {
+                throw new Error('Configure el ID del Google Sheet primero');
             }
             
-            const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${nombreHoja}!A:A:append?valueInputOption=RAW`;
+            const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${nombreHoja}!A:A:append?valueInputOption=RAW&key=${API_KEY}`;
             
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -1015,9 +710,131 @@
             
             return await response.json();
         }
-
+        
+        // Probar conexión con Google Sheets
+        async function probarConexion() {
+            const idSheet = document.getElementById('spreadsheetId').value.trim();
+            
+            if (!idSheet) {
+                mostrarAlerta('Ingrese el ID del Google Sheet', 'warning');
+                return;
+            }
+            
+            updateConnectionStatus('loading', 'Probando conexión...');
+            
+            try {
+                // Probar acceso al sheet
+                const url = `${SHEETS_API_BASE}/${idSheet}?key=${API_KEY}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error.message);
+                }
+                
+                const data = await response.json();
+                
+                updateConnectionStatus('connected', `Conectado a: ${data.properties.title}`);
+                mostrarAlerta('Conexión exitosa con Google Sheets', 'success');
+                
+                // Verificar si existen las hojas necesarias
+                const hojasExistentes = data.sheets.map(sheet => sheet.properties.title);
+                const hojasRequeridas = ['Inventario', 'Precios', 'Ventas', 'Configuracion'];
+                const hojasFaltantes = hojasRequeridas.filter(hoja => !hojasExistentes.includes(hoja));
+                
+                if (hojasFaltantes.length > 0) {
+                    mostrarAlerta(`Faltan las siguientes hojas: ${hojasFaltantes.join(', ')}. Use el botón "Crear Estructura" para crearlas automáticamente.`, 'warning');
+                }
+                
+            } catch (error) {
+                updateConnectionStatus('disconnected', `Error: ${error.message}`);
+                mostrarAlerta(`Error de conexión: ${error.message}`, 'danger');
+            }
+        }
+        
+        // Crear estructura de hojas automáticamente
+        async function crearEstructuraHojas() {
+            if (!spreadsheetId) {
+                mostrarAlerta('Configure el ID del Google Sheet primero', 'warning');
+                return;
+            }
+            
+            try {
+                updateConnectionStatus('loading', 'Creando estructura...');
+                
+                // Datos para cada hoja
+                const estructuras = {
+                    'Inventario': [
+                        ['Tipo', 'Stock', 'PrecioPromedio', 'ValorTotal', 'UltimaActualizacion']
+                    ],
+                    'Precios': [
+                        ['Tipo', 'PrecioCompra', 'Margen', 'PrecioVenta', 'Ganancia']
+                    ],
+                    'Ventas': [
+                        ['NumeroFactura', 'Fecha', 'Cliente', 'Productos', 'Total']
+                    ],
+                    'Configuracion': [
+                        ['UltimoNumeroFactura', 'NombreEmpresa', 'DireccionEmpresa', 'TelefonoEmpresa'],
+                        [1, config.nombreEmpresa, config.direccionEmpresa, config.telefonoEmpresa]
+                    ]
+                };
+                
+                // Crear cada hoja
+                for (const [nombreHoja, datos] of Object.entries(estructuras)) {
+                    try {
+                        await escribirHoja(nombreHoja, datos);
+                        console.log(`Hoja ${nombreHoja} creada/actualizada`);
+                    } catch (error) {
+                        console.error(`Error al crear hoja ${nombreHoja}:`, error);
+                    }
+                }
+                
+                updateConnectionStatus('connected', 'Estructura creada correctamente');
+                mostrarAlerta('Estructura de hojas creada exitosamente', 'success');
+                
+            } catch (error) {
+                updateConnectionStatus('disconnected', `Error: ${error.message}`);
+                mostrarAlerta(`Error al crear estructura: ${error.message}`, 'danger');
+            }
+        }
+        
+        // Guardar configuración
+        function guardarConfiguracion() {
+            const newSpreadsheetId = document.getElementById('spreadsheetId').value.trim();
+            
+            if (!newSpreadsheetId) {
+                mostrarAlerta('Ingrese el ID del Google Sheet', 'warning');
+                return;
+            }
+            
+            spreadsheetId = newSpreadsheetId;
+            localStorage.setItem('spreadsheetId', spreadsheetId);
+            isConfigured = true;
+            
+            mostrarAlerta('Configuración guardada', 'success');
+            cargarTodosLosDatos();
+        }
+        
+        // Guardar datos de empresa
+        function guardarDatosEmpresa() {
+            config.nombreEmpresa = document.getElementById('nombreEmpresa').value;
+            config.direccionEmpresa = document.getElementById('direccionEmpresa').value;
+            config.telefonoEmpresa = document.getElementById('telefonoEmpresa').value;
+            
+            localStorage.setItem('nombreEmpresa', config.nombreEmpresa);
+            localStorage.setItem('direccionEmpresa', config.direccionEmpresa);
+            localStorage.setItem('telefonoEmpresa', config.telefonoEmpresa);
+            
+            mostrarAlerta('Datos de empresa guardados', 'success');
+        }
+        
         // Cargar todos los datos
         async function cargarTodosLosDatos() {
+            if (!spreadsheetId) {
+                mostrarAlerta('Configure el ID del Google Sheet primero', 'warning');
+                return;
+            }
+            
             try {
                 updateConnectionStatus('loading', 'Cargando datos...');
                 
@@ -1027,12 +844,14 @@
                 ]);
                 
                 updateConnectionStatus('connected', 'Datos cargados correctamente');
+                isConfigured = true;
+                
             } catch (error) {
                 updateConnectionStatus('disconnected', `Error: ${error.message}`);
                 mostrarAlerta(`Error al cargar datos: ${error.message}`, 'danger');
             }
         }
-
+        
         // Cargar inventario
         async function cargarInventario() {
             try {
@@ -1056,10 +875,10 @@
                 actualizarTablaInventario();
             } catch (error) {
                 console.error('Error al cargar inventario:', error);
-                mostrarAlerta(`Error al cargar inventario: ${error.message}`, 'danger');
+                throw error;
             }
         }
-
+        
         // Cargar precios
         async function cargarPrecios() {
             try {
@@ -1083,12 +902,17 @@
                 actualizarTablaPrecios();
             } catch (error) {
                 console.error('Error al cargar precios:', error);
-                mostrarAlerta(`Error al cargar precios: ${error.message}`, 'danger');
+                throw error;
             }
         }
-
+        
         // Agregar inventario
         async function agregarInventario() {
+            if (!isConfigured) {
+                mostrarAlerta('Configure el sistema primero', 'warning');
+                return;
+            }
+            
             const tipo = document.getElementById('tipoPescadoInventario').value;
             const libras = parseFloat(document.getElementById('librasRecibidas').value);
             const precio = parseFloat(document.getElementById('precioCompra').value);
@@ -1145,7 +969,7 @@
                 btnAgregar.innerHTML = '+ AGREGAR AL INVENTARIO';
             }
         }
-
+        
         // Actualizar tabla de inventario
         function actualizarTablaInventario() {
             const tbody = document.querySelector('#tablaInventario tbody');
@@ -1171,14 +995,14 @@
                 fila.innerHTML = `
                     <td>${tipo}</td>
                     <td>${datos.stock.toFixed(1)}</td>
-                    <td>$${datos.precioPromedio.toFixed(2)}</td>
-                    <td>$${datos.valorTotal.toFixed(2)}</td>
+                    <td>${datos.precioPromedio.toFixed(2)}</td>
+                    <td>${datos.valorTotal.toFixed(2)}</td>
                     <td>${datos.ultimaActualizacion || 'N/A'}</td>
                     <td ${claseEstado}>${estado}</td>
                 `;
             }
         }
-
+        
         // Cargar inventario para precios
         function cargarInventarioParaPrecios() {
             const select = document.getElementById('tipoPescadoPrecio');
@@ -1188,9 +1012,14 @@
                 select.innerHTML += `<option value="${tipo}">${tipo}</option>`;
             }
         }
-
+        
         // Configurar precio
         async function configurarPrecio() {
+            if (!isConfigured) {
+                mostrarAlerta('Configure el sistema primero', 'warning');
+                return;
+            }
+            
             const tipo = document.getElementById('tipoPescadoPrecio').value;
             const margen = parseFloat(document.getElementById('margenGanancia').value);
             const precioManual = parseFloat(document.getElementById('precioVentaManual').value);
@@ -1258,7 +1087,7 @@
                 btnConfigurar.innerHTML = '💾 GUARDAR PRECIO';
             }
         }
-
+        
         // Actualizar tabla de precios
         function actualizarTablaPrecios() {
             const tbody = document.querySelector('#tablaPrecios tbody');
@@ -1268,15 +1097,15 @@
                 const fila = tbody.insertRow();
                 fila.innerHTML = `
                     <td>${tipo}</td>
-                    <td>$${datos.precioCompra.toFixed(2)}</td>
+                    <td>${datos.precioCompra.toFixed(2)}</td>
                     <td>${datos.margen.toFixed(1)}%</td>
-                    <td>$${datos.precioVenta.toFixed(2)}</td>
-                    <td>$${datos.ganancia.toFixed(2)}</td>
+                    <td>${datos.precioVenta.toFixed(2)}</td>
+                    <td>${datos.ganancia.toFixed(2)}</td>
                     <td><button class="btn btn-danger" onclick="eliminarPrecio('${tipo}')">Eliminar</button></td>
                 `;
             }
         }
-
+        
         // Cargar inventario para ventas
         function cargarInventarioParaVentas() {
             const select = document.getElementById('tipoPescadoVenta');
@@ -1288,7 +1117,7 @@
                 }
             }
         }
-
+        
         // Agregar producto a venta
         function agregarProductoVenta() {
             const tipo = document.getElementById('tipoPescadoVenta').value;
@@ -1321,7 +1150,7 @@
             
             actualizarTablaVentaActual();
         }
-
+        
         // Actualizar tabla de venta actual
         function actualizarTablaVentaActual() {
             const tbody = document.querySelector('#tablaVentaActual tbody');
@@ -1334,8 +1163,8 @@
                 fila.innerHTML = `
                     <td>${producto.tipo}</td>
                     <td>${producto.cantidad.toFixed(1)}</td>
-                    <td>$${producto.precio.toFixed(2)}</td>
-                    <td>$${producto.subtotal.toFixed(2)}</td>
+                    <td>${producto.precio.toFixed(2)}</td>
+                    <td>${producto.subtotal.toFixed(2)}</td>
                     <td><button class="btn btn-danger" onclick="eliminarProductoVenta(${index})">Eliminar</button></td>
                 `;
                 total += producto.subtotal;
@@ -1343,15 +1172,20 @@
             
             document.getElementById('totalVenta').textContent = total.toFixed(2);
         }
-
+        
         // Eliminar producto de venta
         function eliminarProductoVenta(index) {
             ventaActual.splice(index, 1);
             actualizarTablaVentaActual();
         }
-
+        
         // Generar factura
         async function generarFactura() {
+            if (!isConfigured) {
+                mostrarAlerta('Configure el sistema primero', 'warning');
+                return;
+            }
+            
             if (ventaActual.length === 0) {
                 mostrarAlerta('Agregue al menos un producto a la venta', 'warning');
                 return;
@@ -1414,7 +1248,7 @@
                 btnGenerar.innerHTML = '🖨️ GENERAR FACTURA';
             }
         }
-
+        
         // Obtener siguiente número de factura
         async function obtenerSiguienteNumeroFactura() {
             try {
@@ -1430,7 +1264,7 @@
                 return 1;
             }
         }
-
+        
         // Guardar venta
         async function guardarVenta(venta) {
             const filaNuevaVenta = [
@@ -1443,13 +1277,13 @@
             
             await agregarFilaHoja('Ventas', filaNuevaVenta);
         }
-
+        
         // Actualizar inventario en sheets
         async function actualizarInventarioEnSheets() {
             const datosInventario = [
                 ['Tipo', 'Stock', 'PrecioPromedio', 'ValorTotal', 'UltimaActualizacion'],
                 ...Object.entries(inventarioData).map(([tipoPez, datos]) => [
-                    tipePez,
+                    tipoPez,
                     datos.stock,
                     datos.precioPromedio,
                     datos.valorTotal,
@@ -1459,7 +1293,7 @@
             
             await escribirHoja('Inventario', datosInventario);
         }
-
+        
         // Actualizar número de factura
         async function actualizarNumeroFactura(nuevoNumero) {
             const datosConfig = [
@@ -1470,7 +1304,7 @@
             await escribirHoja('Configuracion', datosConfig);
         }
         
-        // Generar HTML de factura (CONTINUACIÓN)
+        // Generar HTML de factura
         function generarHTMLFactura(venta, productos, cliente, telefono) {
             const facturaHTML = `
                 <div class="factura">
@@ -1509,8 +1343,8 @@
                                 <tr>
                                     <td style="padding: 10px; border: 1px solid #ddd;">${producto.tipo}</td>
                                     <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${producto.cantidad.toFixed(1)}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">$${producto.precio.toFixed(2)}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">$${producto.subtotal.toFixed(2)}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${producto.precio.toFixed(2)}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${producto.subtotal.toFixed(2)}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -1518,7 +1352,7 @@
                     
                     <div style="text-align: right; padding: 20px; background: #f8f9fa; border-radius: 10px; margin-top: 20px;">
                         <div style="font-size: 1.5em; font-weight: bold; color: #28a745;">
-                            TOTAL A PAGAR: $${venta.total.toFixed(2)}
+                            TOTAL A PAGAR: ${venta.total.toFixed(2)}
                         </div>
                         <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
                             ¡Gracias por su compra! Pescado fresco del día.
@@ -1534,7 +1368,7 @@
             
             document.getElementById('facturaGenerada').innerHTML = facturaHTML;
         }
-
+        
         // Limpiar venta
         function limpiarVenta() {
             ventaActual = [];
@@ -1543,14 +1377,19 @@
             actualizarTablaVentaActual();
             cargarInventarioParaVentas();
         }
-
+        
         // Limpiar factura
         function limpiarFactura() {
             document.getElementById('facturaGenerada').innerHTML = '';
         }
-
+        
         // Cargar reportes
         async function cargarReportes() {
+            if (!isConfigured) {
+                mostrarAlerta('Configure el sistema primero', 'warning');
+                return;
+            }
+            
             const btnCargar = document.getElementById('btnCargarReportes');
             btnCargar.disabled = true;
             btnCargar.innerHTML = '<span class="loading"></span> CARGANDO...';
@@ -1593,229 +1432,4 @@
                         }
                     }
                     
-                    // Actualizar estadísticas
-                    document.getElementById('totalVentasHoy').textContent = `$${totalHoy.toFixed(2)}`;
-                    document.getElementById('totalVentasMes').textContent = `$${totalMes.toFixed(2)}`;
-                    document.getElementById('numeroFacturas').textContent = numeroFacturas;
-                    
-                    // Mostrar últimas ventas
-                    actualizarTablaUltimasVentas(ventasData);
-                }
-                
-                // Calcular valor del inventario
-                const valorInventario = Object.values(inventarioData).reduce((sum, item) => sum + (item.valorTotal || 0), 0);
-                document.getElementById('totalInventario').textContent = `$${valorInventario.toFixed(2)}`;
-                
-                // Actualizar stock bajo
-                actualizarTablaStockBajo();
-                
-                updateConnectionStatus('connected', 'Reportes actualizados');
-                
-            } catch (error) {
-                updateConnectionStatus('disconnected', `Error: ${error.message}`);
-                mostrarAlerta(`Error al cargar reportes: ${error.message}`, 'danger');
-            } finally {
-                btnCargar.disabled = false;
-                btnCargar.innerHTML = '🔄 ACTUALIZAR REPORTES';
-            }
-        }
-
-        // Actualizar tabla de últimas ventas
-        function actualizarTablaUltimasVentas(ventasData) {
-            const tbody = document.querySelector('#tablaUltimasVentas tbody');
-            tbody.innerHTML = '';
-            
-            // Mostrar las últimas 10 ventas
-            const ventasRecientes = ventasData.slice(-11, -1).reverse(); // -11 para obtener 10, -1 para excluir encabezados
-            
-            ventasRecientes.forEach(venta => {
-                if (venta[0]) {
-                    const fila = tbody.insertRow();
-                    fila.innerHTML = `
-                        <td>#${venta[0]}</td>
-                        <td>${venta[1] || 'N/A'}</td>
-                        <td>${venta[2] || 'N/A'}</td>
-                        <td>${venta[3] || 'N/A'}</td>
-                        <td>$${parseFloat(venta[4] || 0).toFixed(2)}</td>
-                    `;
-                }
-            });
-            
-            if (tbody.children.length === 0) {
-                const fila = tbody.insertRow();
-                fila.innerHTML = '<td colspan="5" style="text-align: center; color: #666;">No hay ventas registradas</td>';
-            }
-        }
-
-        // Actualizar tabla de stock bajo
-        function actualizarTablaStockBajo() {
-            const tbody = document.querySelector('#tablaStockBajo tbody');
-            tbody.innerHTML = '';
-            
-            let hayStockBajo = false;
-            
-            for (const [tipo, datos] of Object.entries(inventarioData)) {
-                if (datos.stock < 10) {
-                    hayStockBajo = true;
-                    const fila = tbody.insertRow();
-                    
-                    let estado = '';
-                    let claseEstado = '';
-                    
-                    if (datos.stock === 0) {
-                        estado = '🔴 Agotado';
-                        claseEstado = 'style="background-color: #f8d7da;"';
-                    } else if (datos.stock < 5) {
-                        estado = '🟠 Crítico';
-                        claseEstado = 'style="background-color: #fff3cd;"';
-                    } else {
-                        estado = '🟡 Bajo';
-                        claseEstado = 'style="background-color: #fff3cd;"';
-                    }
-                    
-                    fila.innerHTML = `
-                        <td>${tipo}</td>
-                        <td>${datos.stock.toFixed(1)} lbs</td>
-                        <td ${claseEstado}>${estado}</td>
-                    `;
-                }
-            }
-            
-            if (!hayStockBajo) {
-                const fila = tbody.insertRow();
-                fila.innerHTML = '<td colspan="3" style="text-align: center; color: #28a745;">✅ Todos los productos tienen stock suficiente</td>';
-            }
-        }
-
-        // Eliminar precio
-        async function eliminarPrecio(tipo) {
-            if (!confirm(`¿Eliminar precio de ${tipo}?`)) {
-                return;
-            }
-            
-            try {
-                delete preciosData[tipo];
-                
-                // Actualizar en Google Sheets
-                const datosPrecios = [
-                    ['Tipo', 'PrecioCompra', 'Margen', 'PrecioVenta', 'Ganancia'],
-                    ...Object.entries(preciosData).map(([tipoPez, datos]) => [
-                        tipoPez,
-                        datos.precioCompra,
-                        datos.margen,
-                        datos.precioVenta,
-                        datos.ganancia
-                    ])
-                ];
-                
-                await escribirHoja('Precios', datosPrecios);
-                
-                actualizarTablaPrecios();
-                mostrarAlerta(`Precio de ${tipo} eliminado`, 'success');
-                
-            } catch (error) {
-                mostrarAlerta(`Error al eliminar precio: ${error.message}`, 'danger');
-            }
-        }
-
-        // Mostrar alertas
-        function mostrarAlerta(mensaje, tipo = 'success') {
-            const alertaDiv = document.createElement('div');
-            alertaDiv.className = `alert alert-${tipo}`;
-            alertaDiv.textContent = mensaje;
-            
-            // Insertar al inicio del contenido
-            const content = document.querySelector('.content');
-            const firstChild = content.firstChild;
-            content.insertBefore(alertaDiv, firstChild);
-            
-            // Eliminar después de 4 segundos
-            setTimeout(() => {
-                if (alertaDiv.parentNode) {
-                    alertaDiv.remove();
-                }
-            }, 4000);
-        }
-
-        // Event listener para cambio de producto en ventas
-        document.addEventListener('DOMContentLoaded', function() {
-            // Cargar configuración
-            if (spreadsheetId) {
-                document.getElementById('spreadsheetId').value = spreadsheetId;
-            }
-            
-            document.getElementById('nombreEmpresa').value = config.nombreEmpresa;
-            document.getElementById('direccionEmpresa').value = config.direccionEmpresa;
-            document.getElementById('telefonoEmpresa').value = config.telefonoEmpresa;
-            
-            // Event listener para precio automático en ventas
-            const selectVenta = document.getElementById('tipoPescadoVenta');
-            if (selectVenta) {
-                selectVenta.addEventListener('change', function() {
-                    const tipo = this.value;
-                    const precioInput = document.getElementById('precioVentaProducto');
-                    
-                    if (tipo && preciosData[tipo]) {
-                        precioInput.value = preciosData[tipo].precioVenta.toFixed(2);
-                    } else {
-                        precioInput.value = '';
-                    }
-                });
-            }
-            
-            // Deshabilitar pestañas inicialmente
-            disableTabs();
-            
-            // Inicializar Google API
-            initializeGapi();
-        });
-
-        // Funciones de utilidad
-        function formatearFecha(fecha) {
-            return fecha.toLocaleDateString('es-ES', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            });
-        }
-
-        // Función para exportar datos
-        async function exportarDatos() {
-            try {
-                const datos = {
-                    fecha: new Date().toISOString(),
-                    inventario: inventarioData,
-                    precios: preciosData,
-                    configuracion: config
-                };
-                
-                const dataStr = JSON.stringify(datos, null, 2);
-                const dataBlob = new Blob([dataStr], {type: 'application/json'});
-                
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(dataBlob);
-                link.download = `backup_pesquera_${formatearFecha(new Date()).replace(/\//g, '-')}.json`;
-                link.click();
-                
-                mostrarAlerta('Datos exportados correctamente', 'success');
-                
-            } catch (error) {
-                mostrarAlerta(`Error al exportar datos: ${error.message}`, 'danger');
-            }
-        }
-
-        // Función para verificar el estado de autenticación al cargar
-        window.addEventListener('load', function() {
-            // Pequeño delay para asegurar que Google API esté cargada
-            setTimeout(() => {
-                if (typeof gapi !== 'undefined') {
-                    initializeGapi();
-                } else {
-                    updateConnectionStatus('disconnected', 'Error al cargar Google API');
-                    mostrarAlerta('Error al cargar Google API. Verifique su conexión a internet.', 'danger');
-                }
-            }, 1000);
-        });
-    </script>
-</body>
-</html>
+                    //
