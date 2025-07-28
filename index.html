@@ -437,6 +437,51 @@
                 display: none !important;
             }
         }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value#totalVentasHoy {
+            color: #3498db;
+        }
+        
+        .stat-value#totalVentasMes {
+            color: #28a745;
+        }
+        
+        .stat-value#totalInventario {
+            color: #e74c3c;
+        }
+        
+        .stat-value#numeroFacturas {
+            color: #f39c12;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
         /* =================== RESPONSIVE DESIGN =================== */
 
         /* Tablets */
