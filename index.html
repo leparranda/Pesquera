@@ -931,6 +931,22 @@
                     mostrarAlerta(`⚠️ Faltan las siguientes hojas: ${hojasFaltantes.join(', ')}. Use el botón "Crear Estructura".`, 'warning');
                 } else {
                     mostrarAlerta('🎉 Todas las hojas necesarias están disponibles', 'success');
+                    
+                    // *** AQUÍ ESTÁ LA CORRECCIÓN PRINCIPAL ***
+                    // Actualizar el spreadsheetId temporalmente para poder cargar datos
+                    const spreadsheetIdAnterior = spreadsheetId;
+                    spreadsheetId = idSheet;
+                    
+                    try {
+                        // Cargar datos existentes de las hojas
+                        console.log('📊 Cargando datos existentes...');
+                        await cargarTodosLosDatos();
+                        mostrarAlerta('📊 Datos cargados correctamente desde Google Sheets', 'success');
+                    } catch (errorCarga) {
+                        console.error('Error al cargar datos:', errorCarga);
+                        mostrarAlerta(`⚠️ Conexión exitosa pero error al cargar datos: ${errorCarga.message}`, 'warning');
+                        spreadsheetId = spreadsheetIdAnterior; // Restaurar ID anterior si falla
+                    }
                 }
                 
             } catch (error) {
@@ -1000,7 +1016,15 @@
             isConfigured = true;
             
             mostrarAlerta('💾 Configuración guardada correctamente', 'success');
-            cargarTodosLosDatos();
+            
+            // Cargar datos después de guardar configuración
+            try {
+                await cargarTodosLosDatos();
+                mostrarAlerta('📊 Datos cargados correctamente', 'success');
+            } catch (error) {
+                console.error('Error al cargar datos después de guardar configuración:', error);
+                mostrarAlerta(`⚠️ Configuración guardada pero error al cargar datos: ${error.message}`, 'warning');
+            }
         };
         
         // Guardar datos de empresa
@@ -1021,24 +1045,27 @@
         // Cargar todos los datos
         async function cargarTodosLosDatos() {
             if (!spreadsheetId) {
-                mostrarAlerta('Configure el ID del Google Sheet primero', 'warning');
-                return;
+                throw new Error('Configure el ID del Google Sheet primero');
             }
             
             try {
                 updateConnectionStatus('loading', 'Cargando datos...');
                 
-                await Promise.all([
-                    cargarInventario(),
-                    cargarPrecios()
-                ]);
+                console.log('📊 Cargando inventario...');
+                await cargarInventario();
+                
+                console.log('💰 Cargando precios...');
+                await cargarPrecios();
                 
                 updateConnectionStatus('connected', 'Datos cargados correctamente');
                 isConfigured = true;
                 
+                console.log('✅ Todos los datos cargados exitosamente');
+                
             } catch (error) {
+                console.error('❌ Error al cargar datos:', error);
                 updateConnectionStatus('disconnected', `Error: ${error.message}`);
-                mostrarAlerta(`Error al cargar datos: ${error.message}`, 'danger');
+                throw error; // Re-lanzar el error para que lo maneje quien llama
             }
         }
         
@@ -1093,6 +1120,29 @@
             } catch (error) {
                 console.error('Error al cargar precios:', error);
                 throw error;
+            }
+        }
+        // Función para verificar si hay datos en las hojas
+        async function verificarDatosExistentes() {
+            try {
+                const inventarioData = await leerHoja('Inventario');
+                const preciosData = await leerHoja('Precios');
+                const ventasData = await leerHoja('Ventas');
+                
+                const tieneInventario = inventarioData.length > 1;
+                const tienePrecios = preciosData.length > 1;
+                const tieneVentas = ventasData.length > 1;
+                
+                console.log('📊 Estado de los datos:', {
+                    inventario: tieneInventario ? `${inventarioData.length - 1} items` : 'vacío',
+                    precios: tienePrecios ? `${preciosData.length - 1} items` : 'vacío',
+                    ventas: tieneVentas ? `${ventasData.length - 1} items` : 'vacío'
+                });
+                
+                return { tieneInventario, tienePrecios, tieneVentas };
+            } catch (error) {
+                console.error('Error al verificar datos existentes:', error);
+                return { tieneInventario: false, tienePrecios: false, tieneVentas: false };
             }
         }
         
