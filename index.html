@@ -17,6 +17,135 @@
             min-height: 100vh;
             padding: 20px;
         }
+        /* =================== ESTILOS DE LOGIN =================== */
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .login-header {
+            margin-bottom: 30px;
+        }
+        
+        .login-header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .login-header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .login-form {
+            margin-bottom: 20px;
+        }
+        
+        .login-form input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .login-form input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        .login-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .login-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.7;
+        }
+        
+        .login-error {
+            background: linear-gradient(45deg, #f8d7da, #f1b0b7);
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f1b0b7;
+            font-weight: bold;
+        }
+        
+        .show-password {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+        }
+        
+        .show-password input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+        
+        .sistema-principal {
+            display: none;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: white;
+            color: #2c3e50;
+        }
         
         .container {
             max-width: 1200px;
@@ -32,6 +161,7 @@
             color: white;
             padding: 30px;
             text-align: center;
+            position: relative;
         }
         
         .header h1 {
@@ -310,62 +440,111 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🐟 SISTEMA PESQUERA</h1>
-            <p>Control de Inventario y Facturación</p>
-        </div>
-        
-        <div class="tabs">
-            <div class="tab active" onclick="showSection('configuracion')">⚙️ CONFIGURACIÓN</div>
-            <div class="tab" onclick="showSection('inventario')">📦 INVENTARIO</div>
-            <div class="tab" onclick="showSection('precios')">💰 PRECIOS</div>
-            <div class="tab" onclick="showSection('ventas')">🧾 VENTAS</div>
-            <div class="tab" onclick="showSection('reportes')">📊 REPORTES</div>
-        </div>
-        
-        <div class="content">
-            <!-- SECCIÓN CONFIGURACIÓN -->
-            <div id="configuracion" class="section active">
-                <h2>⚙️ Configuración del Sistema</h2>
-                
-                <div class="connection-status" id="connectionStatus">
-                    <span>🔧</span>
-                    <span>Configure el sistema para comenzar</span>
+       <!-- PANTALLA DE LOGIN -->
+        <div id="loginScreen" class="login-container">
+            <div class="login-box">
+                <div class="login-header">
+                    <h1>🐟</h1>
+                    <h2>SISTEMA PESQUERA</h2>
+                    <p>Acceso al Sistema de Control</p>
                 </div>
                 
-                <div class="config-section">
-                    <h3>📋 Configuración de Google Sheets</h3>
-                    <div class="form-group">
-                        <label>ID del Google Sheet:</label>
-                        <input type="text" id="spreadsheetId" placeholder="ID del Google Sheet">
-                        <small style="color: #666; font-size: 12px;">
-                            Obtenga el ID de la URL: https://docs.google.com/spreadsheets/d/<strong>ID_AQUI</strong>/edit<br>
-                        </small>
-                    </div>
-                    <button class="btn btn-success" onclick="probarConexion()">🔌 PROBAR CONEXIÓN</button>
-                    <button class="btn btn-success" onclick="guardarConfiguracion()">💾 GUARDAR CONFIGURACIÓN</button>
-
-
+                <div id="loginError" class="login-error" style="display: none;"></div>
+                
+                <form class="login-form" onsubmit="iniciarSesion(event)">
+                    <input 
+                        type="text" 
+                        id="username" 
+                        placeholder="👤 Usuario" 
+                        required
+                        autocomplete="username"
+                    >
+                    <input 
+                        type="password" 
+                        id="password" 
+                        placeholder="🔒 Contraseña" 
+                        required
+                        autocomplete="current-password"
+                    >
+                    
+                    <label class="show-password" onclick="togglePassword()">
+                        <input type="checkbox" id="showPassword">
+                        <span>Mostrar contraseña</span>
+                    </label>
+                    
+                    <button type="submit" class="login-btn" id="loginBtn">
+                        🔑 INICIAR SESIÓN
+                    </button>
+                </form>
+                
+                <div style="font-size: 12px; color: #999; margin-top: 20px;">
+                    <p>🔐 Acceso seguro al sistema</p>
+                    <p>© 2025 Sistema Pesquera</p>
+                </div>
+            </div>
+        </div>
+    
+        <!-- SISTEMA PRINCIPAL -->
+        <div id="sistemaPrincipal" class="sistema-principal">
+            <div class="container">
+                <div class="header">
+                    <button class="logout-btn" onclick="cerrarSesion()">
+                        🚪 Cerrar Sesión
+                    </button>
+                    <h1>🐟 SISTEMA PESQUERA</h1>
+                    <p>Control de Inventario y Facturación</p>
                 </div>
                 
-                <div class="config-section">
-                    <h3>🏢 Datos de la Empresa</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Nombre de la Empresa:</label>
-                            <input type="text" id="nombreEmpresa" value="Pesquera del Mar">
+                <div class="tabs">
+                    <div class="tab active" onclick="showSection('configuracion')">⚙️ CONFIGURACIÓN</div>
+                    <div class="tab" onclick="showSection('inventario')">📦 INVENTARIO</div>
+                    <div class="tab" onclick="showSection('precios')">💰 PRECIOS</div>
+                    <div class="tab" onclick="showSection('ventas')">🧾 VENTAS</div>
+                    <div class="tab" onclick="showSection('reportes')">📊 REPORTES</div>
+                </div>
+                
+                <div class="content">
+                    <!-- SECCIÓN CONFIGURACIÓN -->
+                    <div id="configuracion" class="section active">
+                        <h2>⚙️ Configuración del Sistema</h2>
+                        
+                        <div class="connection-status" id="connectionStatus">
+                            <span>🔧</span>
+                            <span>Configure el sistema para comenzar</span>
                         </div>
-                        <div class="form-group">
-                            <label>Teléfono:</label>
-                            <input type="tel" id="telefonoEmpresa" value="(000) 000-0000">
+                        
+                        <div class="config-section">
+                            <h3>📋 Configuración de Google Sheets</h3>
+                            <div class="form-group">
+                                <label>ID del Google Sheet:</label>
+                                <input type="text" id="spreadsheetId" placeholder="ID del Google Sheet">
+                                <small style="color: #666; font-size: 12px;">
+                                    Obtenga el ID de la URL: https://docs.google.com/spreadsheets/d/<strong>ID_AQUI</strong>/edit<br>
+                                </small>
+                            </div>
+                            <button class="btn btn-success" onclick="probarConexion()">🔌 PROBAR CONEXIÓN</button>
+                            <button class="btn btn-success" onclick="guardarConfiguracion()">💾 GUARDAR CONFIGURACIÓN</button>
+                        </div>
+                        
+                        <div class="config-section">
+                            <h3>🏢 Datos de la Empresa</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nombre de la Empresa:</label>
+                                    <input type="text" id="nombreEmpresa" value="Pesquera del Mar">
+                                </div>
+                                <div class="form-group">
+                                    <label>Teléfono:</label>
+                                    <input type="tel" id="telefonoEmpresa" value="(000) 000-0000">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Dirección:</label>
+                                <textarea id="direccionEmpresa" rows="2">Dirección de la empresa</textarea>
+                            </div>
+                            <button class="btn btn-success" onclick="guardarDatosEmpresa()">💾 GUARDAR DATOS</button>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>Dirección:</label>
-                        <textarea id="direccionEmpresa" rows="2">Dirección de la empresa</textarea>
-                    </div>
-                    <button class="btn btn-success" onclick="guardarDatosEmpresa()">💾 GUARDAR DATOS</button>
                 </div>
             </div>
             
@@ -1832,12 +2011,13 @@
         // Cargar configuración guardada al iniciar
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎯 DOM cargado, inicializando sistema...');
+            verificarSesion();
             
             // Cargar configuración guardada
             if (spreadsheetId) {
                 document.getElementById('spreadsheetId').value = spreadsheetId;
                 updateConnectionStatus('connected', 'Configuración cargada desde localStorage');
-                cargarTodosLosDatos();
+                //cargarTodosLosDatos();
             } else {
                 updateConnectionStatus('disconnected', 'Configure el sistema para comenzar');
             }
@@ -1851,6 +2031,127 @@
         });
         
         console.log('🎯 Todas las funciones definidas correctamente');
+
+        // =================== FUNCIONES DE AUTENTICACIÓN ===================
+
+        // Credenciales del sistema
+        const USUARIO_VALIDO = 'pesquera';
+        const CONTRASEÑA_VALIDA = 'gloria11';
+        
+        // Variables de sesión
+        let sesionActiva = localStorage.getItem('sesionPesquera') === 'true';
+        
+        // Función para alternar visibilidad de contraseña
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const showPasswordCheckbox = document.getElementById('showPassword');
+            
+            if (showPasswordCheckbox.checked) {
+                passwordInput.type = 'text';
+            } else {
+                passwordInput.type = 'password';
+            }
+        }
+        
+        // Función para iniciar sesión
+        function iniciarSesion(event) {
+            event.preventDefault();
+            
+            const usuario = document.getElementById('username').value.trim();
+            const contraseña = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const errorDiv = document.getElementById('loginError');
+            
+            // Deshabilitar botón y mostrar carga
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="loading"></span> VERIFICANDO...';
+            
+            // Simular verificación
+            setTimeout(() => {
+                if (usuario === USUARIO_VALIDO && contraseña === CONTRASEÑA_VALIDA) {
+                    // Login exitoso
+                    localStorage.setItem('sesionPesquera', 'true');
+                    localStorage.setItem('ultimoLogin', new Date().toISOString());
+                    
+                    mostrarSistema();
+                    
+                    // Limpiar formulario
+                    document.getElementById('username').value = '';
+                    document.getElementById('password').value = '';
+                    errorDiv.style.display = 'none';
+                    
+                } else {
+                    // Login fallido
+                    errorDiv.textContent = '❌ Usuario o contraseña incorrectos';
+                    errorDiv.style.display = 'block';
+                    
+                    // Limpiar contraseña
+                    document.getElementById('password').value = '';
+                    document.getElementById('password').focus();
+                }
+                
+                // Restaurar botón
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '🔑 INICIAR SESIÓN';
+                
+            }, 1000);
+        }
+        
+        // Función para mostrar el sistema principal
+        function mostrarSistema() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('sistemaPrincipal').style.display = 'block';
+            
+            console.log('✅ Sesión iniciada correctamente');
+            
+            // Cargar datos si ya está configurado
+            if (spreadsheetId) {
+                cargarTodosLosDatos();
+            }
+        }
+        
+        // Función para cerrar sesión
+        function cerrarSesion() {
+            if (confirm('¿Está seguro que desea cerrar sesión?')) {
+                localStorage.removeItem('sesionPesquera');
+                localStorage.removeItem('ultimoLogin');
+                
+                document.getElementById('sistemaPrincipal').style.display = 'none';
+                document.getElementById('loginScreen').style.display = 'flex';
+                
+                // Limpiar datos sensibles
+                ventaActual = [];
+                
+                console.log('🚪 Sesión cerrada correctamente');
+            }
+        }
+        
+        // Función para verificar sesión al cargar la página (8 horas de duración)
+        function verificarSesion() {
+            const sesionGuardada = localStorage.getItem('sesionPesquera') === 'true';
+            const ultimoLogin = localStorage.getItem('ultimoLogin');
+            
+            if (sesionGuardada && ultimoLogin) {
+                const tiempoLogin = new Date(ultimoLogin);
+                const ahora = new Date();
+                const diferenciaHoras = (ahora - tiempoLogin) / (1000 * 60 * 60);
+                
+                // Sesión válida por 8 horas
+                if (diferenciaHoras < 8) {
+                    mostrarSistema();
+                    return;
+                } else {
+                    // Sesión expirada
+                    localStorage.removeItem('sesionPesquera');
+                    localStorage.removeItem('ultimoLogin');
+                }
+            }
+            
+            // Mostrar login por defecto
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('sistemaPrincipal').style.display = 'none';
+        }
+        
     </script>
 </body>
 </html>
