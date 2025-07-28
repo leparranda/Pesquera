@@ -437,6 +437,149 @@
                 display: none !important;
             }
         }
+        /* =================== RESPONSIVE DESIGN =================== */
+
+        /* Tablets */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .login-box {
+                padding: 25px;
+                margin: 10px;
+            }
+            
+            .logout-btn {
+                position: static;
+                margin-bottom: 15px;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .tab {
+                padding: 15px 8px;
+                font-size: 12px;
+                min-width: 80px;
+            }
+            
+            /* Tabla responsiva */
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            table {
+                min-width: 600px;
+            }
+            
+            th, td {
+                padding: 8px;
+                font-size: 12px;
+                white-space: nowrap;
+            }
+        }
+        
+        /* Móviles */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            
+            .login-container {
+                padding: 10px;
+            }
+            
+            .login-box {
+                padding: 20px;
+                margin: 5px;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .content {
+                padding: 10px;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .tab {
+                padding: 12px 6px;
+                font-size: 10px;
+                min-width: 70px;
+                flex-shrink: 0;
+            }
+            
+            .form-group input, .form-group select, .form-group textarea {
+                padding: 14px;
+                font-size: 16px; /* Evita zoom en iOS */
+            }
+            
+            .btn {
+                padding: 14px;
+                min-height: 50px;
+                width: 100%;
+            }
+            
+            .config-section {
+                padding: 12px;
+            }
+            
+            /* Estadísticas responsivas */
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+            
+            table {
+                min-width: 500px;
+            }
+            
+            th, td {
+                padding: 6px;
+                font-size: 11px;
+            }
+        }
+        
+        /* Móviles muy pequeños */
+        @media (max-width: 360px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tab {
+                font-size: 9px;
+                min-width: 60px;
+            }
+            
+            .header h1 {
+                font-size: 1.3em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -598,20 +741,22 @@
                         </button>
                     </div>
                 </div>
-                
-                <table id="tablaInventario">
-                    <thead>
-                        <tr>
-                            <th>Tipo de Pescado</th>
-                            <th>Stock Actual (lbs)</th>
-                            <th>Precio Promedio</th>
-                            <th>Valor Total</th>
-                            <th>Última Actualización</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+
+                <div class="table-container">
+                    <table id="tablaInventario">
+                        <thead>
+                            <tr>
+                                <th>Tipo de Pescado</th>
+                                <th>Stock Actual (lbs)</th>
+                                <th>Precio Promedio</th>
+                                <th>Valor Total</th>
+                                <th>Última Actualización</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
             
             <!-- SECCIÓN PRECIOS -->
@@ -645,20 +790,22 @@
                         </button>
                     </div>
                 </div>
-                
-                <table id="tablaPrecios">
-                    <thead>
-                        <tr>
-                            <th>Tipo de Pescado</th>
-                            <th>Precio Compra</th>
-                            <th>Margen (%)</th>
-                            <th>Precio de Venta</th>
-                            <th>Ganancia por Libra</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+
+                <div class="table-container">
+                    <table id="tablaPrecios">
+                        <thead>
+                            <tr>
+                                <th>Tipo de Pescado</th>
+                                <th>Precio Compra</th>
+                                <th>Margen (%)</th>
+                                <th>Precio de Venta</th>
+                                <th>Ganancia por Libra</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
             
             <!-- SECCIÓN VENTAS -->
@@ -702,19 +849,21 @@
                         <button class="btn btn-success" onclick="agregarProductoVenta()">+ AGREGAR</button>
                     </div>
                 </div>
-                
-                <table id="tablaVentaActual">
-                    <thead>
-                        <tr>
-                            <th>Producto</th>
-                            <th>Cantidad (lbs)</th>
-                            <th>Precio Unitario</th>
-                            <th>Subtotal</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+
+                <div class="table-container">
+                    <table id="tablaVentaActual">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad (lbs)</th>
+                                <th>Precio Unitario</th>
+                                <th>Subtotal</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
                 
                 <div style="text-align: right; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
                     <div style="font-size: 1.2em;"><strong>TOTAL A PAGAR: $<span id="totalVenta">0.00</span></strong></div>
@@ -735,52 +884,55 @@
                     <span>Configure el sistema primero</span>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                    <div style="background: linear-gradient(45deg, #f8f9fa, #e9ecef); padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-                        <div style="font-size: 2em; font-weight: bold; color: #3498db;" id="totalVentasHoy">$0.00</div>
-                        <div style="color: #6c757d; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px;">VENTAS DE HOY</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalVentasHoy">$0.00</div>
+                        <div class="stat-label">VENTAS DE HOY</div>
                     </div>
-                    <div style="background: linear-gradient(45deg, #f8f9fa, #e9ecef); padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-                        <div style="font-size: 2em; font-weight: bold; color: #28a745;" id="totalVentasMes">$0.00</div>
-                        <div style="color: #6c757d; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px;">VENTAS DEL MES</div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalVentasMes">$0.00</div>
+                        <div class="stat-label">VENTAS DEL MES</div>
                     </div>
-                    <div style="background: linear-gradient(45deg, #f8f9fa, #e9ecef); padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-                        <div style="font-size: 2em; font-weight: bold; color: #e74c3c;" id="totalInventario">$0.00</div>
-                        <div style="color: #6c757d; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px;">VALOR INVENTARIO</div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalInventario">$0.00</div>
+                        <div class="stat-label">VALOR INVENTARIO</div>
                     </div>
-                    <div style="background: linear-gradient(45deg, #f8f9fa, #e9ecef); padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-                        <div style="font-size: 2em; font-weight: bold; color: #f39c12;" id="numeroFacturas">0</div>
-                        <div style="color: #6c757d; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px;">FACTURAS EMITIDAS</div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="numeroFacturas">0</div>
+                        <div class="stat-label">FACTURAS EMITIDAS</div>
                     </div>
                 </div>
                 
                 <button class="btn" onclick="cargarReportes()" id="btnCargarReportes">🔄 ACTUALIZAR REPORTES</button>
                 
                 <h3>📈 Últimas Ventas</h3>
-                <table id="tablaUltimasVentas">
-                    <thead>
-                        <tr>
-                            <th>Factura #</th>
-                            <th>Fecha</th>
-                            <th>Cliente</th>
-                            <th>Productos</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-                
+                <div class="table-container">
+                    <table id="tablaUltimasVentas">
+                        <thead>
+                            <tr>
+                                <th>Factura #</th>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Productos</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
                 <h3 style="margin-top: 30px;">⚠️ Stock Bajo (menos de 10 lbs)</h3>
-                <table id="tablaStockBajo">
-                    <thead>
-                        <tr>
-                            <th>Tipo de Pescado</th>
-                            <th>Stock Actual</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div class="table-container">
+                    <table id="tablaStockBajo">
+                        <thead>
+                            <tr>
+                                <th>Tipo de Pescado</th>
+                                <th>Stock Actual</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
