@@ -1003,7 +1003,7 @@
         };
         
         // Guardar configuración
-        window.guardarConfiguracion = function() {
+        window.guardarConfiguracion = async function() {
             const newSpreadsheetId = document.getElementById('spreadsheetId').value.trim();
             
             if (!newSpreadsheetId) {
