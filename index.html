@@ -10,7 +10,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -25,7 +25,7 @@
             min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        
+
         .login-box {
             background: white;
             padding: 40px;
@@ -35,27 +35,27 @@
             max-width: 400px;
             text-align: center;
         }
-        
+
         .login-header {
             margin-bottom: 30px;
         }
-        
+
         .login-header h1 {
             color: #2c3e50;
             font-size: 2.5em;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
-        
+
         .login-header p {
             color: #666;
             font-size: 1.1em;
         }
-        
+
         .login-form {
             margin-bottom: 20px;
         }
-        
+
         .login-form input {
             width: 100%;
             padding: 15px;
@@ -65,13 +65,13 @@
             font-size: 16px;
             transition: border-color 0.3s ease;
         }
-        
+
         .login-form input:focus {
             outline: none;
             border-color: #3498db;
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
-        
+
         .login-btn {
             width: 100%;
             background: linear-gradient(45deg, #3498db, #2980b9);
@@ -86,19 +86,19 @@
             letter-spacing: 1px;
             transition: all 0.3s ease;
         }
-        
+
         .login-btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
-        
+
         .login-btn:disabled {
             background: #95a5a6;
             cursor: not-allowed;
             transform: none;
             opacity: 0.7;
         }
-        
+
         .login-error {
             background: linear-gradient(45deg, #f8d7da, #f1b0b7);
             color: #721c24;
@@ -108,7 +108,7 @@
             border: 1px solid #f1b0b7;
             font-weight: bold;
         }
-        
+
         .show-password {
             display: flex;
             align-items: center;
@@ -118,16 +118,16 @@
             color: #666;
             cursor: pointer;
         }
-        
+
         .show-password input[type="checkbox"] {
             width: auto;
             margin: 0;
         }
-        
+
         .sistema-principal {
             display: none;
         }
-        
+
         .logout-btn {
             position: absolute;
             top: 20px;
@@ -141,12 +141,12 @@
             font-size: 14px;
             transition: all 0.3s ease;
         }
-        
+
         .logout-btn:hover {
             background: white;
             color: #2c3e50;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -155,7 +155,7 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
         }
-        
+
         .header {
             background: linear-gradient(45deg, #2c3e50, #3498db);
             color: white;
@@ -163,19 +163,19 @@
             text-align: center;
             position: relative;
         }
-        
+
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
-        
+
         .tabs {
             display: flex;
             background: #f8f9fa;
             border-bottom: 3px solid #dee2e6;
         }
-        
+
         .tab {
             flex: 1;
             padding: 20px;
@@ -187,54 +187,54 @@
             font-weight: bold;
             color: #495057;
         }
-        
+
         .tab:last-child {
             border-right: none;
         }
-        
+
         .tab.active {
             background: linear-gradient(45deg, #28a745, #20c997);
             color: white;
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
-        
+
         .tab:hover:not(.active) {
             background: #f1f3f4;
             transform: translateY(-1px);
         }
-        
+
         .content {
             padding: 30px;
             min-height: 600px;
         }
-        
+
         .section {
             display: none;
         }
-        
+
         .section.active {
             display: block;
         }
-        
+
         .form-group {
             margin-bottom: 20px;
         }
-        
+
         .form-row {
             display: flex;
             gap: 15px;
             margin-bottom: 15px;
             align-items: end;
         }
-        
+
         .form-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
             color: #2c3e50;
         }
-        
+
         .form-group input, .form-group select, .form-group textarea {
             width: 100%;
             padding: 12px;
@@ -243,13 +243,13 @@
             font-size: 14px;
             transition: border-color 0.3s ease;
         }
-        
+
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none;
             border-color: #3498db;
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
-        
+
         .btn {
             background: linear-gradient(45deg, #3498db, #2980b9);
             color: white;
@@ -263,32 +263,32 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        
+
         .btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
-        
+
         .btn:disabled {
             background: #95a5a6;
             cursor: not-allowed;
             transform: none;
             opacity: 0.7;
         }
-        
+
         .btn-success {
             background: linear-gradient(45deg, #28a745, #20c997);
         }
-        
+
         .btn-danger {
             background: linear-gradient(45deg, #dc3545, #c82333);
         }
-        
+
         .btn-warning {
             background: linear-gradient(45deg, #ffc107, #e0a800);
             color: #212529;
         }
-        
+
         .connection-status {
             display: flex;
             align-items: center;
@@ -298,25 +298,25 @@
             border-radius: 8px;
             font-weight: bold;
         }
-        
+
         .status-connected {
             background: linear-gradient(45deg, #d4edda, #c3e6cb);
             color: #155724;
             border: 1px solid #c3e6cb;
         }
-        
+
         .status-disconnected {
             background: linear-gradient(45deg, #f8d7da, #f1b0b7);
             color: #721c24;
             border: 1px solid #f1b0b7;
         }
-        
+
         .status-loading {
             background: linear-gradient(45deg, #fff3cd, #ffeaa7);
             color: #856404;
             border: 1px solid #ffeaa7;
         }
-        
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -325,13 +325,13 @@
             overflow: hidden;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-        
+
         th, td {
             padding: 15px;
             text-align: left;
             border-bottom: 1px solid #dee2e6;
         }
-        
+
         th {
             background: linear-gradient(45deg, #343a40, #495057);
             color: white;
@@ -339,41 +339,41 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        
+
         tr:nth-child(even) {
             background-color: #f8f9fa;
         }
-        
+
         tr:hover {
             background-color: #e3f2fd;
             transition: background-color 0.3s ease;
         }
-        
+
         .alert {
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
             font-weight: bold;
         }
-        
+
         .alert-success {
             background: linear-gradient(45deg, #d4edda, #c3e6cb);
             color: #155724;
             border: 1px solid #c3e6cb;
         }
-        
+
         .alert-warning {
             background: linear-gradient(45deg, #fff3cd, #ffeaa7);
             color: #856404;
             border: 1px solid #ffeaa7;
         }
-        
+
         .alert-danger {
             background: linear-gradient(45deg, #f8d7da, #f1b0b7);
             color: #721c24;
             border: 1px solid #f1b0b7;
         }
-        
+
         .loading {
             display: inline-block;
             width: 20px;
@@ -383,12 +383,12 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
+
         .config-section {
             background: #f8f9fa;
             padding: 25px;
@@ -396,7 +396,7 @@
             margin-bottom: 25px;
             border: 2px solid #e9ecef;
         }
-        
+
         .config-section h3 {
             color: #2c3e50;
             margin-bottom: 15px;
@@ -404,7 +404,7 @@
             align-items: center;
             gap: 10px;
         }
-        
+
         .factura {
             background: white;
             padding: 30px;
@@ -413,11 +413,11 @@
             margin-top: 20px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-        
+
         .no-print {
             display: block;
         }
-        
+
         @media print {
             body * {
                 visibility: hidden;
@@ -489,109 +489,109 @@
             body {
                 padding: 10px;
             }
-            
+
             .login-box {
                 padding: 25px;
                 margin: 10px;
             }
-            
+
             .logout-btn {
                 position: static;
                 margin-bottom: 15px;
                 width: 100%;
                 text-align: center;
             }
-            
+
             .header h1 {
                 font-size: 1.8em;
             }
-            
+
             .content {
                 padding: 15px;
             }
-            
+
             .form-row {
                 flex-direction: column;
                 gap: 0;
             }
-            
+
             .tab {
                 padding: 15px 8px;
                 font-size: 12px;
                 min-width: 80px;
             }
-            
+
             /* Tabla responsiva */
             .table-container {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
             }
-            
+
             table {
                 min-width: 600px;
             }
-            
+
             th, td {
                 padding: 8px;
                 font-size: 12px;
                 white-space: nowrap;
             }
         }
-        
+
         /* Móviles */
         @media (max-width: 480px) {
             body {
                 padding: 5px;
             }
-            
+
             .login-container {
                 padding: 10px;
             }
-            
+
             .login-box {
                 padding: 20px;
                 margin: 5px;
             }
-            
+
             .header {
                 padding: 15px;
             }
-            
+
             .header h1 {
                 font-size: 1.5em;
             }
-            
+
             .content {
                 padding: 10px;
             }
-            
+
             .tabs {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
             }
-            
+
             .tab {
                 padding: 12px 6px;
                 font-size: 10px;
                 min-width: 70px;
                 flex-shrink: 0;
             }
-            
+
             .form-group input, .form-group select, .form-group textarea {
                 padding: 14px;
                 font-size: 16px; /* Evita zoom en iOS */
             }
-            
+
             .btn {
                 padding: 14px;
                 min-height: 50px;
                 width: 100%;
             }
-            
+
             .config-section {
                 padding: 12px;
             }
-            
+
             /* Estadísticas responsivas */
             .stats-grid {
                 display: grid;
@@ -599,28 +599,28 @@
                 gap: 10px;
                 margin-bottom: 20px;
             }
-            
+
             table {
                 min-width: 500px;
             }
-            
+
             th, td {
                 padding: 6px;
                 font-size: 11px;
             }
         }
-        
+
         /* Móviles muy pequeños */
         @media (max-width: 360px) {
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .tab {
                 font-size: 9px;
                 min-width: 60px;
             }
-            
+
             .header h1 {
                 font-size: 1.3em;
             }
@@ -636,9 +636,9 @@
                     <h2>SISTEMA PESQUERA</h2>
                     <p>Acceso al Sistema de Control</p>
                 </div>
-                
+
                 <div id="loginError" class="login-error" style="display: none;"></div>
-                
+
                 <form class="login-form" onsubmit="iniciarSesion(event)">
                     <input 
                         type="text" 
@@ -654,24 +654,24 @@
                         required
                         autocomplete="current-password"
                     >
-                    
+
                     <label class="show-password" onclick="togglePassword()">
                         <input type="checkbox" id="showPassword">
                         <span>Mostrar contraseña</span>
                     </label>
-                    
+
                     <button type="submit" class="login-btn" id="loginBtn">
                         🔑 INICIAR SESIÓN
                     </button>
                 </form>
-                
+
                 <div style="font-size: 12px; color: #999; margin-top: 20px;">
                     <p>🔐 Acceso seguro al sistema</p>
                     <p>© 2025 Sistema Pesquera</p>
                 </div>
             </div>
         </div>
-    
+
         <!-- SISTEMA PRINCIPAL -->
         <div id="sistemaPrincipal" class="sistema-principal">
             <div class="container">
@@ -682,7 +682,7 @@
                     <h1>🐟 SISTEMA PESQUERA</h1>
                     <p>Control de Inventario y Facturación</p>
                 </div>
-                
+
                 <div class="tabs">
                     <div class="tab active" onclick="showSection('configuracion')">⚙️ CONFIGURACIÓN</div>
                     <div class="tab" onclick="showSection('inventario')">📦 INVENTARIO</div>
@@ -690,17 +690,17 @@
                     <div class="tab" onclick="showSection('ventas')">🧾 VENTAS</div>
                     <div class="tab" onclick="showSection('reportes')">📊 REPORTES</div>
                 </div>
-                
+
                 <div class="content">
                     <!-- SECCIÓN CONFIGURACIÓN -->
                     <div id="configuracion" class="section active">
                         <h2>⚙️ Configuración del Sistema</h2>
-                        
+
                         <div class="connection-status" id="connectionStatus">
                             <span>🔧</span>
                             <span>Configure el sistema para comenzar</span>
                         </div>
-                        
+
                         <div class="config-section">
                             <h3>📋 Configuración de Google Sheets</h3>
                             <div class="form-group">
@@ -713,7 +713,7 @@
                             <button class="btn btn-success" onclick="probarConexion()">🔌 PROBAR CONEXIÓN</button>
                             <button class="btn btn-success" onclick="guardarConfiguracion()">💾 GUARDAR CONFIGURACIÓN</button>
                         </div>
-                        
+
                         <div class="config-section">
                             <h3>🏢 Datos de la Empresa</h3>
                             <div class="form-row">
@@ -733,16 +733,16 @@
                             <button class="btn btn-success" onclick="guardarDatosEmpresa()">💾 GUARDAR DATOS</button>
                         </div>
                     </div>
-            
+
             <!-- SECCIÓN INVENTARIO -->
             <div id="inventario" class="section">
                 <h2>📦 Control de Inventario</h2>
-                
+
                 <div class="connection-status" id="inventarioStatus">
                     <span>🔧</span>
                     <span>Configure el sistema primero</span>
                 </div>
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tipo de Pescado:</label>
@@ -777,7 +777,7 @@
                     </div>
                     <div class="form-group">
                         <label>Precio de Compra (por libra):</label>
-                        <input type="number" id="precioCompra" step="50" min="0" placeholder="Ej: 12000">
+                        <input type="number" id="precioCompra" step="500" min="500" placeholder="Ej: 12000">
                     </div>
                     <div class="form-group">
                         <label>&nbsp;</label>
@@ -803,16 +803,16 @@
                     </table>
                 </div>
             </div>
-            
+
             <!-- SECCIÓN PRECIOS -->
             <div id="precios" class="section">
                 <h2>💰 Configuración de Precios de Venta</h2>
-                
+
                 <div class="connection-status" id="preciosStatus">
                     <span>🔧</span>
                     <span>Configure el sistema primero</span>
                 </div>
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tipo de Pescado:</label>
@@ -826,7 +826,7 @@
                     </div>
                     <div class="form-group">
                         <label>Precio de Venta (por libra):</label>
-                        <input type="number" id="precioVentaManual" step="50" min="0" placeholder="Ingrese precio completo">
+                        <input type="number" id="precioVentaManual" step="0.01" min="0" placeholder="O ingrese manualmente">
                     </div>
                     <div class="form-group">
                         <label>&nbsp;</label>
@@ -852,16 +852,16 @@
                     </table>
                 </div>
             </div>
-            
+
             <!-- SECCIÓN VENTAS -->
             <div id="ventas" class="section">
                 <h2>🧾 Registro de Ventas</h2>
-                
+
                 <div class="connection-status" id="ventasStatus">
                     <span>🔧</span>
                     <span>Configure el sistema primero</span>
                 </div>
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>Cliente:</label>
@@ -872,7 +872,7 @@
                         <input type="tel" id="telefonoCliente" placeholder="Teléfono (opcional)">
                     </div>
                 </div>
-                
+
                 <h3>Productos a Vender:</h3>
                 <div class="form-row">
                     <div class="form-group">
@@ -887,7 +887,7 @@
                     </div>
                     <div class="form-group">
                         <label>Precio por Libra:</label>
-                        <input type="number" id="precioVentaProducto" step="50" min="0" readonly>
+                        <input type="number" id="precioVentaProducto" step="0.01" min="0" readonly>
                     </div>
                     <div class="form-group">
                         <label>&nbsp;</label>
@@ -909,26 +909,26 @@
                         <tbody></tbody>
                     </table>
                 </div>
-                
+
                 <div style="text-align: right; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
                     <div style="font-size: 1.2em;"><strong>TOTAL A PAGAR: $<span id="totalVenta">0.00</span></strong></div>
                     <button class="btn btn-warning" onclick="generarFactura()" id="btnGenerarFactura" style="margin-top: 15px;">
                         🖨️ GENERAR FACTURA
                     </button>
                 </div>
-                
+
                 <div id="facturaGenerada"></div>
             </div>
-            
+
             <!-- SECCIÓN REPORTES -->
             <div id="reportes" class="section">
                 <h2>📊 Reportes y Estadísticas</h2>
-                
+
                 <div class="connection-status" id="reportesStatus">
                     <span>🔧</span>
                     <span>Configure el sistema primero</span>
                 </div>
-                
+
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-value" id="totalVentasHoy">$0.00</div>
@@ -947,9 +947,9 @@
                         <div class="stat-label">FACTURAS EMITIDAS</div>
                     </div>
                 </div>
-                
+
                 <button class="btn" onclick="cargarReportes()" id="btnCargarReportes">🔄 ACTUALIZAR REPORTES</button>
-                
+
                 <h3>📈 Últimas Ventas</h3>
                 <div class="table-container">
                     <table id="tablaUltimasVentas">
@@ -981,30 +981,30 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         // =================== CONFIGURACIÓN INICIAL ===================
         console.log('🚀 Iniciando Sistema Pesquera...');
-        
+
         // Configuración de la API
         const API_KEY = 'AIzaSyBHyIgNRB_Td-Zq9p2FwxSDruIsz0EOvlk';
         const SHEETS_API_BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksZdobQBT-nDgBQk4tDHgdjJmCN83wW3pAi7Qc0yPbKIiRNEqYXxhAL8Y0HFCbOlk/exec';
-        
+
         // Variables globales
         let spreadsheetId = localStorage.getItem('spreadsheetId') || '';
         let isConfigured = false;
         let ventaActual = [];
         let inventarioData = {};
         let preciosData = {};
-        
+
         // Configuración de empresa
         let config = {
             nombreEmpresa: localStorage.getItem('nombreEmpresa') || 'Pesquera del Mar',
             direccionEmpresa: localStorage.getItem('direccionEmpresa') || 'Dirección de la empresa',
             telefonoEmpresa: localStorage.getItem('telefonoEmpresa') || '(000) 000-0000'
         };
-        
+
         console.log('✅ Variables inicializadas correctamente');
 
         // =================== FUNCIONES DE FORMATO PARA PESOS COLOMBIANOS ===================
@@ -1014,30 +1014,30 @@
             if (isNaN(numero) || numero === null || numero === undefined) {
                 return '$0';
             }
-            
+
             // Redondear a número entero para pesos colombianos
             const numeroRedondeado = Math.round(numero);
-            
+
             // Formatear con separadores de miles (puntos)
             return '$' + numeroRedondeado.toLocaleString('es-CO');
         }
-        
+
         // Función para formatear números sin símbolo de moneda
         function formatearNumero(numero) {
             if (isNaN(numero) || numero === null || numero === undefined) {
                 return '0';
             }
-            
+
             const numeroRedondeado = Math.round(numero);
             return numeroRedondeado.toLocaleString('es-CO');
         }
 
-        
+
         function llamarAPIConJSONP(data = null) {
           return new Promise((resolve, reject) => {
             const callbackName = 'jsonp_callback_' + Math.random().toString(36).substr(2, 9);
             const script = document.createElement('script');
-            
+
             // Crear función callback global
             window[callbackName] = function(response) {
               // Limpiar
@@ -1045,7 +1045,7 @@
               if (document.body.contains(script)) {
                 document.body.removeChild(script);
               }
-              
+
               // Resolver o rechazar según la respuesta
               if (response.error) {
                 reject(new Error(response.error));
@@ -1053,16 +1053,16 @@
                 resolve(response);
               }
             };
-            
+
             // Configurar parámetros
             const params = new URLSearchParams({
               callback: callbackName
             });
-            
+
             if (data) {
               params.append('data', JSON.stringify(data));
             }
-            
+
             // Configurar script
             script.src = `${APPS_SCRIPT_URL}?${params}`;
             script.onerror = () => {
@@ -1072,7 +1072,7 @@
               }
               reject(new Error('Error en la solicitud JSONP'));
             };
-            
+
             // Timeout de 30 segundos
             setTimeout(() => {
               if (window[callbackName]) {
@@ -1083,30 +1083,30 @@
                 reject(new Error('Timeout en la solicitud JSONP'));
               }
             }, 30000);
-            
+
             document.body.appendChild(script);
           });
         }
-        
+
         // =================== FUNCIONES DE UTILIDAD ===================
-        
+
         // Función para mostrar alertas
         function mostrarAlerta(mensaje, tipo = 'info') {
             // Eliminar alertas existentes
             const alertasExistentes = document.querySelectorAll('.alert');
             alertasExistentes.forEach(alerta => alerta.remove());
-            
+
             // Crear nueva alerta
             const alerta = document.createElement('div');
             alerta.className = `alert alert-${tipo}`;
             alerta.textContent = mensaje;
-            
+
             // Insertar al principio del contenido actual
             const seccionActiva = document.querySelector('.section.active');
             if (seccionActiva) {
                 seccionActiva.insertBefore(alerta, seccionActiva.firstChild);
             }
-            
+
             // Auto-eliminar después de 5 segundos
             setTimeout(() => {
                 if (alerta.parentNode) {
@@ -1114,7 +1114,7 @@
                 }
             }, 5000);
         }
-        
+
         // Función para actualizar el estado de conexión
         function updateConnectionStatus(estado, mensaje) {
             const statusElements = [
@@ -1124,44 +1124,44 @@
                 'ventasStatus',
                 'reportesStatus'
             ];
-            
+
             statusElements.forEach(elementId => {
                 const element = document.getElementById(elementId);
                 if (element) {
                     element.className = `connection-status status-${estado}`;
-                    
+
                     let icono = '🔧';
                     if (estado === 'connected') icono = '✅';
                     else if (estado === 'loading') icono = '⏳';
                     else if (estado === 'disconnected') icono = '❌';
-                    
+
                     element.innerHTML = `<span>${icono}</span><span>${mensaje}</span>`;
                 }
             });
         }
-        
+
         // Función para cambiar secciones
         window.showSection = function(seccionId) {
             // Ocultar todas las secciones
             const secciones = document.querySelectorAll('.section');
             secciones.forEach(seccion => seccion.classList.remove('active'));
-            
+
             // Desactivar todas las pestañas
             const tabs = document.querySelectorAll('.tab');
             tabs.forEach(tab => tab.classList.remove('active'));
-            
+
             // Activar la sección seleccionada
             const seccionSeleccionada = document.getElementById(seccionId);
             if (seccionSeleccionada) {
                 seccionSeleccionada.classList.add('active');
             }
-            
+
             // Activar la pestaña correspondiente
             const tabSeleccionada = event.target;
             if (tabSeleccionada) {
                 tabSeleccionada.classList.add('active');
             }
-            
+
             // Cargar datos específicos de la sección
             if (seccionId === 'precios' && isConfigured) {
                 cargarInventarioParaPrecios();
@@ -1170,75 +1170,75 @@
                 cargarInventarioParaVentas();
             }
         };
-        
+
         // =================== FUNCIONES DE API ===================
-        
+
         // Funciones de la API de Google Sheets
         async function leerHoja(nombreHoja) {
             if (!spreadsheetId) {
                 throw new Error('Configure el ID del Google Sheet primero');
             }
-            
+
             const range = `${nombreHoja}!A:Z`;
             const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${range}?key=${API_KEY}`;
-            
+
             const response = await fetch(url);
-            
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(`Error al leer ${nombreHoja}: ${errorData.error.message}`);
             }
-            
+
             const data = await response.json();
             return data.values || [];
         }
-        
+
         async function escribirHoja(nombreHoja, datos) {
           if (!spreadsheetId) {
             throw new Error('Configure el ID del Google Sheet primero');
           }
-          
+
           const requestData = {
             action: 'escribirHoja',
             spreadsheetId: spreadsheetId,
             nombreHoja: nombreHoja,
             datos: datos
           };
-          
+
           return await llamarAPIConJSONP(requestData);
         }
-   
+
         async function agregarFilaHoja(nombreHoja, fila) {
           if (!spreadsheetId) {
             throw new Error('Configure el ID del Google Sheet primero');
           }
-          
+
           const requestData = {
             action: 'agregarFila',
             spreadsheetId: spreadsheetId,
             nombreHoja: nombreHoja,
             fila: fila
           };
-          
+
           return await llamarAPIConJSONP(requestData);
         }
 
-        
+
         // =================== FUNCIONES PRINCIPALES ===================
-        
+
         // REEMPLAZA tu función window.pruebaBasica con esta versión simplificada
         window.pruebaBasica = async function() {
           console.log('🧪 Iniciando prueba básica del sistema...');
           mostrarAlerta('🧪 Probando solo Google Apps Script con JSONP...', 'warning');
-          
+
           try {
             console.log('🚀 Probando Apps Script con JSONP...');
             console.log('📍 URL que se va a probar:', APPS_SCRIPT_URL);
-            
+
             // Solo probar JSONP - sin Google Sheets API por ahora
             const appsScriptResponse = await llamarAPIConJSONP();
             console.log('✅ Apps Script respuesta:', appsScriptResponse);
-            
+
             if (appsScriptResponse.success || appsScriptResponse.message) {
               mostrarAlerta('✅ Apps Script con JSONP: FUNCIONA PERFECTAMENTE', 'success');
               console.log('🎉 El sistema está listo para usar');
@@ -1254,14 +1254,14 @@
               timestamp: new Date().toISOString()
             });
             mostrarAlerta(`❌ Error en Apps Script: ${appsScriptError.message}`, 'danger');
-            
+
             // Mostrar ayuda específica
             if (appsScriptError.message.includes('Error al cargar script JSONP')) {
               mostrarAlerta('💡 SOLUCIÓN: Verifica que hayas hecho un nuevo deployment del Apps Script y copiado la URL correcta', 'warning');
             }
           }
         };
-        
+
         // TAMBIÉN agrega esta función para probar la URL directamente
         window.probarURLDirecta = function() {
           const url = APPS_SCRIPT_URL;
@@ -1269,48 +1269,48 @@
           mostrarAlerta('📝 Abriendo Apps Script en nueva pestaña. Deberías ver un JSON con el mensaje de funcionamiento.', 'info');
           window.open(url, '_blank');
         };
-        
+
         // Probar conexión con Google Sheets
         window.probarConexion = async function() {
             console.log('🔌 Iniciando prueba de conexión...');
-            
+
             const idSheet = document.getElementById('spreadsheetId').value.trim();
-            
+
             if (!idSheet) {
                 mostrarAlerta('⚠️ Ingrese el ID del Google Sheet', 'warning');
                 return;
             }
-            
+
             updateConnectionStatus('loading', 'Probando conexión...');
-            
+
             try {
                 const url = `${SHEETS_API_BASE}/${idSheet}?key=${API_KEY}`;
                 const response = await fetch(url);
-                
+
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.error.message);
                 }
-                
+
                 const data = await response.json();
                 updateConnectionStatus('connected', `Conectado a: ${data.properties.title}`);
                 mostrarAlerta('✅ Conexión exitosa con Google Sheets', 'success');
-                
+
                 // Verificar hojas necesarias
                 const hojasExistentes = data.sheets.map(sheet => sheet.properties.title);
                 const hojasRequeridas = ['Inventario', 'Precios', 'Ventas', 'Configuracion'];
                 const hojasFaltantes = hojasRequeridas.filter(hoja => !hojasExistentes.includes(hoja));
-                
+
                 if (hojasFaltantes.length > 0) {
                     mostrarAlerta(`⚠️ Faltan las siguientes hojas: ${hojasFaltantes.join(', ')}. Use el botón "Crear Estructura".`, 'warning');
                 } else {
                     mostrarAlerta('🎉 Todas las hojas necesarias están disponibles', 'success');
-                    
+
                     // *** AQUÍ ESTÁ LA CORRECCIÓN PRINCIPAL ***
                     // Actualizar el spreadsheetId temporalmente para poder cargar datos
                     const spreadsheetIdAnterior = spreadsheetId;
                     spreadsheetId = idSheet;
-                    
+
                     try {
                         // Cargar datos existentes de las hojas
                         console.log('📊 Cargando datos existentes...');
@@ -1322,23 +1322,23 @@
                         spreadsheetId = spreadsheetIdAnterior; // Restaurar ID anterior si falla
                     }
                 }
-                
+
             } catch (error) {
                 updateConnectionStatus('disconnected', `Error: ${error.message}`);
                 mostrarAlerta(`❌ Error de conexión: ${error.message}`, 'danger');
             }
         };
-        
+
         // Crear estructura de hojas
         window.crearEstructuraHojas = async function() {
             if (!spreadsheetId) {
                 mostrarAlerta('⚠️ Configure el ID del Google Sheet primero', 'warning');
                 return;
             }
-            
+
             try {
                 updateConnectionStatus('loading', 'Creando estructura...');
-                
+
                 const estructuras = {
                     'Inventario': [
                         ['Tipo', 'Stock', 'PrecioPromedio', 'ValorTotal', 'UltimaActualizacion']
@@ -1354,7 +1354,7 @@
                         [1, config.nombreEmpresa, config.direccionEmpresa, config.telefonoEmpresa]
                     ]
                 };
-                
+
                 let hojasCreadas = 0;
                 for (const [nombreHoja, datos] of Object.entries(estructuras)) {
                     try {
@@ -1364,33 +1364,33 @@
                         mostrarAlerta(`Error al crear hoja ${nombreHoja}: ${error.message}`, 'danger');
                     }
                 }
-                
+
                 if (hojasCreadas === Object.keys(estructuras).length) {
                     updateConnectionStatus('connected', 'Estructura creada correctamente');
                     mostrarAlerta('🎉 Estructura de hojas creada exitosamente', 'success');
                 }
-                
+
             } catch (error) {
                 updateConnectionStatus('disconnected', `Error: ${error.message}`);
                 mostrarAlerta(`❌ Error al crear estructura: ${error.message}`, 'danger');
             }
         };
-        
+
         // Guardar configuración
         window.guardarConfiguracion = async function() {
             const newSpreadsheetId = document.getElementById('spreadsheetId').value.trim();
-            
+
             if (!newSpreadsheetId) {
                 mostrarAlerta('⚠️ Ingrese el ID del Google Sheet', 'warning');
                 return;
             }
-            
+
             spreadsheetId = newSpreadsheetId;
             localStorage.setItem('spreadsheetId', spreadsheetId);
             isConfigured = true;
-            
+
             mostrarAlerta('💾 Configuración guardada correctamente', 'success');
-            
+
             // Cargar datos después de guardar configuración
             try {
                 await cargarTodosLosDatos();
@@ -1400,54 +1400,54 @@
                 mostrarAlerta(`⚠️ Configuración guardada pero error al cargar datos: ${error.message}`, 'warning');
             }
         };
-        
+
         // Guardar datos de empresa
         window.guardarDatosEmpresa = function() {
             config.nombreEmpresa = document.getElementById('nombreEmpresa').value;
             config.direccionEmpresa = document.getElementById('direccionEmpresa').value;
             config.telefonoEmpresa = document.getElementById('telefonoEmpresa').value;
-            
+
             localStorage.setItem('nombreEmpresa', config.nombreEmpresa);
             localStorage.setItem('direccionEmpresa', config.direccionEmpresa);
             localStorage.setItem('telefonoEmpresa', config.telefonoEmpresa);
-            
+
             mostrarAlerta('💾 Datos de empresa guardados', 'success');
         };
-        
+
         // =================== FUNCIONES DE DATOS ===================
-        
+
         // Cargar todos los datos
         async function cargarTodosLosDatos() {
             if (!spreadsheetId) {
                 throw new Error('Configure el ID del Google Sheet primero');
             }
-            
+
             try {
                 updateConnectionStatus('loading', 'Cargando datos...');
-                
+
                 console.log('📊 Cargando inventario...');
                 await cargarInventario();
-                
+
                 console.log('💰 Cargando precios...');
                 await cargarPrecios();
-                
+
                 updateConnectionStatus('connected', 'Datos cargados correctamente');
                 isConfigured = true;
-                
+
                 console.log('✅ Todos los datos cargados exitosamente');
-                
+
             } catch (error) {
                 console.error('❌ Error al cargar datos:', error);
                 updateConnectionStatus('disconnected', `Error: ${error.message}`);
                 throw error; // Re-lanzar el error para que lo maneje quien llama
             }
         }
-        
+
         // Cargar inventario
         async function cargarInventario() {
             try {
                 const datos = await leerHoja('Inventario');
-                
+
                 inventarioData = {};
                 if (datos.length > 1) {
                     for (let i = 1; i < datos.length; i++) {
@@ -1462,19 +1462,19 @@
                         }
                     }
                 }
-                
+
                 actualizarTablaInventario();
             } catch (error) {
                 console.error('Error al cargar inventario:', error);
                 throw error;
             }
         }
-        
+
         // Cargar precios
         async function cargarPrecios() {
             try {
                 const datos = await leerHoja('Precios');
-                
+
                 preciosData = {};
                 if (datos.length > 1) {
                     for (let i = 1; i < datos.length; i++) {
@@ -1489,7 +1489,7 @@
                         }
                     }
                 }
-                
+
                 actualizarTablaPrecios();
             } catch (error) {
                 console.error('Error al cargar precios:', error);
@@ -1502,59 +1502,59 @@
                 const inventarioData = await leerHoja('Inventario');
                 const preciosData = await leerHoja('Precios');
                 const ventasData = await leerHoja('Ventas');
-                
+
                 const tieneInventario = inventarioData.length > 1;
                 const tienePrecios = preciosData.length > 1;
                 const tieneVentas = ventasData.length > 1;
-                
+
                 console.log('📊 Estado de los datos:', {
                     inventario: tieneInventario ? `${inventarioData.length - 1} items` : 'vacío',
                     precios: tienePrecios ? `${preciosData.length - 1} items` : 'vacío',
                     ventas: tieneVentas ? `${ventasData.length - 1} items` : 'vacío'
                 });
-                
+
                 return { tieneInventario, tienePrecios, tieneVentas };
             } catch (error) {
                 console.error('Error al verificar datos existentes:', error);
                 return { tieneInventario: false, tienePrecios: false, tieneVentas: false };
             }
         }
-        
+
         // =================== FUNCIONES DE INVENTARIO ===================
-        
+
         // Agregar inventario
         window.agregarInventario = async function() {
             if (!isConfigured) {
                 mostrarAlerta('Configure el sistema primero', 'warning');
                 return;
             }
-            
+
             const tipo = document.getElementById('tipoPescadoInventario').value;
             const libras = parseFloat(document.getElementById('librasRecibidas').value);
             const precio = parseFloat(document.getElementById('precioCompra').value);
-            
+
             if (!tipo || !libras || !precio) {
                 mostrarAlerta('Complete todos los campos', 'warning');
                 return;
             }
-            
+
             const btnAgregar = document.getElementById('btnAgregarInventario');
             btnAgregar.disabled = true;
             btnAgregar.innerHTML = '<span class="loading"></span> AGREGANDO...';
-            
+
             try {
                 // Calcular nuevo inventario
                 if (!inventarioData[tipo]) {
                     inventarioData[tipo] = { stock: 0, precioPromedio: 0, valorTotal: 0 };
                 }
-                
+
                 const valorAnterior = inventarioData[tipo].valorTotal;
-                
+
                 inventarioData[tipo].stock += libras;
                 inventarioData[tipo].valorTotal = valorAnterior + (libras * precio);
                 inventarioData[tipo].precioPromedio = inventarioData[tipo].valorTotal / inventarioData[tipo].stock;
                 inventarioData[tipo].ultimaActualizacion = new Date().toLocaleDateString();
-                
+
                 // Preparar datos para escribir
                 const datosInventario = [
                     ['Tipo', 'Stock', 'PrecioPromedio', 'ValorTotal', 'UltimaActualizacion'],
@@ -1566,17 +1566,17 @@
                         datos.ultimaActualizacion
                     ])
                 ];
-                
+
                 await escribirHoja('Inventario', datosInventario);
-                
+
                 // Limpiar formulario
                 document.getElementById('tipoPescadoInventario').value = '';
                 document.getElementById('librasRecibidas').value = '';
                 document.getElementById('precioCompra').value = '';
-                
+
                 actualizarTablaInventario();
                 mostrarAlerta('Inventario actualizado correctamente', 'success');
-                
+
             } catch (error) {
                 mostrarAlerta(`Error al actualizar inventario: ${error.message}`, 'danger');
             } finally {
@@ -1584,18 +1584,18 @@
                 btnAgregar.innerHTML = '+ AGREGAR AL INVENTARIO';
             }
         };
-        
+
         // Actualizar tabla de inventario
         function actualizarTablaInventario() {
             const tbody = document.querySelector('#tablaInventario tbody');
             tbody.innerHTML = '';
-            
+
             for (const [tipo, datos] of Object.entries(inventarioData)) {
                 const fila = tbody.insertRow();
-                
+
                 let estado = '✅ Disponible';
                 let claseEstado = '';
-                
+
                 if (datos.stock === 0) {
                     estado = '🔴 Agotado';
                     claseEstado = 'style="background-color: #f8d7da;"';
@@ -1606,7 +1606,7 @@
                     estado = '🟡 Bajo';
                     claseEstado = 'style="background-color: #fff3cd;"';
                 }
-                
+
                 fila.innerHTML = `
                     <td>${tipo}</td>
                     <td>${datos.stock.toFixed(1)}</td>
@@ -1617,48 +1617,48 @@
                 `;
             }
         }
-        
+
         // =================== FUNCIONES DE PRECIOS ===================
-        
+
         // Cargar inventario para precios
         function cargarInventarioParaPrecios() {
             const select = document.getElementById('tipoPescadoPrecio');
             select.innerHTML = '<option value="">Seleccionar...</option>';
-            
+
             for (const tipo in inventarioData) {
                 select.innerHTML += `<option value="${tipo}">${tipo}</option>`;
             }
         }
-        
+
         // Configurar precio
         window.configurarPrecio = async function() {
             if (!isConfigured) {
                 mostrarAlerta('Configure el sistema primero', 'warning');
                 return;
             }
-            
+
             const tipo = document.getElementById('tipoPescadoPrecio').value;
             const margen = parseFloat(document.getElementById('margenGanancia').value);
             const precioManual = parseFloat(document.getElementById('precioVentaManual').value);
-            
+
             if (!tipo) {
                 mostrarAlerta('Seleccione un tipo de pescado', 'warning');
                 return;
             }
-            
+
             if (!inventarioData[tipo]) {
                 mostrarAlerta('Este pescado no existe en el inventario', 'warning');
                 return;
             }
-            
+
             const btnConfigurar = document.getElementById('btnConfigurarPrecio');
             btnConfigurar.disabled = true;
             btnConfigurar.innerHTML = '<span class="loading"></span> GUARDANDO...';
-            
+
             try {
                 const precioCompra = inventarioData[tipo].precioPromedio;
                 let precioVenta;
-                
+
                 if (precioManual) {
                     precioVenta = precioManual;
                 } else if (margen) {
@@ -1667,14 +1667,14 @@
                     mostrarAlerta('Ingrese un margen o precio manual', 'warning');
                     return;
                 }
-                
+
                 preciosData[tipo] = {
                     precioCompra: precioCompra,
                     margen: margen || ((precioVenta - precioCompra) / precioCompra * 100),
                     precioVenta: precioVenta,
                     ganancia: precioVenta - precioCompra
                 };
-                
+
                 // Preparar datos para escribir
                 const datosPrecios = [
                     ['Tipo', 'PrecioCompra', 'Margen', 'PrecioVenta', 'Ganancia'],
@@ -1686,17 +1686,17 @@
                         datos.ganancia
                     ])
                 ];
-                
+
                 await escribirHoja('Precios', datosPrecios);
-                
+
                 // Limpiar formulario
                 document.getElementById('tipoPescadoPrecio').value = '';
                 document.getElementById('margenGanancia').value = '30';
                 document.getElementById('precioVentaManual').value = '';
-                
+
                 actualizarTablaPrecios();
                 mostrarAlerta('Precio configurado correctamente', 'success');
-                
+
             } catch (error) {
                 mostrarAlerta(`Error al configurar precio: ${error.message}`, 'danger');
             } finally {
@@ -1704,12 +1704,12 @@
                 btnConfigurar.innerHTML = '💾 GUARDAR PRECIO';
             }
         };
-        
+
         // Actualizar tabla de precios
         function actualizarTablaPrecios() {
             const tbody = document.querySelector('#tablaPrecios tbody');
             tbody.innerHTML = '';
-            
+
             for (const [tipo, datos] of Object.entries(preciosData)) {
                 const fila = tbody.insertRow();
                 fila.innerHTML = `
@@ -1722,16 +1722,16 @@
                 `;
             }
         }
-        
+
         // Eliminar precio
         window.eliminarPrecio = async function(tipo) {
             if (!confirm(`¿Está seguro de eliminar el precio de ${tipo}?`)) {
                 return;
             }
-            
+
             try {
                 delete preciosData[tipo];
-                
+
                 const datosPrecios = [
                     ['Tipo', 'PrecioCompra', 'Margen', 'PrecioVenta', 'Ganancia'],
                     ...Object.entries(preciosData).map(([tipoPez, datos]) => [
@@ -1742,82 +1742,82 @@
                         datos.ganancia
                     ])
                 ];
-                
+
                 await escribirHoja('Precios', datosPrecios);
                 actualizarTablaPrecios();
                 mostrarAlerta('Precio eliminado correctamente', 'success');
-                
+
             } catch (error) {
                 mostrarAlerta(`Error al eliminar precio: ${error.message}`, 'danger');
             }
         };
-        
+
         // =================== FUNCIONES DE VENTAS ===================
-        
+
         // Cargar inventario para ventas
         function cargarInventarioParaVentas() {
             const select = document.getElementById('tipoPescadoVenta');
             select.innerHTML = '<option value="">Seleccionar...</option>';
-            
+
             for (const tipo in inventarioData) {
                 if (inventarioData[tipo].stock > 0 && preciosData[tipo]) {
                     select.innerHTML += `<option value="${tipo}">${tipo} (${inventarioData[tipo].stock.toFixed(1)} lbs disponibles)</option>`;
                 }
             }
-            
+
             // Event listener para cargar precio automáticamente
             select.addEventListener('change', function() {
                 const tipoSeleccionado = this.value;
                 const precioInput = document.getElementById('precioVentaProducto');
-                
+
                 if (tipoSeleccionado && preciosData[tipoSeleccionado]) {
-                    precioInput.value = Math.round(preciosData[tipoSeleccionado].precioVenta);
+                    precioInput.value = preciosData[tipoSeleccionado].precioVenta.toFixed(2);
                 } else {
                     precioInput.value = '';
                 }
             });
         }
-        
+
         // Agregar producto a venta
         window.agregarProductoVenta = function() {
             const tipo = document.getElementById('tipoPescadoVenta').value;
             const cantidad = parseFloat(document.getElementById('cantidadVenta').value);
             const precio = parseFloat(document.getElementById('precioVentaProducto').value);
-            
+
             if (!tipo || !cantidad || !precio) {
                 mostrarAlerta('Complete todos los campos del producto', 'warning');
                 return;
             }
-            
+
             if (cantidad > inventarioData[tipo].stock) {
                 mostrarAlerta(`Solo hay ${inventarioData[tipo].stock.toFixed(1)} libras disponibles de ${tipo}`, 'warning');
                 return;
             }
-            
+
             const subtotal = cantidad * precio;
-            
+
             ventaActual.push({
                 tipo: tipo,
                 cantidad: cantidad,
                 precio: precio,
                 subtotal: subtotal
             });
-            
+
             // Limpiar campos
             document.getElementById('tipoPescadoVenta').value = '';
             document.getElementById('cantidadVenta').value = '';
             document.getElementById('precioVentaProducto').value = '';
-            
+
             actualizarTablaVentaActual();
         };
-        
+
         // Actualizar tabla de venta actual
         function actualizarTablaVentaActual() {
             const tbody = document.querySelector('#tablaVentaActual tbody');
             tbody.innerHTML = '';
-            
+
             let total = 0;
-            
+
             ventaActual.forEach((producto, index) => {
                 const fila = tbody.insertRow();
                 fila.innerHTML = `
@@ -1829,35 +1829,35 @@
                 `;
                 total += producto.subtotal;
             });
-            
+
             document.getElementById('totalVenta').textContent = formatearNumero(total);
         }
-        
+
         // Eliminar producto de venta
         window.eliminarProductoVenta = function(index) {
             ventaActual.splice(index, 1);
             actualizarTablaVentaActual();
         };
-        
+
         // Generar factura
         window.generarFactura = async function() {
             if (!isConfigured) {
                 mostrarAlerta('Configure el sistema primero', 'warning');
                 return;
             }
-            
+
             if (ventaActual.length === 0) {
                 mostrarAlerta('Agregue al menos un producto a la venta', 'warning');
                 return;
             }
-            
+
             const cliente = document.getElementById('nombreCliente').value || 'Cliente General';
             const telefono = document.getElementById('telefonoCliente').value || 'N/A';
-            
+
             const btnGenerar = document.getElementById('btnGenerarFactura');
             btnGenerar.disabled = true;
             btnGenerar.innerHTML = '<span class="loading"></span> GENERANDO...';
-            
+
             try {
                 // Verificar stock
                 for (const producto of ventaActual) {
@@ -1866,18 +1866,18 @@
                         return;
                     }
                 }
-                
+
                 const total = ventaActual.reduce((sum, producto) => sum + producto.subtotal, 0);
-                
+
                 // Obtener número de factura
                 const numeroFactura = await obtenerSiguienteNumeroFactura();
-                
+
                 // Actualizar inventario
                 ventaActual.forEach(producto => {
                     inventarioData[producto.tipo].stock -= producto.cantidad;
                     inventarioData[producto.tipo].valorTotal = inventarioData[producto.tipo].stock * inventarioData[producto.tipo].precioPromedio;
                 });
-                
+
                 // Guardar venta
                 const venta = {
                     numero: numeroFactura,
@@ -1886,21 +1886,21 @@
                     productos: ventaActual.map(p => `${p.tipo} (${p.cantidad.toFixed(1)} lbs)`).join(', '),
                     total: total
                 };
-                
+
                 await Promise.all([
                     guardarVenta(venta),
                     actualizarInventarioEnSheets(),
                     actualizarNumeroFactura(numeroFactura + 1)
                 ]);
-                
+
                 // Generar HTML de factura
                 generarHTMLFactura(venta, ventaActual, cliente, telefono);
-                
+
                 // Limpiar venta
                 limpiarVenta();
-                
+
                 mostrarAlerta(`Factura #${numeroFactura} generada correctamente`, 'success');
-                
+
             } catch (error) {
                 mostrarAlerta(`Error al generar factura: ${error.message}`, 'danger');
             } finally {
@@ -1908,23 +1908,23 @@
                 btnGenerar.innerHTML = '🖨️ GENERAR FACTURA';
             }
         };
-        
+
         // Obtener siguiente número de factura
         async function obtenerSiguienteNumeroFactura() {
             try {
                 const datos = await leerHoja('Configuracion');
                 let numeroActual = 1;
-                
+
                 if (datos.length > 1 && datos[1][0]) {
                     numeroActual = parseInt(datos[1][0]) || 1;
                 }
-                
+
                 return numeroActual;
             } catch (error) {
                 return 1;
             }
         }
-        
+
         // Guardar venta
         async function guardarVenta(venta) {
             const filaNuevaVenta = [
@@ -1934,10 +1934,10 @@
                 venta.productos,
                 venta.total
             ];
-            
+
             await agregarFilaHoja('Ventas', filaNuevaVenta);
         }
-        
+
         // Actualizar inventario en sheets
         async function actualizarInventarioEnSheets() {
             const datosInventario = [
@@ -1950,21 +1950,21 @@
                     datos.ultimaActualizacion
                 ])
             ];
-            
+
             await escribirHoja('Inventario', datosInventario);
             actualizarTablaInventario();
         }
-        
+
         // Actualizar número de factura
         async function actualizarNumeroFactura(nuevoNumero) {
             const datosConfig = [
                 ['UltimoNumeroFactura', 'NombreEmpresa', 'DireccionEmpresa', 'TelefonoEmpresa'],
                 [nuevoNumero, config.nombreEmpresa, config.direccionEmpresa, config.telefonoEmpresa]
             ];
-            
+
             await escribirHoja('Configuracion', datosConfig);
         }
-        
+
         // Generar HTML de factura
         function generarHTMLFactura(venta, productos, cliente, telefono) {
             const facturaHTML = `
@@ -2026,10 +2026,10 @@
                     </div>
                 </div>
             `;
-            
+
             document.getElementById('facturaGenerada').innerHTML = facturaHTML;
         }
-        
+
         // Limpiar venta
         function limpiarVenta() {
             ventaActual = [];
@@ -2038,39 +2038,39 @@
             actualizarTablaVentaActual();
             cargarInventarioParaVentas();
         }
-        
+
         // Limpiar factura
         window.limpiarFactura = function() {
             document.getElementById('facturaGenerada').innerHTML = '';
         };
-        
+
         // =================== FUNCIONES DE REPORTES ===================
-        
+
         // Cargar reportes
         window.cargarReportes = async function() {
             if (!isConfigured) {
                 mostrarAlerta('Configure el sistema primero', 'warning');
                 return;
             }
-            
+
             const btnCargar = document.getElementById('btnCargarReportes');
             btnCargar.disabled = true;
             btnCargar.innerHTML = '<span class="loading"></span> CARGANDO...';
-            
+
             try {
                 updateConnectionStatus('loading', 'Cargando reportes...');
-                
+
                 const ventasData = await leerHoja('Ventas');
-                
+
                 if (ventasData.length > 1) {
                     const hoy = new Date().toLocaleDateString();
                     const mesActual = new Date().getMonth();
                     const añoActual = new Date().getFullYear();
-                    
+
                     let totalHoy = 0;
                     let totalMes = 0;
                     let numeroFacturas = ventasData.length - 1; // -1 por el encabezado
-                    
+
                     // Procesar ventas
                     const ventasParaTabla = [];
                     for (let i = 1; i < ventasData.length; i++) {
@@ -2078,7 +2078,7 @@
                         if (venta[1] && venta[4]) {
                             const fechaVenta = venta[1];
                             const totalVenta = parseFloat(venta[4]) || 0;
-                            
+
                             // Agregar a tabla de últimas ventas
                             ventasParaTabla.push({
                                 numero: venta[0],
@@ -2087,12 +2087,12 @@
                                 productos: venta[3] || 'N/A',
                                 total: totalVenta
                             });
-                            
+
                             // Ventas de hoy
                             if (fechaVenta === hoy) {
                                 totalHoy += totalVenta;
                             }
-                            
+
                             // Ventas del mes
                             try {
                                 const fecha = new Date(fechaVenta.split('/').reverse().join('-'));
@@ -2104,36 +2104,36 @@
                             }
                         }
                     }
-                    
+
                     // Calcular valor total del inventario
                     let totalInventario = 0;
                     for (const tipo in inventarioData) {
                         totalInventario += inventarioData[tipo].valorTotal;
                     }
-                    
+
                     // Actualizar estadísticas
                     document.getElementById('totalVentasHoy').textContent = formatearPesos(totalHoy);
                     document.getElementById('totalVentasMes').textContent = formatearPesos(totalMes);
                     document.getElementById('totalInventario').textContent = formatearPesos(totalInventario);
                     document.getElementById('numeroFacturas').textContent = numeroFacturas;
-                    
+
                     // Actualizar tabla de últimas ventas (últimas 10)
                     actualizarTablaUltimasVentas(ventasParaTabla.slice(-10).reverse());
-                    
+
                     // Actualizar tabla de stock bajo
                     actualizarTablaStockBajo();
-                    
+
                     updateConnectionStatus('connected', 'Reportes cargados correctamente');
                     mostrarAlerta('Reportes actualizados correctamente', 'success');
-                    
+
                 } else {
                     document.getElementById('totalVentasHoy').textContent = '$0.00';
                     document.getElementById('totalVentasMes').textContent = '$0.00';
                     document.getElementById('numeroFacturas').textContent = '0';
-                    
+
                     mostrarAlerta('No hay datos de ventas disponibles', 'warning');
                 }
-                
+
             } catch (error) {
                 updateConnectionStatus('disconnected', `Error: ${error.message}`);
                 mostrarAlerta(`Error al cargar reportes: ${error.message}`, 'danger');
@@ -2142,18 +2142,18 @@
                 btnCargar.innerHTML = '🔄 ACTUALIZAR REPORTES';
             }
         };
-        
+
         // Actualizar tabla de últimas ventas
         function actualizarTablaUltimasVentas(ventas) {
             const tbody = document.querySelector('#tablaUltimasVentas tbody');
             tbody.innerHTML = '';
-            
+
             if (ventas.length === 0) {
                 const fila = tbody.insertRow();
                 fila.innerHTML = '<td colspan="5" style="text-align: center;">No hay ventas registradas</td>';
                 return;
             }
-            
+
             ventas.forEach(venta => {
                 const fila = tbody.insertRow();
                 fila.innerHTML = `
@@ -2165,26 +2165,26 @@
                 `;
             });
         }
-        
+
         // Actualizar tabla de stock bajo
         function actualizarTablaStockBajo() {
             const tbody = document.querySelector('#tablaStockBajo tbody');
             tbody.innerHTML = '';
-            
+
             const stockBajo = Object.entries(inventarioData).filter(([tipo, datos]) => datos.stock < 10);
-            
+
             if (stockBajo.length === 0) {
                 const fila = tbody.insertRow();
                 fila.innerHTML = '<td colspan="3" style="text-align: center;">✅ Todos los productos tienen stock suficiente</td>';
                 return;
             }
-            
+
             stockBajo.forEach(([tipo, datos]) => {
                 const fila = tbody.insertRow();
-                
+
                 let estado = '🟡 Stock Bajo';
                 let claseEstado = 'style="background-color: #fff3cd;"';
-                
+
                 if (datos.stock === 0) {
                     estado = '🔴 Agotado';
                     claseEstado = 'style="background-color: #f8d7da;"';
@@ -2192,7 +2192,7 @@
                     estado = '🟠 Crítico';
                     claseEstado = 'style="background-color: #f8d7da;"';
                 }
-                
+
                 fila.innerHTML = `
                     <td>${tipo}</td>
                     <td>${datos.stock.toFixed(1)} lbs</td>
@@ -2200,14 +2200,14 @@
                 `;
             });
         }
-        
+
         // =================== INICIALIZACIÓN ===================
-        
+
         // Cargar configuración guardada al iniciar
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎯 DOM cargado, inicializando sistema...');
             verificarSesion();
-            
+
             // Cargar configuración guardada
             if (spreadsheetId) {
                 document.getElementById('spreadsheetId').value = spreadsheetId;
@@ -2216,15 +2216,15 @@
             } else {
                 updateConnectionStatus('disconnected', 'Configure el sistema para comenzar');
             }
-            
+
             // Cargar datos de empresa
             document.getElementById('nombreEmpresa').value = config.nombreEmpresa;
             document.getElementById('direccionEmpresa').value = config.direccionEmpresa;
             document.getElementById('telefonoEmpresa').value = config.telefonoEmpresa;
-            
+
             console.log('✅ Sistema inicializado correctamente');
         });
-        
+
         console.log('🎯 Todas las funciones definidas correctamente');
 
         // =================== FUNCIONES DE AUTENTICACIÓN ===================
@@ -2232,105 +2232,105 @@
         // Credenciales del sistema
         const USUARIO_VALIDO = 'pesquera';
         const CONTRASEÑA_VALIDA = 'gloria11';
-        
+
         // Variables de sesión
         let sesionActiva = localStorage.getItem('sesionPesquera') === 'true';
-        
+
         // Función para alternar visibilidad de contraseña
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const showPasswordCheckbox = document.getElementById('showPassword');
-            
+
             if (showPasswordCheckbox.checked) {
                 passwordInput.type = 'text';
             } else {
                 passwordInput.type = 'password';
             }
         }
-        
+
         // Función para iniciar sesión
         function iniciarSesion(event) {
             event.preventDefault();
-            
+
             const usuario = document.getElementById('username').value.trim();
             const contraseña = document.getElementById('password').value;
             const loginBtn = document.getElementById('loginBtn');
             const errorDiv = document.getElementById('loginError');
-            
+
             // Deshabilitar botón y mostrar carga
             loginBtn.disabled = true;
             loginBtn.innerHTML = '<span class="loading"></span> VERIFICANDO...';
-            
+
             // Simular verificación
             setTimeout(() => {
                 if (usuario === USUARIO_VALIDO && contraseña === CONTRASEÑA_VALIDA) {
                     // Login exitoso
                     localStorage.setItem('sesionPesquera', 'true');
                     localStorage.setItem('ultimoLogin', new Date().toISOString());
-                    
+
                     mostrarSistema();
-                    
+
                     // Limpiar formulario
                     document.getElementById('username').value = '';
                     document.getElementById('password').value = '';
                     errorDiv.style.display = 'none';
-                    
+
                 } else {
                     // Login fallido
                     errorDiv.textContent = '❌ Usuario o contraseña incorrectos';
                     errorDiv.style.display = 'block';
-                    
+
                     // Limpiar contraseña
                     document.getElementById('password').value = '';
                     document.getElementById('password').focus();
                 }
-                
+
                 // Restaurar botón
                 loginBtn.disabled = false;
                 loginBtn.innerHTML = '🔑 INICIAR SESIÓN';
-                
+
             }, 1000);
         }
-        
+
         // Función para mostrar el sistema principal
         function mostrarSistema() {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('sistemaPrincipal').style.display = 'block';
-            
+
             console.log('✅ Sesión iniciada correctamente');
-            
+
             // Cargar datos si ya está configurado
             if (spreadsheetId) {
                 cargarTodosLosDatos();
             }
         }
-        
+
         // Función para cerrar sesión
         function cerrarSesion() {
             if (confirm('¿Está seguro que desea cerrar sesión?')) {
                 localStorage.removeItem('sesionPesquera');
                 localStorage.removeItem('ultimoLogin');
-                
+
                 document.getElementById('sistemaPrincipal').style.display = 'none';
                 document.getElementById('loginScreen').style.display = 'flex';
-                
+
                 // Limpiar datos sensibles
                 ventaActual = [];
-                
+
                 console.log('🚪 Sesión cerrada correctamente');
             }
         }
-        
+
         // Función para verificar sesión al cargar la página (8 horas de duración)
         function verificarSesion() {
             const sesionGuardada = localStorage.getItem('sesionPesquera') === 'true';
             const ultimoLogin = localStorage.getItem('ultimoLogin');
-            
+
             if (sesionGuardada && ultimoLogin) {
                 const tiempoLogin = new Date(ultimoLogin);
                 const ahora = new Date();
                 const diferenciaHoras = (ahora - tiempoLogin) / (1000 * 60 * 60);
-                
+
                 // Sesión válida por 8 horas
                 if (diferenciaHoras < 8) {
                     mostrarSistema();
@@ -2341,12 +2341,12 @@
                     localStorage.removeItem('ultimoLogin');
                 }
             }
-            
+
             // Mostrar login por defecto
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('sistemaPrincipal').style.display = 'none';
         }
-        
+
     </script>
 </body>
 </html>
