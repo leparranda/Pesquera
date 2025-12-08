@@ -777,7 +777,7 @@
                     </div>
                     <div class="form-group">
                         <label>Precio de Compra (por libra):</label>
-                        <input type="number" id="precioCompra" step="500" min="500" placeholder="Ej: 12000">
+                        <input type="number" id="precioCompra" step="50" min="0" placeholder="Ej: 12000">
                     </div>
                     <div class="form-group">
                         <label>&nbsp;</label>
@@ -826,7 +826,7 @@
                     </div>
                     <div class="form-group">
                         <label>Precio de Venta (por libra):</label>
-                        <input type="number" id="precioVentaManual" step="0.01" min="0" placeholder="O ingrese manualmente">
+                        <input type="number" id="precioVentaManual" step="50" min="0" placeholder="Ingrese precio completo">
                     </div>
                     <div class="form-group">
                         <label>&nbsp;</label>
@@ -887,7 +887,7 @@
                     </div>
                     <div class="form-group">
                         <label>Precio por Libra:</label>
-                        <input type="number" id="precioVentaProducto" step="0.01" min="0" readonly>
+                        <input type="number" id="precioVentaProducto" step="50" min="0" readonly>
                     </div>
                     <div class="form-group">
                         <label>&nbsp;</label>
@@ -1009,27 +1009,37 @@
 
         // =================== FUNCIONES DE FORMATO PARA PESOS COLOMBIANOS ===================
 
-        // Función para formatear números como pesos colombianos
+// =================== FUNCIONES DE FORMATO PARA PESOS COLOMBIANOS ===================
+
+        // Función profesional para pesos colombianos (COP)
+        // Ejemplo: Convierte 200000 en "$ 200.000"
         function formatearPesos(numero) {
             if (isNaN(numero) || numero === null || numero === undefined) {
-                return '$0';
+                return '$ 0';
             }
             
-            // Redondear a número entero para pesos colombianos
-            const numeroRedondeado = Math.round(numero);
+            // Usamos Intl.NumberFormat para formato estricto de Colombia
+            const formato = new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
             
-            // Formatear con separadores de miles (puntos)
-            return '$' + numeroRedondeado.toLocaleString('es-CO');
+            return formato.format(numero);
         }
         
-        // Función para formatear números sin símbolo de moneda
+        // Función para números simples con puntos de miles (sin signo $)
+        // Ejemplo: Convierte 2000 en "2.000"
         function formatearNumero(numero) {
             if (isNaN(numero) || numero === null || numero === undefined) {
                 return '0';
             }
             
-            const numeroRedondeado = Math.round(numero);
-            return numeroRedondeado.toLocaleString('es-CO');
+            return new Intl.NumberFormat('es-CO', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(numero);
         }
 
         
@@ -1771,7 +1781,7 @@
                 const precioInput = document.getElementById('precioVentaProducto');
                 
                 if (tipoSeleccionado && preciosData[tipoSeleccionado]) {
-                    precioInput.value = preciosData[tipoSeleccionado].precioVenta.toFixed(2);
+                    precioInput.value = Math.round(preciosData[tipoSeleccionado].precioVenta);
                 } else {
                     precioInput.value = '';
                 }
