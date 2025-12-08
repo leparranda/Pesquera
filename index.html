@@ -1009,37 +1009,27 @@
 
         // =================== FUNCIONES DE FORMATO PARA PESOS COLOMBIANOS ===================
 
-// =================== FUNCIONES DE FORMATO PARA PESOS COLOMBIANOS ===================
-
-        // Función profesional para pesos colombianos (COP)
-        // Ejemplo: Convierte 200000 en "$ 200.000"
+        // Función para formatear números como pesos colombianos
         function formatearPesos(numero) {
             if (isNaN(numero) || numero === null || numero === undefined) {
-                return '$ 0';
+                return '$0';
             }
             
-            // Usamos Intl.NumberFormat para formato estricto de Colombia
-            const formato = new Intl.NumberFormat('es-CO', {
-                style: 'currency',
-                currency: 'COP',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            });
+            // Redondear a número entero para pesos colombianos
+            const numeroRedondeado = Math.round(numero);
             
-            return formato.format(numero);
+            // Formatear con separadores de miles (puntos)
+            return '$' + numeroRedondeado.toLocaleString('es-CO');
         }
         
-        // Función para números simples con puntos de miles (sin signo $)
-        // Ejemplo: Convierte 2000 en "2.000"
+        // Función para formatear números sin símbolo de moneda
         function formatearNumero(numero) {
             if (isNaN(numero) || numero === null || numero === undefined) {
                 return '0';
             }
             
-            return new Intl.NumberFormat('es-CO', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(numero);
+            const numeroRedondeado = Math.round(numero);
+            return numeroRedondeado.toLocaleString('es-CO');
         }
 
         
