@@ -822,17 +822,21 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tipo de Pescado:</label>
-                        <select id="tipoPescadoPrecio">
+                        <select id="tipoPescadoPrecio" onchange="cargarPrecioCompraActual()">
                             <option value="">Seleccionar...</option>
                         </select>
                     </div>
                     <div class="form-group">
+                        <label>Precio de Compra ($/lb):</label>
+                        <input type="number" id="precioCompraActual" step="0.01" min="0" readonly style="background-color: #f8f9fa;">
+                    </div>
+                    <div class="form-group">
                         <label>Margen de Ganancia (%):</label>
-                        <input type="number" id="margenGanancia" step="1" min="0" max="500" value="30">
+                        <input type="number" id="margenGanancia" step="1" min="0" max="500" value="30" oninput="calcularPrecioVentaDesdeMargen()" readonly style="background-color: #e8f5e9;">
                     </div>
                     <div class="form-group">
                         <label>Precio de Venta (por libra):</label>
-                        <input type="number" id="precioVentaManual" step="0.01" min="0" placeholder="O ingrese manualmente">
+                        <input type="number" id="precioVentaManual" step="0.01" min="0" placeholder="O ingrese manualmente" oninput="calcularMargenDesdeVenta()">
                     </div>
                     <div class="form-group">
                         <label>&nbsp;</label>
@@ -943,6 +947,10 @@
                     <div class="stat-card">
                         <div class="stat-value" id="totalVentasMes">$0.00</div>
                         <div class="stat-label">VENTAS DEL MES</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="gananciasMes">$0.00</div>
+                        <div class="stat-label">GANANCIAS DEL MES</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value" id="totalInventario">$0.00</div>
@@ -1636,6 +1644,45 @@
             }
         }
 
+        // Cargar precio de compra actual cuando se selecciona un pescado
+        function cargarPrecioCompraActual() {
+            const tipo = document.getElementById('tipoPescadoPrecio').value;
+            const precioCompraInput = document.getElementById('precioCompraActual');
+            
+            if (tipo && inventarioData[tipo]) {
+                precioCompraInput.value = inventarioData[tipo].precioPromedio.toFixed(2);
+                // Limpiar campos
+                document.getElementById('margenGanancia').value = '';
+                document.getElementById('precioVentaManual').value = '';
+            } else {
+                precioCompraInput.value = '';
+                document.getElementById('margenGanancia').value = '';
+                document.getElementById('precioVentaManual').value = '';
+            }
+        }
+
+        // Calcular precio de venta desde el margen
+        function calcularPrecioVentaDesdeMargen() {
+            const precioCompra = parseFloat(document.getElementById('precioCompraActual').value);
+            const margen = parseFloat(document.getElementById('margenGanancia').value);
+            
+            if (precioCompra && margen) {
+                const precioVenta = precioCompra * (1 + margen / 100);
+                document.getElementById('precioVentaManual').value = precioVenta.toFixed(2);
+            }
+        }
+
+        // Calcular margen desde el precio de venta
+        function calcularMargenDesdeVenta() {
+            const precioCompra = parseFloat(document.getElementById('precioCompraActual').value);
+            const precioVenta = parseFloat(document.getElementById('precioVentaManual').value);
+            
+            if (precioCompra && precioVenta && precioCompra > 0) {
+                const margen = ((precioVenta - precioCompra) / precioCompra) * 100;
+                document.getElementById('margenGanancia').value = margen.toFixed(2);
+            }
+        }
+
         // Configurar precio
         window.configurarPrecio = async function() {
             if (!isConfigured) {
@@ -1657,26 +1704,23 @@
                 return;
             }
 
+            if (!precioManual) {
+                mostrarAlerta('Ingrese un precio de venta', 'warning');
+                return;
+            }
+
             const btnConfigurar = document.getElementById('btnConfigurarPrecio');
             btnConfigurar.disabled = true;
             btnConfigurar.innerHTML = '<span class="loading"></span> GUARDANDO...';
 
             try {
                 const precioCompra = inventarioData[tipo].precioPromedio;
-                let precioVenta;
-
-                if (precioManual) {
-                    precioVenta = precioManual;
-                } else if (margen) {
-                    precioVenta = precioCompra * (1 + margen / 100);
-                } else {
-                    mostrarAlerta('Ingrese un margen o precio manual', 'warning');
-                    return;
-                }
+                const precioVenta = precioManual;
+                const margenCalculado = ((precioVenta - precioCompra) / precioCompra) * 100;
 
                 preciosData[tipo] = {
                     precioCompra: precioCompra,
-                    margen: margen || ((precioVenta - precioCompra) / precioCompra * 100),
+                    margen: margenCalculado,
                     precioVenta: precioVenta,
                     ganancia: precioVenta - precioCompra
                 };
@@ -1697,7 +1741,8 @@
 
                 // Limpiar formulario
                 document.getElementById('tipoPescadoPrecio').value = '';
-                document.getElementById('margenGanancia').value = '30';
+                document.getElementById('precioCompraActual').value = '';
+                document.getElementById('margenGanancia').value = '';
                 document.getElementById('precioVentaManual').value = '';
 
                 actualizarTablaPrecios();
@@ -2075,6 +2120,7 @@
 
                     let totalHoy = 0;
                     let totalMes = 0;
+                    let gananciasMes = 0;
                     let numeroFacturas = ventasData.length - 1; // -1 por el encabezado
 
                     // Procesar ventas
@@ -2084,13 +2130,14 @@
                         if (venta[1] && venta[4]) {
                             const fechaVenta = venta[1];
                             const totalVenta = parseFloat(venta[4]) || 0;
+                            const productosTexto = venta[3] || '';
 
                             // Agregar a tabla de últimas ventas
                             ventasParaTabla.push({
                                 numero: venta[0],
                                 fecha: fechaVenta,
                                 cliente: venta[2] || 'N/A',
-                                productos: venta[3] || 'N/A',
+                                productos: productosTexto,
                                 total: totalVenta
                             });
 
@@ -2099,11 +2146,27 @@
                                 totalHoy += totalVenta;
                             }
 
-                            // Ventas del mes
+                            // Ventas del mes y ganancias
                             try {
                                 const fecha = new Date(fechaVenta.split('/').reverse().join('-'));
                                 if (fecha.getMonth() === mesActual && fecha.getFullYear() === añoActual) {
                                     totalMes += totalVenta;
+                                    
+                                    // Calcular ganancias del mes
+                                    // Formato esperado: "Pargo (2.5 lbs), Atún (3.0 lbs)"
+                                    const productos = productosTexto.split(', ');
+                                    for (const productoStr of productos) {
+                                        const match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs\)$/);
+                                        if (match) {
+                                            const tipoPescado = match[1].trim();
+                                            const cantidad = parseFloat(match[2]);
+                                            
+                                            if (preciosData[tipoPescado]) {
+                                                const gananciaPorLibra = preciosData[tipoPescado].ganancia || 0;
+                                                gananciasMes += (cantidad * gananciaPorLibra);
+                                            }
+                                        }
+                                    }
                                 }
                             } catch (e) {
                                 console.log('Error al procesar fecha:', fechaVenta);
@@ -2120,6 +2183,7 @@
                     // Actualizar estadísticas
                     document.getElementById('totalVentasHoy').textContent = formatearPesos(totalHoy);
                     document.getElementById('totalVentasMes').textContent = formatearPesos(totalMes);
+                    document.getElementById('gananciasMes').textContent = formatearPesos(gananciasMes);
                     document.getElementById('totalInventario').textContent = formatearPesos(totalInventario);
                     document.getElementById('numeroFacturas').textContent = numeroFacturas;
 
@@ -2135,6 +2199,7 @@
                 } else {
                     document.getElementById('totalVentasHoy').textContent = '$0.00';
                     document.getElementById('totalVentasMes').textContent = '$0.00';
+                    document.getElementById('gananciasMes').textContent = '$0.00';
                     document.getElementById('numeroFacturas').textContent = '0';
 
                     mostrarAlerta('No hay datos de ventas disponibles', 'warning');
