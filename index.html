@@ -247,21 +247,24 @@
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none;
             border-color: #3498db;
-            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
         .btn {
-            background: linear-gradient(45deg, #28a745, #20c997);
+            background: linear-gradient(45deg, #3498db, #2980b9);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 12px 25px;
             border-radius: 8px;
             cursor: pointer;
+            font-size: 14px;
             font-weight: bold;
             transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .btn:hover {
+        .btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
@@ -270,31 +273,87 @@
             background: #95a5a6;
             cursor: not-allowed;
             transform: none;
+            opacity: 0.7;
         }
 
-        .btn-primary {
-            background: linear-gradient(45deg, #3498db, #2980b9);
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
         }
 
         .btn-danger {
-            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            background: linear-gradient(45deg, #dc3545, #c82333);
         }
 
         .btn-warning {
-            background: linear-gradient(45deg, #f39c12, #e67e22);
+            background: linear-gradient(45deg, #ffc107, #e0a800);
+            color: #212529;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .status-connected {
+            background: linear-gradient(45deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-disconnected {
+            background: linear-gradient(45deg, #f8d7da, #f1b0b7);
+            color: #721c24;
+            border: 1px solid #f1b0b7;
+        }
+
+        .status-loading {
+            background: linear-gradient(45deg, #fff3cd, #ffeaa7);
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        th {
+            background: linear-gradient(45deg, #343a40, #495057);
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        tr:hover {
+            background-color: #e3f2fd;
+            transition: background-color 0.3s ease;
         }
 
         .alert {
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            font-weight: bold;
         }
 
         .alert-success {
@@ -303,471 +362,606 @@
             border: 1px solid #c3e6cb;
         }
 
+        .alert-warning {
+            background: linear-gradient(45deg, #fff3cd, #ffeaa7);
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
         .alert-danger {
             background: linear-gradient(45deg, #f8d7da, #f1b0b7);
             color: #721c24;
             border: 1px solid #f1b0b7;
         }
 
-        .alert-warning {
-            background: linear-gradient(45deg, #fff3cd, #ffe8a1);
-            color: #856404;
-            border: 1px solid #ffe8a1;
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .table thead {
-            background: linear-gradient(45deg, #2c3e50, #3498db);
-            color: white;
-        }
-
-        .table th, .table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .table tbody tr:hover {
-            background: #f8f9fa;
-        }
-
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            transition: transform 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-card h3 {
-            font-size: 1em;
-            margin-bottom: 10px;
-            opacity: 0.9;
-        }
-
-        .stat-card .stat-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .stat-card.success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        }
-
-        .stat-card.info {
-            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-        }
-
-        .stat-card.warning {
-            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
-        }
-
-        .stat-card.danger {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-        }
-
-        .connection-status {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        .status-dot.connected {
-            background: #28a745;
-        }
-
-        .status-dot.disconnected {
-            background: #dc3545;
-        }
-
-        .status-dot.connecting {
-            background: #ffc107;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .venta-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .venta-item:hover {
-            background: #e9ecef;
-        }
-
         .loading {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
             border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
+            animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .config-section {
             background: #f8f9fa;
             padding: 25px;
-            border-radius: 12px;
+            border-radius: 10px;
             margin-bottom: 25px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 2px solid #e9ecef;
         }
 
         .config-section h3 {
             color: #2c3e50;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #3498db;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .factura {
+            background: white;
+            padding: 30px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .no-print {
+            display: block;
         }
 
         @media print {
             body * {
                 visibility: hidden;
             }
-            #facturaImpresion, #facturaImpresion * {
+            .factura, .factura * {
                 visibility: visible;
             }
-            #facturaImpresion {
+            .factura {
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 100%;
+                box-shadow: none;
+                border: none;
+            }
+            .no-print {
+                display: none !important;
             }
         }
 
-        .factura-preview {
-            background: white;
-            padding: 30px;
-            border: 2px solid #dee2e6;
-            border-radius: 12px;
-            margin-top: 20px;
-        }
-
-        .factura-header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 3px solid #3498db;
-            padding-bottom: 20px;
-        }
-
-        .factura-info {
+        .stats-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
             margin-bottom: 30px;
         }
-
-        .factura-productos {
-            margin-bottom: 30px;
+        
+        .stat-card {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-
-        .factura-total {
-            text-align: right;
-            font-size: 1.5em;
+        
+        .stat-value {
+            font-size: 2em;
             font-weight: bold;
-            color: #2c3e50;
-            border-top: 3px solid #3498db;
-            padding-top: 20px;
+            margin-bottom: 5px;
         }
         
-        /* Nuevo estilo para campos calculados */
-        .form-group.calculated {
-            position: relative;
+        .stat-value#totalVentasHoy {
+            color: #3498db;
         }
         
-        .form-group.calculated input {
-            background-color: #e8f5e9;
-            border-color: #4caf50;
+        .stat-value#totalVentasMes {
+            color: #28a745;
         }
         
-        .form-group.calculated::after {
-            content: '🔢 Calculado';
-            position: absolute;
-            right: 10px;
-            top: 38px;
-            font-size: 12px;
-            color: #4caf50;
-            font-weight: bold;
+        .stat-value#totalInventario {
+            color: #e74c3c;
         }
         
-        /* Estilo para la tarjeta de ganancias del mes */
-        .stat-card.profit {
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        .stat-value#numeroFacturas {
+            color: #f39c12;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+        /* =================== RESPONSIVE DESIGN =================== */
+
+        /* Tablets */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .login-box {
+                padding: 25px;
+                margin: 10px;
+            }
+
+            .logout-btn {
+                position: static;
+                margin-bottom: 15px;
+                width: 100%;
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .tab {
+                padding: 15px 8px;
+                font-size: 12px;
+                min-width: 80px;
+            }
+
+            /* Tabla responsiva */
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            table {
+                min-width: 600px;
+            }
+
+            th, td {
+                padding: 8px;
+                font-size: 12px;
+                white-space: nowrap;
+            }
+        }
+
+        /* Móviles */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .login-container {
+                padding: 10px;
+            }
+
+            .login-box {
+                padding: 20px;
+                margin: 5px;
+            }
+
+            .header {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .content {
+                padding: 10px;
+            }
+
+            .tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .tab {
+                padding: 12px 6px;
+                font-size: 10px;
+                min-width: 70px;
+                flex-shrink: 0;
+            }
+
+            .form-group input, .form-group select, .form-group textarea {
+                padding: 14px;
+                font-size: 16px; /* Evita zoom en iOS */
+            }
+
+            .btn {
+                padding: 14px;
+                min-height: 50px;
+                width: 100%;
+            }
+
+            .config-section {
+                padding: 12px;
+            }
+
+            /* Estadísticas responsivas */
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+
+            table {
+                min-width: 500px;
+            }
+
+            th, td {
+                padding: 6px;
+                font-size: 11px;
+            }
+        }
+
+        /* Móviles muy pequeños */
+        @media (max-width: 360px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tab {
+                font-size: 9px;
+                min-width: 60px;
+            }
+
+            .header h1 {
+                font-size: 1.3em;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Pantalla de Login -->
-    <div id="loginScreen" class="login-container">
-        <div class="login-box">
-            <div class="login-header">
-                <h1>🐟 PESQUERA</h1>
-                <p>Rincón del Mar</p>
-            </div>
-
-            <div id="loginError" class="login-error" style="display: none;"></div>
-
-            <form id="loginForm" class="login-form" onsubmit="iniciarSesion(event)">
-                <input 
-                    type="text" 
-                    id="username" 
-                    placeholder="Usuario" 
-                    required 
-                    autocomplete="username"
-                >
-                <input 
-                    type="password" 
-                    id="password" 
-                    placeholder="Contraseña" 
-                    required 
-                    autocomplete="current-password"
-                >
-
-                <label class="show-password">
-                    <input 
-                        type="checkbox" 
-                        id="showPassword" 
-                        onchange="togglePassword()"
-                    >
-                    Mostrar contraseña
-                </label>
-
-                <button type="submit" id="loginBtn" class="login-btn">
-                    🔑 INICIAR SESIÓN
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Sistema Principal -->
-    <div id="sistemaPrincipal" class="sistema-principal">
-        <button class="logout-btn" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
-
-        <div class="container">
-            <div class="header">
-                <h1>🐟 PESQUERA RINCON DEL MAR</h1>
-                <p>Sistema de Gestión Integral</p>
-            </div>
-
-            <div class="tabs">
-                <div class="tab active" onclick="cambiarTab('ventas')">💰 VENTAS</div>
-                <div class="tab" onclick="cambiarTab('inventario')">📦 INVENTARIO</div>
-                <div class="tab" onclick="cambiarTab('precios')">💵 PRECIOS</div>
-                <div class="tab" onclick="cambiarTab('reportes')">📊 REPORTES</div>
-                <div class="tab" onclick="cambiarTab('configuracion')">⚙️ CONFIGURACIÓN</div>
-            </div>
-
-            <div class="content">
-                <div id="alertContainer"></div>
-
-                <!-- SECCIÓN VENTAS -->
-                <div id="ventas" class="section active">
-                    <h2>💰 Nueva Venta</h2>
-
-                    <div class="form-group">
-                        <label>Cliente:</label>
-                        <input type="text" id="clienteVenta" placeholder="Nombre del cliente">
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 2;">
-                            <label>Tipo de Producto:</label>
-                            <select id="tipoProductoVenta">
-                                <option value="">Seleccione un producto</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label>Cantidad (lbs):</label>
-                            <input type="number" id="cantidadVenta" step="0.1" min="0.1" placeholder="0.0">
-                        </div>
-                        <div class="form-group" style="flex: 1;">
-                            <button class="btn" onclick="agregarProductoVenta()">➕ Agregar</button>
-                        </div>
-                    </div>
-
-                    <div id="productosVenta"></div>
-
-                    <div class="form-group">
-                        <div class="factura-total">
-                            <strong>TOTAL: <span id="totalVenta">$0.00</span></strong>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-primary" onclick="finalizarVenta()" style="width: 100%; padding: 20px; font-size: 1.2em;">
-                        🧾 FINALIZAR VENTA
-                    </button>
+       <!-- PANTALLA DE LOGIN -->
+        <div id="loginScreen" class="login-container">
+            <div class="login-box">
+                <div class="login-header">
+                    <h1>🐟</h1>
+                    <h2>PESQUERA RINCON DEL MAR</h2>
+                    <p>Acceso al Sistema de Control</p>
                 </div>
 
-                <!-- SECCIÓN INVENTARIO -->
-                <div id="inventario" class="section">
-                    <h2>📦 Control de Inventario</h2>
+                <div id="loginError" class="login-error" style="display: none;"></div>
 
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 2;">
-                            <label>Tipo de Producto:</label>
-                            <select id="tipoProductoInventario">
-                                <option value="">Seleccione un producto</option>
-                            </select>
+                <form class="login-form" onsubmit="iniciarSesion(event)">
+                    <input 
+                        type="text" 
+                        id="username" 
+                        placeholder="👤 Usuario" 
+                        required
+                        autocomplete="username"
+                    >
+                    <input 
+                        type="password" 
+                        id="password" 
+                        placeholder="🔒 Contraseña" 
+                        required
+                        autocomplete="current-password"
+                    >
+
+                    <label class="show-password" onclick="togglePassword()">
+                        <input type="checkbox" id="showPassword">
+                        <span>Mostrar contraseña</span>
+                    </label>
+
+                    <button type="submit" class="login-btn" id="loginBtn">
+                        🔑 INICIAR SESIÓN
+                    </button>
+                </form>
+
+                <div style="font-size: 12px; color: #999; margin-top: 20px;">
+                    <p>🔐 Acceso seguro al sistema</p>
+                    <p>© 2025 PESQUERA RINCON DEL MAR</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SISTEMA PRINCIPAL -->
+        <div id="sistemaPrincipal" class="sistema-principal">
+            <div class="container">
+                <div class="header">
+                    <button class="logout-btn" onclick="cerrarSesion()">
+                        🚪 Cerrar Sesión
+                    </button>
+                    <h1>🐟 PESQUERA RINCON DEL MAR</h1>
+                    <p>Control de Inventario y Facturación</p>
+                </div>
+
+                <div class="tabs">
+                    <div class="tab active" onclick="showSection('configuracion')">⚙️ CONFIGURACIÓN</div>
+                    <div class="tab" onclick="showSection('inventario')">📦 INVENTARIO</div>
+                    <div class="tab" onclick="showSection('precios')">💰 PRECIOS</div>
+                    <div class="tab" onclick="showSection('ventas')">🧾 VENTAS</div>
+                    <div class="tab" onclick="showSection('reportes')">📊 REPORTES</div>
+                </div>
+
+                <div class="content">
+                    <!-- SECCIÓN CONFIGURACIÓN -->
+                    <div id="configuracion" class="section active">
+                        <h2>⚙️ Configuración del Sistema</h2>
+
+                        <div class="connection-status" id="connectionStatus">
+                            <span>🔧</span>
+                            <span>Configure el sistema para comenzar</span>
                         </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label>Cantidad (lbs):</label>
-                            <input type="number" id="cantidadInventario" step="0.1" placeholder="0.0">
+
+                        <div class="config-section">
+                            <h3>📋 Configuración de Google Sheets</h3>
+                            <div class="form-group">
+                                <label>ID del Google Sheet:</label>
+                                <input type="text" id="spreadsheetId" placeholder="ID del Google Sheet">
+                                <small style="color: #666; font-size: 12px;">
+                                    <!--Obtenga el ID de la URL: https://docs.google.com/spreadsheets/d/<strong>ID_AQUI</strong>/edit<br>-->
+                                </small>
+                            </div>
+                            <button class="btn btn-success" onclick="probarConexion()">🔌 PROBAR CONEXIÓN</button>
+                            <button class="btn btn-success" onclick="guardarConfiguracion()">💾 GUARDAR CONFIGURACIÓN</button>
                         </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label>Precio Compra ($/lb):</label>
-                            <input type="number" id="precioCompraInventario" step="1" placeholder="0">
+
+                        <div class="config-section">
+                            <h3>🏢 Datos de la Empresa</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nombre de la Empresa:</label>
+                                    <input type="text" id="nombreEmpresa" value="Pesquera del Mar">
+                                </div>
+                                <div class="form-group">
+                                    <label>Teléfono:</label>
+                                    <input type="tel" id="telefonoEmpresa" value="(000) 000-0000">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Dirección:</label>
+                                <textarea id="direccionEmpresa" rows="2">Dirección de la empresa</textarea>
+                            </div>
+                            <button class="btn btn-success" onclick="guardarDatosEmpresa()">💾 GUARDAR DATOS</button>
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <button class="btn btn-primary" onclick="agregarInventario()">➕ AGREGAR STOCK</button>
-                        <button class="btn btn-danger" onclick="restarInventario()">➖ RESTAR STOCK</button>
-                        <button class="btn btn-warning" onclick="cargarInventario()">🔄 ACTUALIZAR</button>
-                    </div>
+            <!-- SECCIÓN INVENTARIO -->
+            <div id="inventario" class="section">
+                <h2>📦 Control de Inventario</h2>
 
-                    <table class="table" id="tablaInventario">
+                <div class="connection-status" id="inventarioStatus">
+                    <span>🔧</span>
+                    <span>Configure el sistema primero</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tipo de Pescado:</label>
+                        <select id="tipoPescadoInventario">
+                            <option value="">Seleccionar...</option>
+                            <option value="Pargo">Pargo</option>
+                            <option value="Atún">Atún</option>
+                            <option value="Mero">Mero</option>
+                            <option value="Bravo">Bravo</option>
+                            <option value="Corvina">Corvina</option>
+                            <option value="Dorado">Dorado</option>
+                            <option value="Róbalo">Róbalo</option>
+                            <option value="Bagre">Bagre</option>
+                            <option value="Jurel">Jurel</option>
+                            <option value="Pelada">Pelada</option>
+                            <option value="Sierra">Sierra</option>
+                            <option value="Burique">Burique</option>
+                            <option value="Revoltura">Revoltura</option>
+                            <option value="Ñato">Ñato</option>
+                            <option value="Jurelillo">Jurelillo</option>
+                            <option value="Veranera">Veranera</option>
+                            <option value="Champeta">Champeta</option>
+                            <option value="Mojarra de mar">Mojarra de mar</option>
+                            <option value="Langostinos">Langostinos</option>
+                            <option value="Camaron">Camaron</option>
+                            <option value="Piangua">Piangua</option>
+                            <option value="Barracuda">Barracuda</option>
+                            <option value="Filete de atún">Filete de atún</option>
+                            <option value="Filete de Bravo">Filete de Bravo</option>
+                            <option value="Cabeza pez blanco">Cabeza pez blanco</option>
+                            <option value="Cabeza pez negro">Cabeza pez negro</option>
+                            <option value="Pargo Paulino">Pargo Paulino</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Libras Recibidas:</label>
+                        <input type="number" id="librasRecibidas" step="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Precio de Compra (por libra):</label>
+                        <input type="number" id="precioCompra" step="500" min="500" placeholder="Ej: 12000">
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-success" onclick="agregarInventario()" id="btnAgregarInventario">
+                            + AGREGAR AL INVENTARIO
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="tablaInventario">
                         <thead>
                             <tr>
-                                <th>Tipo</th>
-                                <th>Stock (lbs)</th>
+                                <th>Tipo de Pescado</th>
+                                <th>Stock Actual (lbs)</th>
                                 <th>Precio Promedio</th>
                                 <th>Valor Total</th>
                                 <th>Última Actualización</th>
+                                <th>Estado</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
                 </div>
+            </div>
 
-                <!-- SECCIÓN PRECIOS -->
-                <div id="precios" class="section">
-                    <h2>💵 Gestión de Precios</h2>
+            <!-- SECCIÓN PRECIOS -->
+            <div id="precios" class="section">
+                <h2>💰 Configuración de Precios de Venta</h2>
 
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 2;">
-                            <label>Tipo de Producto:</label>
-                            <select id="tipoProductoPrecio">
-                                <option value="">Seleccione un producto</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label>Precio Compra ($/lb):</label>
-                            <input type="number" id="precioCompra" step="1" placeholder="0" oninput="calcularMargenAutomatico()">
-                        </div>
-                        <div class="form-group calculated" style="flex: 1;">
-                            <label>Margen de Ganancia (%):</label>
-                            <input type="number" id="margenGanancia" step="1" placeholder="0" readonly>
-                        </div>
+                <div class="connection-status" id="preciosStatus">
+                    <span>🔧</span>
+                    <span>Configure el sistema primero</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tipo de Pescado:</label>
+                        <select id="tipoPescadoPrecio">
+                            <option value="">Seleccionar...</option>
+                        </select>
                     </div>
-
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 1;">
-                            <label>Precio Venta ($/lb):</label>
-                            <input type="number" id="precioVenta" step="1" placeholder="0" oninput="calcularMargenAutomatico()">
-                        </div>
-                        <div class="form-group calculated" style="flex: 1;">
-                            <label>Ganancia por Libra ($):</label>
-                            <input type="number" id="gananciaPorLibra" step="1" placeholder="0" readonly>
-                        </div>
-                        <div class="form-group" style="flex: 1;">
-                            <button class="btn btn-primary" onclick="actualizarPrecio()" style="width: 100%;">💾 GUARDAR PRECIO</button>
-                        </div>
+                    <div class="form-group">
+                        <label>Margen de Ganancia (%):</label>
+                        <input type="number" id="margenGanancia" step="1" min="0" max="500" value="30">
                     </div>
+                    <div class="form-group">
+                        <label>Precio de Venta (por libra):</label>
+                        <input type="number" id="precioVentaManual" step="0.01" min="0" placeholder="O ingrese manualmente">
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-success" onclick="configurarPrecio()" id="btnConfigurarPrecio">
+                            💾 GUARDAR PRECIO
+                        </button>
+                    </div>
+                </div>
 
-                    <button class="btn btn-warning" onclick="cargarPrecios()">🔄 ACTUALIZAR TABLA</button>
-
-                    <table class="table" id="tablaPrecios">
+                <div class="table-container">
+                    <table id="tablaPrecios">
                         <thead>
                             <tr>
-                                <th>Tipo</th>
+                                <th>Tipo de Pescado</th>
                                 <th>Precio Compra</th>
                                 <th>Margen (%)</th>
-                                <th>Precio Venta</th>
-                                <th>Ganancia ($/lb)</th>
+                                <th>Precio de Venta</th>
+                                <th>Ganancia por Libra</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECCIÓN VENTAS -->
+            <div id="ventas" class="section">
+                <h2>🧾 Registro de Ventas</h2>
+
+                <div class="connection-status" id="ventasStatus">
+                    <span>🔧</span>
+                    <span>Configure el sistema primero</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cliente:</label>
+                        <input type="text" id="nombreCliente" placeholder="Nombre del cliente">
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono:</label>
+                        <input type="tel" id="telefonoCliente" placeholder="Teléfono (opcional)">
+                    </div>
+                </div>
+
+                <h3>Productos a Vender:</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tipo de Pescado:</label>
+                        <select id="tipoPescadoVenta">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Cantidad (libras):</label>
+                        <input type="number" id="cantidadVenta" step="0.1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Precio por Libra:</label>
+                        <input type="number" id="precioVentaProducto" step="0.01" min="0" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-success" onclick="agregarProductoVenta()">+ AGREGAR</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="tablaVentaActual">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad (lbs)</th>
+                                <th>Precio Unitario</th>
+                                <th>Subtotal</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
                 </div>
 
-                <!-- SECCIÓN REPORTES -->
-                <div id="reportes" class="section">
-                    <h2>📊 Reportes y Estadísticas</h2>
+                <div style="text-align: right; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                    <div style="font-size: 1.2em;"><strong>TOTAL A PAGAR: $<span id="totalVenta">0.00</span></strong></div>
+                    <button class="btn btn-warning" onclick="generarFactura()" id="btnGenerarFactura" style="margin-top: 15px;">
+                        🖨️ GENERAR FACTURA
+                    </button>
+                </div>
 
-                    <button class="btn btn-warning" onclick="cargarReportes()">🔄 ACTUALIZAR REPORTES</button>
+                <div id="facturaGenerada"></div>
+            </div>
 
-                    <div class="stats-container">
-                        <div class="stat-card success">
-                            <h3>💰 Total Ventas Hoy</h3>
-                            <div class="stat-value" id="totalVentasHoy">$0.00</div>
-                        </div>
-                        <div class="stat-card info">
-                            <h3>📅 Total Ventas del Mes</h3>
-                            <div class="stat-value" id="totalVentasMes">$0.00</div>
-                        </div>
-                        <div class="stat-card profit">
-                            <h3>💵 Ganancias del Mes</h3>
-                            <div class="stat-value" id="gananciasMes">$0.00</div>
-                        </div>
-                        <div class="stat-card warning">
-                            <h3>📦 Valor en Inventario</h3>
-                            <div class="stat-value" id="totalInventario">$0.00</div>
-                        </div>
-                        <div class="stat-card danger">
-                            <h3>🧾 Número de Facturas</h3>
-                            <div class="stat-value" id="numeroFacturas">0</div>
-                        </div>
+            <!-- SECCIÓN REPORTES -->
+            <div id="reportes" class="section">
+                <h2>📊 Reportes y Estadísticas</h2>
+
+                <div class="connection-status" id="reportesStatus">
+                    <span>🔧</span>
+                    <span>Configure el sistema primero</span>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalVentasHoy">$0.00</div>
+                        <div class="stat-label">VENTAS DE HOY</div>
                     </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalVentasMes">$0.00</div>
+                        <div class="stat-label">VENTAS DEL MES</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalInventario">$0.00</div>
+                        <div class="stat-label">VALOR INVENTARIO</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="numeroFacturas">0</div>
+                        <div class="stat-label">FACTURAS EMITIDAS</div>
+                    </div>
+                </div>
 
-                    <h3>🕒 Últimas Ventas</h3>
-                    <table class="table" id="tablaUltimasVentas">
+                <button class="btn" onclick="cargarReportes()" id="btnCargarReportes">🔄 ACTUALIZAR REPORTES</button>
+
+                <h3>📈 Últimas Ventas</h3>
+                <div class="table-container">
+                    <table id="tablaUltimasVentas">
                         <thead>
                             <tr>
-                                <th>Factura</th>
+                                <th>Factura #</th>
                                 <th>Fecha</th>
                                 <th>Cliente</th>
                                 <th>Productos</th>
@@ -776,12 +970,13 @@
                         </thead>
                         <tbody></tbody>
                     </table>
-
-                    <h3>⚠️ Productos con Stock Bajo</h3>
-                    <table class="table" id="tablaStockBajo">
+                </div>
+                <h3 style="margin-top: 30px;">⚠️ Stock Bajo (menos de 10 lbs)</h3>
+                <div class="table-container">
+                    <table id="tablaStockBajo">
                         <thead>
                             <tr>
-                                <th>Tipo</th>
+                                <th>Tipo de Pescado</th>
                                 <th>Stock Actual</th>
                                 <th>Estado</th>
                             </tr>
@@ -789,750 +984,431 @@
                         <tbody></tbody>
                     </table>
                 </div>
-
-                <!-- SECCIÓN CONFIGURACIÓN -->
-                <div id="configuracion" class="section">
-                    <h2>⚙️ Configuración del Sistema</h2>
-
-                    <div class="connection-status">
-                        <div class="status-dot disconnected" id="statusDot"></div>
-                        <span id="statusText">No conectado</span>
-                    </div>
-
-                    <div class="config-section">
-                        <h3>🔗 Conexión a Google Sheets</h3>
-                        <div class="form-group">
-                            <label>ID de la Hoja de Cálculo:</label>
-                            <input type="text" id="spreadsheetId" placeholder="Ejemplo: 1a2b3c4d5e6f7g8h9i0j">
-                        </div>
-                        <button class="btn btn-primary" onclick="guardarConfiguracion()">💾 GUARDAR Y CONECTAR</button>
-                    </div>
-
-                    <div class="config-section">
-                        <h3>🏢 Información de la Empresa</h3>
-                        <div class="form-group">
-                            <label>Nombre de la Empresa:</label>
-                            <input type="text" id="nombreEmpresa" placeholder="PESQUERA RINCON DEL MAR">
-                        </div>
-                        <div class="form-group">
-                            <label>Dirección:</label>
-                            <input type="text" id="direccionEmpresa" placeholder="Dirección de la empresa">
-                        </div>
-                        <div class="form-group">
-                            <label>Teléfono:</label>
-                            <input type="text" id="telefonoEmpresa" placeholder="Teléfono de contacto">
-                        </div>
-                        <button class="btn btn-primary" onclick="guardarDatosEmpresa()">💾 GUARDAR DATOS</button>
-                    </div>
-
-                    <div class="config-section">
-                        <h3>🔄 Mantenimiento</h3>
-                        <button class="btn btn-warning" onclick="cargarTodosLosDatos()">🔄 RECARGAR TODOS LOS DATOS</button>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- Factura para Impresión (oculta) -->
-    <div id="facturaImpresion" style="display: none;"></div>
-
     <script>
-        // =================== VARIABLES GLOBALES ===================
+        // =================== CONFIGURACIÓN INICIAL ===================
+        console.log('🚀 Iniciando PESQUERA RINCON DEL MAR...');
+
+        // Configuración de la API
+        const API_KEY = 'AIzaSyBHyIgNRB_Td-Zq9p2FwxSDruIsz0EOvlk';
+        const SHEETS_API_BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksZdobQBT-nDgBQk4tDHgdjJmCN83wW3pAi7Qc0yPbKIiRNEqYXxhAL8Y0HFCbOlk/exec';
+
+        // Variables globales
         let spreadsheetId = localStorage.getItem('spreadsheetId') || '';
-        let preciosData = {};
-        let inventarioData = {};
+        let isConfigured = false;
         let ventaActual = [];
-        let numeroFactura = 1;
+        let inventarioData = {};
+        let preciosData = {};
 
-        const SHEETS_API_KEY = 'AIzaSyCKvmqXmXBj5LcCKM-4jSzL7p82sihWL_8';
-
+        // Configuración de empresa
         let config = {
-            nombreEmpresa: localStorage.getItem('nombreEmpresa') || 'PESQUERA RINCON DEL MAR',
-            direccionEmpresa: localStorage.getItem('direccionEmpresa') || '',
-            telefonoEmpresa: localStorage.getItem('telefonoEmpresa') || ''
+            nombreEmpresa: localStorage.getItem('nombreEmpresa') || 'Pesquera del Mar',
+            direccionEmpresa: localStorage.getItem('direccionEmpresa') || 'Dirección de la empresa',
+            telefonoEmpresa: localStorage.getItem('telefonoEmpresa') || '(000) 000-0000'
         };
 
-        // =================== FUNCIONES DE NAVEGACIÓN ===================
+        console.log('✅ Variables inicializadas correctamente');
 
-        function cambiarTab(tabName) {
-            // Desactivar todas las tabs
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+        // =================== FUNCIONES DE FORMATO PARA PESOS COLOMBIANOS ===================
 
-            // Activar la tab seleccionada
-            event.target.classList.add('active');
-            document.getElementById(tabName).classList.add('active');
+        // Función para formatear números como pesos colombianos
+        function formatearPesos(numero) {
+            if (isNaN(numero) || numero === null || numero === undefined) {
+                return '$0';
+            }
 
-            console.log('📌 Tab cambiada a:', tabName);
+            // Redondear a número entero para pesos colombianos
+            const numeroRedondeado = Math.round(numero);
+
+            // Formatear con separadores de miles (puntos)
+            return '$' + numeroRedondeado.toLocaleString('es-CO');
         }
 
-        // =================== FUNCIONES DE UTILIDADES ===================
+        // Función para formatear números sin símbolo de moneda
+        function formatearNumero(numero) {
+            if (isNaN(numero) || numero === null || numero === undefined) {
+                return '0';
+            }
 
-        function formatearPesos(valor) {
-            return new Intl.NumberFormat('es-CO', {
-                style: 'currency',
-                currency: 'COP',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(valor);
+            const numeroRedondeado = Math.round(numero);
+            return numeroRedondeado.toLocaleString('es-CO');
         }
 
-        function mostrarAlerta(mensaje, tipo = 'success') {
-            const container = document.getElementById('alertContainer');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${tipo}`;
-            alert.textContent = mensaje;
-            alert.style.display = 'block';
 
-            container.innerHTML = '';
-            container.appendChild(alert);
+        function llamarAPIConJSONP(data = null) {
+          return new Promise((resolve, reject) => {
+            const callbackName = 'jsonp_callback_' + Math.random().toString(36).substr(2, 9);
+            const script = document.createElement('script');
 
+            // Crear función callback global
+            window[callbackName] = function(response) {
+              // Limpiar
+              delete window[callbackName];
+              if (document.body.contains(script)) {
+                document.body.removeChild(script);
+              }
+
+              // Resolver o rechazar según la respuesta
+              if (response.error) {
+                reject(new Error(response.error));
+              } else {
+                resolve(response);
+              }
+            };
+
+            // Configurar parámetros
+            const params = new URLSearchParams({
+              callback: callbackName
+            });
+
+            if (data) {
+              params.append('data', JSON.stringify(data));
+            }
+
+            // Configurar script
+            script.src = `${APPS_SCRIPT_URL}?${params}`;
+            script.onerror = () => {
+              delete window[callbackName];
+              if (document.body.contains(script)) {
+                document.body.removeChild(script);
+              }
+              reject(new Error('Error en la solicitud JSONP'));
+            };
+
+            // Timeout de 30 segundos
             setTimeout(() => {
-                alert.style.display = 'none';
+              if (window[callbackName]) {
+                delete window[callbackName];
+                if (document.body.contains(script)) {
+                  document.body.removeChild(script);
+                }
+                reject(new Error('Timeout en la solicitud JSONP'));
+              }
+            }, 30000);
+
+            document.body.appendChild(script);
+          });
+        }
+
+        // =================== FUNCIONES DE UTILIDAD ===================
+
+        // Función para mostrar alertas
+        function mostrarAlerta(mensaje, tipo = 'info') {
+            // Eliminar alertas existentes
+            const alertasExistentes = document.querySelectorAll('.alert');
+            alertasExistentes.forEach(alerta => alerta.remove());
+
+            // Crear nueva alerta
+            const alerta = document.createElement('div');
+            alerta.className = `alert alert-${tipo}`;
+            alerta.textContent = mensaje;
+
+            // Insertar al principio del contenido actual
+            const seccionActiva = document.querySelector('.section.active');
+            if (seccionActiva) {
+                seccionActiva.insertBefore(alerta, seccionActiva.firstChild);
+            }
+
+            // Auto-eliminar después de 5 segundos
+            setTimeout(() => {
+                if (alerta.parentNode) {
+                    alerta.remove();
+                }
             }, 5000);
         }
 
-        function updateConnectionStatus(status, message) {
-            const statusDot = document.getElementById('statusDot');
-            const statusText = document.getElementById('statusText');
+        // Función para actualizar el estado de conexión
+        function updateConnectionStatus(estado, mensaje) {
+            const statusElements = [
+                'connectionStatus',
+                'inventarioStatus', 
+                'preciosStatus',
+                'ventasStatus',
+                'reportesStatus'
+            ];
 
-            statusDot.className = `status-dot ${status}`;
-            statusText.textContent = message;
+            statusElements.forEach(elementId => {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.className = `connection-status status-${estado}`;
 
-            console.log(`📡 Estado de conexión: ${status} - ${message}`);
+                    let icono = '🔧';
+                    if (estado === 'connected') icono = '✅';
+                    else if (estado === 'loading') icono = '⏳';
+                    else if (estado === 'disconnected') icono = '❌';
+
+                    element.innerHTML = `<span>${icono}</span><span>${mensaje}</span>`;
+                }
+            });
         }
 
-        // =================== FUNCIONES DE GOOGLE SHEETS API ===================
+        // Función para cambiar secciones
+        window.showSection = function(seccionId) {
+            // Ocultar todas las secciones
+            const secciones = document.querySelectorAll('.section');
+            secciones.forEach(seccion => seccion.classList.remove('active'));
 
-        async function leerHoja(rango) {
-            if (!spreadsheetId) {
-                throw new Error('No se ha configurado el ID de la hoja de cálculo');
+            // Desactivar todas las pestañas
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Activar la sección seleccionada
+            const seccionSeleccionada = document.getElementById(seccionId);
+            if (seccionSeleccionada) {
+                seccionSeleccionada.classList.add('active');
             }
 
-            const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${rango}?key=${SHEETS_API_KEY}`;
+            // Activar la pestaña correspondiente
+            const tabSeleccionada = event.target;
+            if (tabSeleccionada) {
+                tabSeleccionada.classList.add('active');
+            }
 
-            console.log('📖 Leyendo hoja:', rango);
+            // Cargar datos específicos de la sección
+            if (seccionId === 'precios' && isConfigured) {
+                cargarInventarioParaPrecios();
+            }
+            if (seccionId === 'ventas' && isConfigured) {
+                cargarInventarioParaVentas();
+            }
+        };
+
+        // =================== FUNCIONES DE API ===================
+
+        // Funciones de la API de Google Sheets
+        async function leerHoja(nombreHoja) {
+            if (!spreadsheetId) {
+                throw new Error('Configure el ID del Google Sheet primero');
+            }
+
+            const range = `${nombreHoja}!A:Z`;
+            const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${range}?key=${API_KEY}`;
 
             const response = await fetch(url);
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error.message || 'Error al leer la hoja');
+                throw new Error(`Error al leer ${nombreHoja}: ${errorData.error.message}`);
             }
 
             const data = await response.json();
-            console.log('✅ Datos leídos de', rango, ':', data.values);
-
             return data.values || [];
         }
 
-        async function escribirHoja(rango, valores) {
-            if (!spreadsheetId) {
-                throw new Error('No se ha configurado el ID de la hoja de cálculo');
-            }
+        async function escribirHoja(nombreHoja, datos) {
+          if (!spreadsheetId) {
+            throw new Error('Configure el ID del Google Sheet primero');
+          }
 
-            const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${rango}?valueInputOption=RAW&key=${SHEETS_API_KEY}`;
+          const requestData = {
+            action: 'escribirHoja',
+            spreadsheetId: spreadsheetId,
+            nombreHoja: nombreHoja,
+            datos: datos
+          };
 
-            console.log('✍️ Escribiendo en hoja:', rango, valores);
-
-            const response = await fetch(url, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    values: valores
-                })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error.message || 'Error al escribir en la hoja');
-            }
-
-            const data = await response.json();
-            console.log('✅ Datos escritos en', rango);
-
-            return data;
+          return await llamarAPIConJSONP(requestData);
         }
 
-        async function agregarFila(rango, valores) {
-            if (!spreadsheetId) {
-                throw new Error('No se ha configurado el ID de la hoja de cálculo');
-            }
+        async function agregarFilaHoja(nombreHoja, fila) {
+          if (!spreadsheetId) {
+            throw new Error('Configure el ID del Google Sheet primero');
+          }
 
-            const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${rango}:append?valueInputOption=RAW&key=${SHEETS_API_KEY}`;
+          const requestData = {
+            action: 'agregarFila',
+            spreadsheetId: spreadsheetId,
+            nombreHoja: nombreHoja,
+            fila: fila
+          };
 
-            console.log('➕ Agregando fila a:', rango, valores);
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    values: [valores]
-                })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error.message || 'Error al agregar fila');
-            }
-
-            const data = await response.json();
-            console.log('✅ Fila agregada a', rango);
-
-            return data;
+          return await llamarAPIConJSONP(requestData);
         }
 
-        // =================== FUNCIONES DE PRECIOS ===================
-        
-        // Nueva función para calcular el margen automáticamente
-        function calcularMargenAutomatico() {
-            const precioCompra = parseFloat(document.getElementById('precioCompra').value) || 0;
-            const precioVenta = parseFloat(document.getElementById('precioVenta').value) || 0;
-            
-            if (precioCompra > 0 && precioVenta > 0) {
-                // Calcular margen de ganancia en porcentaje
-                const ganancia = precioVenta - precioCompra;
-                const margen = (ganancia / precioCompra) * 100;
-                
-                // Actualizar campos calculados
-                document.getElementById('margenGanancia').value = margen.toFixed(2);
-                document.getElementById('gananciaPorLibra').value = ganancia.toFixed(0);
+
+        // =================== FUNCIONES PRINCIPALES ===================
+
+        // REEMPLAZA tu función window.pruebaBasica con esta versión simplificada
+        window.pruebaBasica = async function() {
+          console.log('🧪 Iniciando prueba básica del sistema...');
+          mostrarAlerta('🧪 Probando solo Google Apps Script con JSONP...', 'warning');
+
+          try {
+            console.log('🚀 Probando Apps Script con JSONP...');
+            console.log('📍 URL que se va a probar:', APPS_SCRIPT_URL);
+
+            // Solo probar JSONP - sin Google Sheets API por ahora
+            const appsScriptResponse = await llamarAPIConJSONP();
+            console.log('✅ Apps Script respuesta:', appsScriptResponse);
+
+            if (appsScriptResponse.success || appsScriptResponse.message) {
+              mostrarAlerta('✅ Apps Script con JSONP: FUNCIONA PERFECTAMENTE', 'success');
+              console.log('🎉 El sistema está listo para usar');
             } else {
-                document.getElementById('margenGanancia').value = '';
-                document.getElementById('gananciaPorLibra').value = '';
+              mostrarAlerta('⚠️ Apps Script responde pero con formato inesperado', 'warning');
+              console.log('🔍 Respuesta recibida:', appsScriptResponse);
             }
-        }
-
-        async function cargarPrecios() {
-            updateConnectionStatus('connecting', 'Cargando precios...');
-
-            try {
-                const datos = await leerHoja('Precios!A2:E100');
-
-                preciosData = {};
-                const selectVenta = document.getElementById('tipoProductoVenta');
-                const selectInventario = document.getElementById('tipoProductoInventario');
-                const selectPrecio = document.getElementById('tipoProductoPrecio');
-
-                selectVenta.innerHTML = '<option value="">Seleccione un producto</option>';
-                selectInventario.innerHTML = '<option value="">Seleccione un producto</option>';
-                selectPrecio.innerHTML = '<option value="">Seleccione un producto</option>';
-
-                datos.forEach(fila => {
-                    if (fila[0]) {
-                        const tipo = fila[0];
-                        preciosData[tipo] = {
-                            precioCompra: parseFloat(fila[1]) || 0,
-                            margen: parseFloat(fila[2]) || 0,
-                            precioVenta: parseFloat(fila[3]) || 0,
-                            ganancia: parseFloat(fila[4]) || 0
-                        };
-
-                        const option1 = new Option(tipo, tipo);
-                        const option2 = new Option(tipo, tipo);
-                        const option3 = new Option(tipo, tipo);
-
-                        selectVenta.add(option1);
-                        selectInventario.add(option2);
-                        selectPrecio.add(option3);
-                    }
-                });
-
-                actualizarTablaPrecios();
-                updateConnectionStatus('connected', 'Precios cargados correctamente');
-                console.log('✅ Precios cargados:', preciosData);
-
-            } catch (error) {
-                updateConnectionStatus('disconnected', `Error: ${error.message}`);
-                mostrarAlerta(`Error al cargar precios: ${error.message}`, 'danger');
-            }
-        }
-
-        function actualizarTablaPrecios() {
-            const tbody = document.querySelector('#tablaPrecios tbody');
-            tbody.innerHTML = '';
-
-            Object.entries(preciosData).forEach(([tipo, datos]) => {
-                const fila = tbody.insertRow();
-                fila.innerHTML = `
-                    <td>${tipo}</td>
-                    <td>${formatearPesos(datos.precioCompra)}</td>
-                    <td>${datos.margen.toFixed(2)}%</td>
-                    <td>${formatearPesos(datos.precioVenta)}</td>
-                    <td>${formatearPesos(datos.ganancia)}</td>
-                `;
+          } catch (appsScriptError) {
+            console.error('❌ Error en Apps Script:', appsScriptError);
+            console.error('🔍 Detalles del error:', {
+              message: appsScriptError.message,
+              url: APPS_SCRIPT_URL,
+              timestamp: new Date().toISOString()
             });
-        }
+            mostrarAlerta(`❌ Error en Apps Script: ${appsScriptError.message}`, 'danger');
 
-        async function actualizarPrecio() {
-            const tipo = document.getElementById('tipoProductoPrecio').value;
-            const precioCompra = parseFloat(document.getElementById('precioCompra').value) || 0;
-            const margen = parseFloat(document.getElementById('margenGanancia').value) || 0;
-            const precioVenta = parseFloat(document.getElementById('precioVenta').value) || 0;
-            const ganancia = parseFloat(document.getElementById('gananciaPorLibra').value) || 0;
+            // Mostrar ayuda específica
+            if (appsScriptError.message.includes('Error al cargar script JSONP')) {
+              mostrarAlerta('💡 SOLUCIÓN: Verifica que hayas hecho un nuevo deployment del Apps Script y copiado la URL correcta', 'warning');
+            }
+          }
+        };
 
-            if (!tipo) {
-                mostrarAlerta('Seleccione un tipo de producto', 'warning');
+        // TAMBIÉN agrega esta función para probar la URL directamente
+        window.probarURLDirecta = function() {
+          const url = APPS_SCRIPT_URL;
+          console.log('🌐 Abriendo URL en nueva pestaña:', url);
+          mostrarAlerta('📝 Abriendo Apps Script en nueva pestaña. Deberías ver un JSON con el mensaje de funcionamiento.', 'info');
+          window.open(url, '_blank');
+        };
+
+        // Probar conexión con Google Sheets
+        window.probarConexion = async function() {
+            console.log('🔌 Iniciando prueba de conexión...');
+
+            const idSheet = document.getElementById('spreadsheetId').value.trim();
+
+            if (!idSheet) {
+                mostrarAlerta('⚠️ Ingrese el ID del Google Sheet', 'warning');
                 return;
             }
 
-            if (precioCompra <= 0 || precioVenta <= 0) {
-                mostrarAlerta('Ingrese precios válidos', 'warning');
-                return;
-            }
-
-            updateConnectionStatus('connecting', 'Actualizando precio...');
+            updateConnectionStatus('loading', 'Probando conexión...');
 
             try {
-                const datos = await leerHoja('Precios!A2:E100');
-                let filaEncontrada = -1;
+                const url = `${SHEETS_API_BASE}/${idSheet}?key=${API_KEY}`;
+                const response = await fetch(url);
 
-                datos.forEach((fila, index) => {
-                    if (fila[0] === tipo) {
-                        filaEncontrada = index + 2;
-                    }
-                });
-
-                if (filaEncontrada !== -1) {
-                    await escribirHoja(`Precios!A${filaEncontrada}:E${filaEncontrada}`, [[tipo, precioCompra, margen, precioVenta, ganancia]]);
-                } else {
-                    await agregarFila('Precios!A:E', [tipo, precioCompra, margen, precioVenta, ganancia]);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error.message);
                 }
 
-                preciosData[tipo] = { precioCompra, margen, precioVenta, ganancia };
-                actualizarTablaPrecios();
+                const data = await response.json();
+                updateConnectionStatus('connected', `Conectado a: ${data.properties.title}`);
+                mostrarAlerta('✅ Conexión exitosa con Google Sheets', 'success');
 
-                document.getElementById('precioCompra').value = '';
-                document.getElementById('margenGanancia').value = '';
-                document.getElementById('precioVenta').value = '';
-                document.getElementById('gananciaPorLibra').value = '';
-                document.getElementById('tipoProductoPrecio').value = '';
+                // Verificar hojas necesarias
+                const hojasExistentes = data.sheets.map(sheet => sheet.properties.title);
+                const hojasRequeridas = ['Inventario', 'Precios', 'Ventas', 'Configuracion'];
+                const hojasFaltantes = hojasRequeridas.filter(hoja => !hojasExistentes.includes(hoja));
 
-                updateConnectionStatus('connected', 'Precio actualizado correctamente');
-                mostrarAlerta('Precio actualizado correctamente', 'success');
+                if (hojasFaltantes.length > 0) {
+                    mostrarAlerta(`⚠️ Faltan las siguientes hojas: ${hojasFaltantes.join(', ')}. Use el botón "Crear Estructura".`, 'warning');
+                } else {
+                    mostrarAlerta('🎉 Todas las hojas necesarias están disponibles', 'success');
+
+                    // *** AQUÍ ESTÁ LA CORRECCIÓN PRINCIPAL ***
+                    // Actualizar el spreadsheetId temporalmente para poder cargar datos
+                    const spreadsheetIdAnterior = spreadsheetId;
+                    spreadsheetId = idSheet;
+
+                    try {
+                        // Cargar datos existentes de las hojas
+                        console.log('📊 Cargando datos existentes...');
+                        await cargarTodosLosDatos();
+                        mostrarAlerta('📊 Datos cargados correctamente desde Google Sheets', 'success');
+                    } catch (errorCarga) {
+                        console.error('Error al cargar datos:', errorCarga);
+                        mostrarAlerta(`⚠️ Conexión exitosa pero error al cargar datos: ${errorCarga.message}`, 'warning');
+                        spreadsheetId = spreadsheetIdAnterior; // Restaurar ID anterior si falla
+                    }
+                }
 
             } catch (error) {
                 updateConnectionStatus('disconnected', `Error: ${error.message}`);
-                mostrarAlerta(`Error al actualizar precio: ${error.message}`, 'danger');
+                mostrarAlerta(`❌ Error de conexión: ${error.message}`, 'danger');
             }
-        }
+        };
 
-        // =================== FUNCIONES DE INVENTARIO ===================
-
-        async function cargarInventario() {
-            updateConnectionStatus('connecting', 'Cargando inventario...');
-
-            try {
-                const datos = await leerHoja('Inventario!A2:E100');
-
-                inventarioData = {};
-
-                datos.forEach(fila => {
-                    if (fila[0]) {
-                        inventarioData[fila[0]] = {
-                            stock: parseFloat(fila[1]) || 0,
-                            precioPromedio: parseFloat(fila[2]) || 0,
-                            valorTotal: parseFloat(fila[3]) || 0,
-                            ultimaActualizacion: fila[4] || ''
-                        };
-                    }
-                });
-
-                actualizarTablaInventario();
-                updateConnectionStatus('connected', 'Inventario cargado correctamente');
-                console.log('✅ Inventario cargado:', inventarioData);
-
-            } catch (error) {
-                updateConnectionStatus('disconnected', `Error: ${error.message}`);
-                mostrarAlerta(`Error al cargar inventario: ${error.message}`, 'danger');
-            }
-        }
-
-        function actualizarTablaInventario() {
-            const tbody = document.querySelector('#tablaInventario tbody');
-            tbody.innerHTML = '';
-
-            Object.entries(inventarioData).forEach(([tipo, datos]) => {
-                const fila = tbody.insertRow();
-
-                let claseStock = '';
-                if (datos.stock === 0) {
-                    claseStock = 'style="background-color: #f8d7da;"';
-                } else if (datos.stock < 5) {
-                    claseStock = 'style="background-color: #fff3cd;"';
-                }
-
-                fila.innerHTML = `
-                    <td>${tipo}</td>
-                    <td ${claseStock}>${datos.stock.toFixed(1)} lbs</td>
-                    <td>${formatearPesos(datos.precioPromedio)}</td>
-                    <td>${formatearPesos(datos.valorTotal)}</td>
-                    <td>${datos.ultimaActualizacion}</td>
-                `;
-            });
-        }
-
-        async function agregarInventario() {
-            const tipo = document.getElementById('tipoProductoInventario').value;
-            const cantidad = parseFloat(document.getElementById('cantidadInventario').value) || 0;
-            const precioCompra = parseFloat(document.getElementById('precioCompraInventario').value) || 0;
-
-            if (!tipo || cantidad <= 0 || precioCompra <= 0) {
-                mostrarAlerta('Complete todos los campos correctamente', 'warning');
+        // Crear estructura de hojas
+        window.crearEstructuraHojas = async function() {
+            if (!spreadsheetId) {
+                mostrarAlerta('⚠️ Configure el ID del Google Sheet primero', 'warning');
                 return;
             }
 
-            updateConnectionStatus('connecting', 'Actualizando inventario...');
-
             try {
-                const stockActual = inventarioData[tipo]?.stock || 0;
-                const precioPromActual = inventarioData[tipo]?.precioPromedio || 0;
-                const valorActual = inventarioData[tipo]?.valorTotal || 0;
+                updateConnectionStatus('loading', 'Creando estructura...');
 
-                const nuevoStock = stockActual + cantidad;
-                const nuevoValorTotal = valorActual + (cantidad * precioCompra);
-                const nuevoPrecioPromedio = nuevoValorTotal / nuevoStock;
-                const fechaActual = new Date().toISOString().split('T')[0];
-
-                const datos = await leerHoja('Inventario!A2:E100');
-                let filaEncontrada = -1;
-
-                datos.forEach((fila, index) => {
-                    if (fila[0] === tipo) {
-                        filaEncontrada = index + 2;
-                    }
-                });
-
-                if (filaEncontrada !== -1) {
-                    await escribirHoja(`Inventario!A${filaEncontrada}:E${filaEncontrada}`, 
-                        [[tipo, nuevoStock, nuevoPrecioPromedio, nuevoValorTotal, fechaActual]]);
-                } else {
-                    await agregarFila('Inventario!A:E', 
-                        [tipo, nuevoStock, nuevoPrecioPromedio, nuevoValorTotal, fechaActual]);
-                }
-
-                inventarioData[tipo] = {
-                    stock: nuevoStock,
-                    precioPromedio: nuevoPrecioPromedio,
-                    valorTotal: nuevoValorTotal,
-                    ultimaActualizacion: fechaActual
+                const estructuras = {
+                    'Inventario': [
+                        ['Tipo', 'Stock', 'PrecioPromedio', 'ValorTotal', 'UltimaActualizacion']
+                    ],
+                    'Precios': [
+                        ['Tipo', 'PrecioCompra', 'Margen', 'PrecioVenta', 'Ganancia']
+                    ],
+                    'Ventas': [
+                        ['NumeroFactura', 'Fecha', 'Cliente', 'Productos', 'Total']
+                    ],
+                    'Configuracion': [
+                        ['UltimoNumeroFactura', 'NombreEmpresa', 'DireccionEmpresa', 'TelefonoEmpresa'],
+                        [1, config.nombreEmpresa, config.direccionEmpresa, config.telefonoEmpresa]
+                    ]
                 };
 
-                actualizarTablaInventario();
-
-                document.getElementById('cantidadInventario').value = '';
-                document.getElementById('precioCompraInventario').value = '';
-                document.getElementById('tipoProductoInventario').value = '';
-
-                updateConnectionStatus('connected', 'Inventario actualizado correctamente');
-                mostrarAlerta(`Se agregaron ${cantidad} lbs de ${tipo}`, 'success');
-
-            } catch (error) {
-                updateConnectionStatus('disconnected', `Error: ${error.message}`);
-                mostrarAlerta(`Error al actualizar inventario: ${error.message}`, 'danger');
-            }
-        }
-
-        async function restarInventario() {
-            const tipo = document.getElementById('tipoProductoInventario').value;
-            const cantidad = parseFloat(document.getElementById('cantidadInventario').value) || 0;
-
-            if (!tipo || cantidad <= 0) {
-                mostrarAlerta('Complete todos los campos correctamente', 'warning');
-                return;
-            }
-
-            const stockActual = inventarioData[tipo]?.stock || 0;
-
-            if (cantidad > stockActual) {
-                mostrarAlerta(`No hay suficiente stock. Stock actual: ${stockActual.toFixed(1)} lbs`, 'danger');
-                return;
-            }
-
-            updateConnectionStatus('connecting', 'Actualizando inventario...');
-
-            try {
-                const precioPromActual = inventarioData[tipo]?.precioPromedio || 0;
-                const nuevoStock = stockActual - cantidad;
-                const nuevoValorTotal = nuevoStock * precioPromActual;
-                const fechaActual = new Date().toISOString().split('T')[0];
-
-                const datos = await leerHoja('Inventario!A2:E100');
-                let filaEncontrada = -1;
-
-                datos.forEach((fila, index) => {
-                    if (fila[0] === tipo) {
-                        filaEncontrada = index + 2;
-                    }
-                });
-
-                if (filaEncontrada !== -1) {
-                    await escribirHoja(`Inventario!A${filaEncontrada}:E${filaEncontrada}`, 
-                        [[tipo, nuevoStock, precioPromActual, nuevoValorTotal, fechaActual]]);
-                }
-
-                inventarioData[tipo] = {
-                    stock: nuevoStock,
-                    precioPromedio: precioPromActual,
-                    valorTotal: nuevoValorTotal,
-                    ultimaActualizacion: fechaActual
-                };
-
-                actualizarTablaInventario();
-
-                document.getElementById('cantidadInventario').value = '';
-                document.getElementById('tipoProductoInventario').value = '';
-
-                updateConnectionStatus('connected', 'Inventario actualizado correctamente');
-                mostrarAlerta(`Se restaron ${cantidad} lbs de ${tipo}`, 'success');
-
-            } catch (error) {
-                updateConnectionStatus('disconnected', `Error: ${error.message}`);
-                mostrarAlerta(`Error al actualizar inventario: ${error.message}`, 'danger');
-            }
-        }
-
-        // =================== FUNCIONES DE VENTAS ===================
-
-        function agregarProductoVenta() {
-            const tipo = document.getElementById('tipoProductoVenta').value;
-            const cantidad = parseFloat(document.getElementById('cantidadVenta').value) || 0;
-
-            if (!tipo || cantidad <= 0) {
-                mostrarAlerta('Seleccione un producto e ingrese una cantidad válida', 'warning');
-                return;
-            }
-
-            const stockDisponible = inventarioData[tipo]?.stock || 0;
-            if (cantidad > stockDisponible) {
-                mostrarAlerta(`No hay suficiente stock. Disponible: ${stockDisponible.toFixed(1)} lbs`, 'danger');
-                return;
-            }
-
-            const precioUnitario = preciosData[tipo]?.precioVenta || 0;
-            const subtotal = cantidad * precioUnitario;
-
-            ventaActual.push({
-                tipo,
-                cantidad,
-                precioUnitario,
-                subtotal
-            });
-
-            actualizarVistaVenta();
-
-            document.getElementById('tipoProductoVenta').value = '';
-            document.getElementById('cantidadVenta').value = '';
-
-            mostrarAlerta(`${tipo} agregado a la venta`, 'success');
-        }
-
-        function actualizarVistaVenta() {
-            const container = document.getElementById('productosVenta');
-            container.innerHTML = '';
-
-            let total = 0;
-
-            ventaActual.forEach((producto, index) => {
-                total += producto.subtotal;
-
-                const div = document.createElement('div');
-                div.className = 'venta-item';
-                div.innerHTML = `
-                    <div>
-                        <strong>${producto.tipo}</strong><br>
-                        ${producto.cantidad.toFixed(1)} lbs × ${formatearPesos(producto.precioUnitario)} = ${formatearPesos(producto.subtotal)}
-                    </div>
-                    <button class="btn btn-danger" onclick="eliminarProductoVenta(${index})">🗑️</button>
-                `;
-                container.appendChild(div);
-            });
-
-            document.getElementById('totalVenta').textContent = formatearPesos(total);
-        }
-
-        function eliminarProductoVenta(index) {
-            ventaActual.splice(index, 1);
-            actualizarVistaVenta();
-            mostrarAlerta('Producto eliminado de la venta', 'warning');
-        }
-
-        async function finalizarVenta() {
-            const cliente = document.getElementById('clienteVenta').value.trim();
-
-            if (!cliente) {
-                mostrarAlerta('Ingrese el nombre del cliente', 'warning');
-                return;
-            }
-
-            if (ventaActual.length === 0) {
-                mostrarAlerta('Agregue al menos un producto a la venta', 'warning');
-                return;
-            }
-
-            if (!confirm('¿Confirmar esta venta?')) {
-                return;
-            }
-
-            updateConnectionStatus('connecting', 'Procesando venta...');
-
-            try {
-                // Obtener número de factura actual
-                const configData = await leerHoja('Configuracion!A2:D2');
-                numeroFactura = parseInt(configData[0][0]) || 1;
-
-                const fechaActual = new Date().toISOString().split('T')[0];
-                let total = 0;
-                let productosTexto = '';
-
-                // Procesar cada producto
-                for (const producto of ventaActual) {
-                    total += producto.subtotal;
-                    productosTexto += `${producto.tipo} (${producto.cantidad.toFixed(1)} lbs), `;
-
-                    // Actualizar inventario
-                    const stockActual = inventarioData[producto.tipo]?.stock || 0;
-                    const precioPromActual = inventarioData[producto.tipo]?.precioPromedio || 0;
-                    const nuevoStock = stockActual - producto.cantidad;
-                    const nuevoValorTotal = nuevoStock * precioPromActual;
-
-                    const inventarioDatos = await leerHoja('Inventario!A2:E100');
-                    let filaInventario = -1;
-
-                    inventarioDatos.forEach((fila, index) => {
-                        if (fila[0] === producto.tipo) {
-                            filaInventario = index + 2;
-                        }
-                    });
-
-                    if (filaInventario !== -1) {
-                        await escribirHoja(`Inventario!A${filaInventario}:E${filaInventario}`, 
-                            [[producto.tipo, nuevoStock, precioPromActual, nuevoValorTotal, fechaActual]]);
-
-                        inventarioData[producto.tipo].stock = nuevoStock;
-                        inventarioData[producto.tipo].valorTotal = nuevoValorTotal;
-                        inventarioData[producto.tipo].ultimaActualizacion = fechaActual;
+                let hojasCreadas = 0;
+                for (const [nombreHoja, datos] of Object.entries(estructuras)) {
+                    try {
+                        await escribirHoja(nombreHoja, datos);
+                        hojasCreadas++;
+                    } catch (error) {
+                        mostrarAlerta(`Error al crear hoja ${nombreHoja}: ${error.message}`, 'danger');
                     }
                 }
 
-                productosTexto = productosTexto.slice(0, -2);
-
-                // Registrar venta
-                await agregarFila('Ventas!A:E', [numeroFactura, fechaActual, cliente, productosTexto, total]);
-
-                // Actualizar número de factura
-                numeroFactura++;
-                await escribirHoja('Configuracion!A2:A2', [[numeroFactura]]);
-
-                // Generar factura
-                generarFactura(numeroFactura - 1, fechaActual, cliente, ventaActual, total);
-
-                // Limpiar venta
-                ventaActual = [];
-                document.getElementById('clienteVenta').value = '';
-                actualizarVistaVenta();
-                actualizarTablaInventario();
-
-                updateConnectionStatus('connected', 'Venta procesada correctamente');
-                mostrarAlerta(`Venta #${numeroFactura - 1} registrada exitosamente`, 'success');
-
-                // Imprimir factura
-                setTimeout(() => {
-                    if (confirm('¿Desea imprimir la factura?')) {
-                        window.print();
-                    }
-                }, 500);
+                if (hojasCreadas === Object.keys(estructuras).length) {
+                    updateConnectionStatus('connected', 'Estructura creada correctamente');
+                    mostrarAlerta('🎉 Estructura de hojas creada exitosamente', 'success');
+                }
 
             } catch (error) {
                 updateConnectionStatus('disconnected', `Error: ${error.message}`);
-                mostrarAlerta(`Error al procesar venta: ${error.message}`, 'danger');
+                mostrarAlerta(`❌ Error al crear estructura: ${error.message}`, 'danger');
             }
-        }
+        };
 
-        function generarFactura(numero, fecha, cliente, productos, total) {
-            const facturaDiv = document.getElementById('facturaImpresion');
+        // Guardar configuración
+        window.guardarConfiguracion = async function() {
+            const newSpreadsheetId = document.getElementById('spreadsheetId').value.trim();
 
-            let productosHTML = '';
-            productos.forEach(p => {
-                productosHTML += `
-                    <tr>
-                        <td>${p.tipo}</td>
-                        <td>${p.cantidad.toFixed(1)} lbs</td>
-                        <td>${formatearPesos(p.precioUnitario)}</td>
-                        <td>${formatearPesos(p.subtotal)}</td>
-                    </tr>
-                `;
-            });
-
-            facturaDiv.innerHTML = `
-                <div class="factura-preview">
-                    <div class="factura-header">
-                        <h1>🐟 ${config.nombreEmpresa}</h1>
-                        <p>${config.direccionEmpresa}</p>
-                        <p>Tel: ${config.telefonoEmpresa}</p>
-                        <h2>FACTURA DE VENTA</h2>
-                        <p>Factura #${numero.toString().padStart(6, '0')}</p>
-                    </div>
-
-                    <div class="factura-info">
-                        <div>
-                            <strong>Fecha:</strong> ${fecha}<br>
-                            <strong>Cliente:</strong> ${cliente}
-                        </div>
-                    </div>
-
-                    <div class="factura-productos">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Producto</th>
-                                    <th>Cantidad</th>
-                                    <th>Precio Unitario</th>
-                                    <th>Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${productosHTML}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="factura-total">
-                        TOTAL: ${formatearPesos(total)}
-                    </div>
-
-                    <p style="text-align: center; margin-top: 30px; color: #666;">
-                        ¡Gracias por su compra!
-                    </p>
-                </div>
-            `;
-        }
-
-        // =================== FUNCIONES DE CONFIGURACIÓN ===================
-
-        function guardarConfiguracion() {
-            const id = document.getElementById('spreadsheetId').value.trim();
-
-            if (!id) {
-                mostrarAlerta('Ingrese un ID de hoja de cálculo válido', 'warning');
+            if (!newSpreadsheetId) {
+                mostrarAlerta('⚠️ Ingrese el ID del Google Sheet', 'warning');
                 return;
             }
 
-            spreadsheetId = id;
+            spreadsheetId = newSpreadsheetId;
             localStorage.setItem('spreadsheetId', spreadsheetId);
+            isConfigured = true;
 
-            updateConnectionStatus('connected', 'Configuración guardada');
-            mostrarAlerta('Configuración guardada correctamente', 'success');
+            mostrarAlerta('💾 Configuración guardada correctamente', 'success');
 
-            cargarTodosLosDatos();
-        }
+            // Cargar datos después de guardar configuración
+            try {
+                await cargarTodosLosDatos();
+                mostrarAlerta('📊 Datos cargados correctamente', 'success');
+            } catch (error) {
+                console.error('Error al cargar datos después de guardar configuración:', error);
+                mostrarAlerta(`⚠️ Configuración guardada pero error al cargar datos: ${error.message}`, 'warning');
+            }
+        };
 
-        function guardarDatosEmpresa() {
+        // Guardar datos de empresa
+        window.guardarDatosEmpresa = function() {
             config.nombreEmpresa = document.getElementById('nombreEmpresa').value;
             config.direccionEmpresa = document.getElementById('direccionEmpresa').value;
             config.telefonoEmpresa = document.getElementById('telefonoEmpresa').value;
@@ -1541,93 +1417,699 @@
             localStorage.setItem('direccionEmpresa', config.direccionEmpresa);
             localStorage.setItem('telefonoEmpresa', config.telefonoEmpresa);
 
-            mostrarAlerta('Datos de empresa guardados correctamente', 'success');
-        }
+            mostrarAlerta('💾 Datos de empresa guardados', 'success');
+        };
 
+        // =================== FUNCIONES DE DATOS ===================
+
+        // Cargar todos los datos
         async function cargarTodosLosDatos() {
             if (!spreadsheetId) {
-                mostrarAlerta('Configure primero el ID de la hoja de cálculo', 'warning');
+                throw new Error('Configure el ID del Google Sheet primero');
+            }
+
+            try {
+                updateConnectionStatus('loading', 'Cargando datos...');
+
+                console.log('📊 Cargando inventario...');
+                await cargarInventario();
+
+                console.log('💰 Cargando precios...');
+                await cargarPrecios();
+
+                updateConnectionStatus('connected', 'Datos cargados correctamente');
+                isConfigured = true;
+
+                console.log('✅ Todos los datos cargados exitosamente');
+
+            } catch (error) {
+                console.error('❌ Error al cargar datos:', error);
+                updateConnectionStatus('disconnected', `Error: ${error.message}`);
+                throw error; // Re-lanzar el error para que lo maneje quien llama
+            }
+        }
+
+        // Cargar inventario
+        async function cargarInventario() {
+            try {
+                const datos = await leerHoja('Inventario');
+
+                inventarioData = {};
+                if (datos.length > 1) {
+                    for (let i = 1; i < datos.length; i++) {
+                        const fila = datos[i];
+                        if (fila[0]) {
+                            inventarioData[fila[0]] = {
+                                stock: parseFloat(fila[1]) || 0,
+                                precioPromedio: parseFloat(fila[2]) || 0,
+                                valorTotal: parseFloat(fila[3]) || 0,
+                                ultimaActualizacion: fila[4] || ''
+                            };
+                        }
+                    }
+                }
+
+                actualizarTablaInventario();
+            } catch (error) {
+                console.error('Error al cargar inventario:', error);
+                throw error;
+            }
+        }
+
+        // Cargar precios
+        async function cargarPrecios() {
+            try {
+                const datos = await leerHoja('Precios');
+
+                preciosData = {};
+                if (datos.length > 1) {
+                    for (let i = 1; i < datos.length; i++) {
+                        const fila = datos[i];
+                        if (fila[0]) {
+                            preciosData[fila[0]] = {
+                                precioCompra: parseFloat(fila[1]) || 0,
+                                margen: parseFloat(fila[2]) || 0,
+                                precioVenta: parseFloat(fila[3]) || 0,
+                                ganancia: parseFloat(fila[4]) || 0
+                            };
+                        }
+                    }
+                }
+
+                actualizarTablaPrecios();
+            } catch (error) {
+                console.error('Error al cargar precios:', error);
+                throw error;
+            }
+        }
+        // Función para verificar si hay datos en las hojas
+        async function verificarDatosExistentes() {
+            try {
+                const inventarioData = await leerHoja('Inventario');
+                const preciosData = await leerHoja('Precios');
+                const ventasData = await leerHoja('Ventas');
+
+                const tieneInventario = inventarioData.length > 1;
+                const tienePrecios = preciosData.length > 1;
+                const tieneVentas = ventasData.length > 1;
+
+                console.log('📊 Estado de los datos:', {
+                    inventario: tieneInventario ? `${inventarioData.length - 1} items` : 'vacío',
+                    precios: tienePrecios ? `${preciosData.length - 1} items` : 'vacío',
+                    ventas: tieneVentas ? `${ventasData.length - 1} items` : 'vacío'
+                });
+
+                return { tieneInventario, tienePrecios, tieneVentas };
+            } catch (error) {
+                console.error('Error al verificar datos existentes:', error);
+                return { tieneInventario: false, tienePrecios: false, tieneVentas: false };
+            }
+        }
+
+        // =================== FUNCIONES DE INVENTARIO ===================
+
+        // Agregar inventario
+        window.agregarInventario = async function() {
+            if (!isConfigured) {
+                mostrarAlerta('Configure el sistema primero', 'warning');
                 return;
             }
 
-            updateConnectionStatus('connecting', 'Cargando todos los datos...');
+            const tipo = document.getElementById('tipoPescadoInventario').value;
+            const libras = parseFloat(document.getElementById('librasRecibidas').value);
+            const precio = parseFloat(document.getElementById('precioCompra').value);
+
+            if (!tipo || !libras || !precio) {
+                mostrarAlerta('Complete todos los campos', 'warning');
+                return;
+            }
+
+            const btnAgregar = document.getElementById('btnAgregarInventario');
+            btnAgregar.disabled = true;
+            btnAgregar.innerHTML = '<span class="loading"></span> AGREGANDO...';
 
             try {
-                await cargarPrecios();
-                await cargarInventario();
+                // Calcular nuevo inventario
+                if (!inventarioData[tipo]) {
+                    inventarioData[tipo] = { stock: 0, precioPromedio: 0, valorTotal: 0 };
+                }
 
-                updateConnectionStatus('connected', 'Todos los datos cargados');
-                mostrarAlerta('Todos los datos cargados correctamente', 'success');
+                const valorAnterior = inventarioData[tipo].valorTotal;
+
+                inventarioData[tipo].stock += libras;
+                inventarioData[tipo].valorTotal = valorAnterior + (libras * precio);
+                inventarioData[tipo].precioPromedio = inventarioData[tipo].valorTotal / inventarioData[tipo].stock;
+                inventarioData[tipo].ultimaActualizacion = new Date().toLocaleDateString();
+
+                // Preparar datos para escribir
+                const datosInventario = [
+                    ['Tipo', 'Stock', 'PrecioPromedio', 'ValorTotal', 'UltimaActualizacion'],
+                    ...Object.entries(inventarioData).map(([tipoPez, datos]) => [
+                        tipoPez,
+                        datos.stock,
+                        datos.precioPromedio,
+                        datos.valorTotal,
+                        datos.ultimaActualizacion
+                    ])
+                ];
+
+                await escribirHoja('Inventario', datosInventario);
+
+                // Limpiar formulario
+                document.getElementById('tipoPescadoInventario').value = '';
+                document.getElementById('librasRecibidas').value = '';
+                document.getElementById('precioCompra').value = '';
+
+                actualizarTablaInventario();
+                mostrarAlerta('Inventario actualizado correctamente', 'success');
+
             } catch (error) {
-                updateConnectionStatus('disconnected', `Error: ${error.message}`);
-                mostrarAlerta(`Error al cargar datos: ${error.message}`, 'danger');
+                mostrarAlerta(`Error al actualizar inventario: ${error.message}`, 'danger');
+            } finally {
+                btnAgregar.disabled = false;
+                btnAgregar.innerHTML = '+ AGREGAR AL INVENTARIO';
+            }
+        };
+
+        // Actualizar tabla de inventario
+        function actualizarTablaInventario() {
+            const tbody = document.querySelector('#tablaInventario tbody');
+            tbody.innerHTML = '';
+
+            for (const [tipo, datos] of Object.entries(inventarioData)) {
+                const fila = tbody.insertRow();
+
+                let estado = '✅ Disponible';
+                let claseEstado = '';
+
+                if (datos.stock === 0) {
+                    estado = '🔴 Agotado';
+                    claseEstado = 'style="background-color: #f8d7da;"';
+                } else if (datos.stock < 5) {
+                    estado = '🟠 Crítico';
+                    claseEstado = 'style="background-color: #fff3cd;"';
+                } else if (datos.stock < 10) {
+                    estado = '🟡 Bajo';
+                    claseEstado = 'style="background-color: #fff3cd;"';
+                }
+
+                fila.innerHTML = `
+                    <td>${tipo}</td>
+                    <td>${datos.stock.toFixed(1)}</td>
+                    <td>${formatearPesos(datos.precioPromedio)}</td>
+                    <td>${formatearPesos(datos.valorTotal)}</td>
+                    <td>${datos.ultimaActualizacion || 'N/A'}</td>
+                    <td ${claseEstado}>${estado}</td>
+                `;
             }
         }
 
+        // =================== FUNCIONES DE PRECIOS ===================
+
+        // Cargar inventario para precios
+        function cargarInventarioParaPrecios() {
+            const select = document.getElementById('tipoPescadoPrecio');
+            select.innerHTML = '<option value="">Seleccionar...</option>';
+
+            for (const tipo in inventarioData) {
+                select.innerHTML += `<option value="${tipo}">${tipo}</option>`;
+            }
+        }
+
+        // Configurar precio
+        window.configurarPrecio = async function() {
+            if (!isConfigured) {
+                mostrarAlerta('Configure el sistema primero', 'warning');
+                return;
+            }
+
+            const tipo = document.getElementById('tipoPescadoPrecio').value;
+            const margen = parseFloat(document.getElementById('margenGanancia').value);
+            const precioManual = parseFloat(document.getElementById('precioVentaManual').value);
+
+            if (!tipo) {
+                mostrarAlerta('Seleccione un tipo de pescado', 'warning');
+                return;
+            }
+
+            if (!inventarioData[tipo]) {
+                mostrarAlerta('Este pescado no existe en el inventario', 'warning');
+                return;
+            }
+
+            const btnConfigurar = document.getElementById('btnConfigurarPrecio');
+            btnConfigurar.disabled = true;
+            btnConfigurar.innerHTML = '<span class="loading"></span> GUARDANDO...';
+
+            try {
+                const precioCompra = inventarioData[tipo].precioPromedio;
+                let precioVenta;
+
+                if (precioManual) {
+                    precioVenta = precioManual;
+                } else if (margen) {
+                    precioVenta = precioCompra * (1 + margen / 100);
+                } else {
+                    mostrarAlerta('Ingrese un margen o precio manual', 'warning');
+                    return;
+                }
+
+                preciosData[tipo] = {
+                    precioCompra: precioCompra,
+                    margen: margen || ((precioVenta - precioCompra) / precioCompra * 100),
+                    precioVenta: precioVenta,
+                    ganancia: precioVenta - precioCompra
+                };
+
+                // Preparar datos para escribir
+                const datosPrecios = [
+                    ['Tipo', 'PrecioCompra', 'Margen', 'PrecioVenta', 'Ganancia'],
+                    ...Object.entries(preciosData).map(([tipoPez, datos]) => [
+                        tipoPez,
+                        datos.precioCompra,
+                        datos.margen,
+                        datos.precioVenta,
+                        datos.ganancia
+                    ])
+                ];
+
+                await escribirHoja('Precios', datosPrecios);
+
+                // Limpiar formulario
+                document.getElementById('tipoPescadoPrecio').value = '';
+                document.getElementById('margenGanancia').value = '30';
+                document.getElementById('precioVentaManual').value = '';
+
+                actualizarTablaPrecios();
+                mostrarAlerta('Precio configurado correctamente', 'success');
+
+            } catch (error) {
+                mostrarAlerta(`Error al configurar precio: ${error.message}`, 'danger');
+            } finally {
+                btnConfigurar.disabled = false;
+                btnConfigurar.innerHTML = '💾 GUARDAR PRECIO';
+            }
+        };
+
+        // Actualizar tabla de precios
+        function actualizarTablaPrecios() {
+            const tbody = document.querySelector('#tablaPrecios tbody');
+            tbody.innerHTML = '';
+
+            for (const [tipo, datos] of Object.entries(preciosData)) {
+                const fila = tbody.insertRow();
+                fila.innerHTML = `
+                    <td>${tipo}</td>
+                    <td>${formatearPesos(datos.precioCompra)}</td>
+                    <td>${datos.margen.toFixed(1)}%</td>
+                    <td>${formatearPesos(datos.precioVenta)}</td>
+                    <td>${formatearPesos(datos.ganancia)}</td>
+                    <td><button class="btn btn-danger" onclick="eliminarPrecio('${tipo}')">Eliminar</button></td>
+                `;
+            }
+        }
+
+        // Eliminar precio
+        window.eliminarPrecio = async function(tipo) {
+            if (!confirm(`¿Está seguro de eliminar el precio de ${tipo}?`)) {
+                return;
+            }
+
+            try {
+                delete preciosData[tipo];
+
+                const datosPrecios = [
+                    ['Tipo', 'PrecioCompra', 'Margen', 'PrecioVenta', 'Ganancia'],
+                    ...Object.entries(preciosData).map(([tipoPez, datos]) => [
+                        tipoPez,
+                        datos.precioCompra,
+                        datos.margen,
+                        datos.precioVenta,
+                        datos.ganancia
+                    ])
+                ];
+
+                await escribirHoja('Precios', datosPrecios);
+                actualizarTablaPrecios();
+                mostrarAlerta('Precio eliminado correctamente', 'success');
+
+            } catch (error) {
+                mostrarAlerta(`Error al eliminar precio: ${error.message}`, 'danger');
+            }
+        };
+
+        // =================== FUNCIONES DE VENTAS ===================
+
+        // Cargar inventario para ventas
+        function cargarInventarioParaVentas() {
+            const select = document.getElementById('tipoPescadoVenta');
+            select.innerHTML = '<option value="">Seleccionar...</option>';
+
+            for (const tipo in inventarioData) {
+                if (inventarioData[tipo].stock > 0 && preciosData[tipo]) {
+                    select.innerHTML += `<option value="${tipo}">${tipo} (${inventarioData[tipo].stock.toFixed(1)} lbs disponibles)</option>`;
+                }
+            }
+
+            // Event listener para cargar precio automáticamente
+            select.addEventListener('change', function() {
+                const tipoSeleccionado = this.value;
+                const precioInput = document.getElementById('precioVentaProducto');
+
+                if (tipoSeleccionado && preciosData[tipoSeleccionado]) {
+                    precioInput.value = preciosData[tipoSeleccionado].precioVenta.toFixed(2);
+                } else {
+                    precioInput.value = '';
+                }
+            });
+        }
+
+        // Agregar producto a venta
+        window.agregarProductoVenta = function() {
+            const tipo = document.getElementById('tipoPescadoVenta').value;
+            const cantidad = parseFloat(document.getElementById('cantidadVenta').value);
+            const precio = parseFloat(document.getElementById('precioVentaProducto').value);
+
+            if (!tipo || !cantidad || !precio) {
+                mostrarAlerta('Complete todos los campos del producto', 'warning');
+                return;
+            }
+
+            if (cantidad > inventarioData[tipo].stock) {
+                mostrarAlerta(`Solo hay ${inventarioData[tipo].stock.toFixed(1)} libras disponibles de ${tipo}`, 'warning');
+                return;
+            }
+
+            const subtotal = cantidad * precio;
+
+            ventaActual.push({
+                tipo: tipo,
+                cantidad: cantidad,
+                precio: precio,
+                subtotal: subtotal
+            });
+
+            // Limpiar campos
+            document.getElementById('tipoPescadoVenta').value = '';
+            document.getElementById('cantidadVenta').value = '';
+            document.getElementById('precioVentaProducto').value = '';
+
+            actualizarTablaVentaActual();
+        };
+
+        // Actualizar tabla de venta actual
+        function actualizarTablaVentaActual() {
+            const tbody = document.querySelector('#tablaVentaActual tbody');
+            tbody.innerHTML = '';
+
+            let total = 0;
+
+            ventaActual.forEach((producto, index) => {
+                const fila = tbody.insertRow();
+                fila.innerHTML = `
+                    <td>${producto.tipo}</td>
+                    <td>${producto.cantidad.toFixed(1)}</td>
+                    <td>${formatearPesos(producto.precio)}</td>
+                    <td>${formatearPesos(producto.subtotal)}</td>
+                    <td><button class="btn btn-danger" onclick="eliminarProductoVenta(${index})">Eliminar</button></td>
+                `;
+                total += producto.subtotal;
+            });
+
+            document.getElementById('totalVenta').textContent = formatearNumero(total);
+        }
+
+        // Eliminar producto de venta
+        window.eliminarProductoVenta = function(index) {
+            ventaActual.splice(index, 1);
+            actualizarTablaVentaActual();
+        };
+
+        // Generar factura
+        window.generarFactura = async function() {
+            if (!isConfigured) {
+                mostrarAlerta('Configure el sistema primero', 'warning');
+                return;
+            }
+
+            if (ventaActual.length === 0) {
+                mostrarAlerta('Agregue al menos un producto a la venta', 'warning');
+                return;
+            }
+
+            const cliente = document.getElementById('nombreCliente').value || 'Cliente General';
+            const telefono = document.getElementById('telefonoCliente').value || 'N/A';
+
+            const btnGenerar = document.getElementById('btnGenerarFactura');
+            btnGenerar.disabled = true;
+            btnGenerar.innerHTML = '<span class="loading"></span> GENERANDO...';
+
+            try {
+                // Verificar stock
+                for (const producto of ventaActual) {
+                    if (producto.cantidad > inventarioData[producto.tipo].stock) {
+                        mostrarAlerta(`Stock insuficiente para ${producto.tipo}`, 'danger');
+                        return;
+                    }
+                }
+
+                const total = ventaActual.reduce((sum, producto) => sum + producto.subtotal, 0);
+
+                // Obtener número de factura
+                const numeroFactura = await obtenerSiguienteNumeroFactura();
+
+                // Actualizar inventario
+                ventaActual.forEach(producto => {
+                    inventarioData[producto.tipo].stock -= producto.cantidad;
+                    inventarioData[producto.tipo].valorTotal = inventarioData[producto.tipo].stock * inventarioData[producto.tipo].precioPromedio;
+                });
+
+                // Guardar venta
+                const venta = {
+                    numero: numeroFactura,
+                    fecha: new Date().toLocaleDateString(),
+                    cliente: cliente,
+                    productos: ventaActual.map(p => `${p.tipo} (${p.cantidad.toFixed(1)} lbs)`).join(', '),
+                    total: total
+                };
+
+                await Promise.all([
+                    guardarVenta(venta),
+                    actualizarInventarioEnSheets(),
+                    actualizarNumeroFactura(numeroFactura + 1)
+                ]);
+
+                // Generar HTML de factura
+                generarHTMLFactura(venta, ventaActual, cliente, telefono);
+
+                // Limpiar venta
+                limpiarVenta();
+
+                mostrarAlerta(`Factura #${numeroFactura} generada correctamente`, 'success');
+
+            } catch (error) {
+                mostrarAlerta(`Error al generar factura: ${error.message}`, 'danger');
+            } finally {
+                btnGenerar.disabled = false;
+                btnGenerar.innerHTML = '🖨️ GENERAR FACTURA';
+            }
+        };
+
+        // Obtener siguiente número de factura
+        async function obtenerSiguienteNumeroFactura() {
+            try {
+                const datos = await leerHoja('Configuracion');
+                let numeroActual = 1;
+
+                if (datos.length > 1 && datos[1][0]) {
+                    numeroActual = parseInt(datos[1][0]) || 1;
+                }
+
+                return numeroActual;
+            } catch (error) {
+                return 1;
+            }
+        }
+
+        // Guardar venta
+        async function guardarVenta(venta) {
+            const filaNuevaVenta = [
+                venta.numero,
+                venta.fecha,
+                venta.cliente,
+                venta.productos,
+                venta.total
+            ];
+
+            await agregarFilaHoja('Ventas', filaNuevaVenta);
+        }
+
+        // Actualizar inventario en sheets
+        async function actualizarInventarioEnSheets() {
+            const datosInventario = [
+                ['Tipo', 'Stock', 'PrecioPromedio', 'ValorTotal', 'UltimaActualizacion'],
+                ...Object.entries(inventarioData).map(([tipoPez, datos]) => [
+                    tipoPez,
+                    datos.stock,
+                    datos.precioPromedio,
+                    datos.valorTotal,
+                    datos.ultimaActualizacion
+                ])
+            ];
+
+            await escribirHoja('Inventario', datosInventario);
+            actualizarTablaInventario();
+        }
+
+        // Actualizar número de factura
+        async function actualizarNumeroFactura(nuevoNumero) {
+            const datosConfig = [
+                ['UltimoNumeroFactura', 'NombreEmpresa', 'DireccionEmpresa', 'TelefonoEmpresa'],
+                [nuevoNumero, config.nombreEmpresa, config.direccionEmpresa, config.telefonoEmpresa]
+            ];
+
+            await escribirHoja('Configuracion', datosConfig);
+        }
+
+        // Generar HTML de factura
+        function generarHTMLFactura(venta, productos, cliente, telefono) {
+            const facturaHTML = `
+                <div class="factura">
+                    <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #3498db;">
+                        <h2>🐟 ${config.nombreEmpresa}</h2>
+                        <p>${config.direccionEmpresa}</p>
+                        <p>📞 ${config.telefonoEmpresa}</p>
+                        <p><strong>FACTURA #${venta.numero.toString().padStart(6, '0')}</strong></p>
+                        <p>Fecha: ${venta.fecha} - Hora: ${new Date().toLocaleTimeString()}</p>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                        <div>
+                            <h4>DATOS DEL CLIENTE:</h4>
+                            <p><strong>Nombre:</strong> ${cliente}</p>
+                            <p><strong>Teléfono:</strong> ${telefono}</p>
+                        </div>
+                        <div>
+                            <h4>DATOS DE VENTA:</h4>
+                            <p><strong>Fecha:</strong> ${venta.fecha}</p>
+                            <p><strong>Factura:</strong> #${venta.numero.toString().padStart(6, '0')}</p>
+                        </div>
+                    </div>
+                    
+                    <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #3498db; color: white;">
+                                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">PRODUCTO</th>
+                                <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">CANTIDAD (LBS)</th>
+                                <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">PRECIO UNIT.</th>
+                                <th style="padding: 10px; text-align: right; border: 1px solid #ddd;">SUBTOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${productos.map(producto => `
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">${producto.tipo}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${producto.cantidad.toFixed(1)}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${formatearPesos(producto.precio)}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${formatearPesos(producto.subtotal)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    
+                    <div style="text-align: right; padding: 20px; background: #f8f9fa; border-radius: 10px; margin-top: 20px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: #28a745;">
+                            TOTAL A PAGAR: ${formatearPesos(venta.total)}
+                        </div>
+                        <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
+                            ¡Gracias por su compra! Pescado fresco del día.
+                        </p>
+                    </div>
+                    
+                    <div class="no-print" style="text-align: center; margin-top: 20px;">
+                        <button class="btn btn-warning" onclick="window.print()">🖨️ IMPRIMIR FACTURA</button>
+                        <button class="btn" onclick="limpiarFactura()">❌ CERRAR</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('facturaGenerada').innerHTML = facturaHTML;
+        }
+
+        // Limpiar venta
+        function limpiarVenta() {
+            ventaActual = [];
+            document.getElementById('nombreCliente').value = '';
+            document.getElementById('telefonoCliente').value = '';
+            actualizarTablaVentaActual();
+            cargarInventarioParaVentas();
+        }
+
+        // Limpiar factura
+        window.limpiarFactura = function() {
+            document.getElementById('facturaGenerada').innerHTML = '';
+        };
+
         // =================== FUNCIONES DE REPORTES ===================
 
+        // Cargar reportes
         window.cargarReportes = async function() {
-            const btnCargar = event.target;
+            if (!isConfigured) {
+                mostrarAlerta('Configure el sistema primero', 'warning');
+                return;
+            }
+
+            const btnCargar = document.getElementById('btnCargarReportes');
             btnCargar.disabled = true;
             btnCargar.innerHTML = '<span class="loading"></span> CARGANDO...';
 
-            updateConnectionStatus('connecting', 'Cargando reportes...');
-
             try {
-                // Cargar ventas
-                const ventasData = await leerHoja('Ventas!A2:E1000');
+                updateConnectionStatus('loading', 'Cargando reportes...');
 
-                if (ventasData && ventasData.length > 0) {
-                    const hoy = new Date().toISOString().split('T')[0];
-                    const mesActual = hoy.substring(0, 7);
+                const ventasData = await leerHoja('Ventas');
+
+                if (ventasData.length > 1) {
+                    const hoy = new Date().toLocaleDateString();
+                    const mesActual = new Date().getMonth();
+                    const añoActual = new Date().getFullYear();
 
                     let totalHoy = 0;
                     let totalMes = 0;
-                    let gananciasMes = 0;
-                    let numeroFacturas = 0;
-                    let ventasParaTabla = [];
+                    let numeroFacturas = ventasData.length - 1; // -1 por el encabezado
 
-                    ventasData.forEach(fila => {
-                        if (fila[1]) {
-                            const fecha = fila[1];
-                            const total = parseFloat(fila[4]) || 0;
-                            
-                            // Calcular totales
-                            if (fecha === hoy) {
-                                totalHoy += total;
+                    // Procesar ventas
+                    const ventasParaTabla = [];
+                    for (let i = 1; i < ventasData.length; i++) {
+                        const venta = ventasData[i];
+                        if (venta[1] && venta[4]) {
+                            const fechaVenta = venta[1];
+                            const totalVenta = parseFloat(venta[4]) || 0;
+
+                            // Agregar a tabla de últimas ventas
+                            ventasParaTabla.push({
+                                numero: venta[0],
+                                fecha: fechaVenta,
+                                cliente: venta[2] || 'N/A',
+                                productos: venta[3] || 'N/A',
+                                total: totalVenta
+                            });
+
+                            // Ventas de hoy
+                            if (fechaVenta === hoy) {
+                                totalHoy += totalVenta;
                             }
 
-                            if (fecha.startsWith(mesActual)) {
-                                totalMes += total;
-                                numeroFacturas++;
-                                
-                                // Calcular ganancias del mes
-                                const productosTexto = fila[3] || '';
-                                const productos = productosTexto.split(', ');
-                                
-                                productos.forEach(productoStr => {
-                                    const match = productoStr.match(/^(.+)\s+\(([0-9.]+)\s+lbs\)$/);
-                                    if (match) {
-                                        const tipo = match[1].trim();
-                                        const cantidad = parseFloat(match[2]);
-                                        
-                                        if (preciosData[tipo]) {
-                                            const gananciaPorLb = preciosData[tipo].ganancia || 0;
-                                            gananciasMes += (cantidad * gananciaPorLb);
-                                        }
-                                    }
-                                });
-                                
-                                ventasParaTabla.push({
-                                    numero: parseInt(fila[0]) || 0,
-                                    fecha: fecha,
-                                    cliente: fila[2] || '',
-                                    productos: fila[3] || '',
-                                    total: total
-                                });
+                            // Ventas del mes
+                            try {
+                                const fecha = new Date(fechaVenta.split('/').reverse().join('-'));
+                                if (fecha.getMonth() === mesActual && fecha.getFullYear() === añoActual) {
+                                    totalMes += totalVenta;
+                                }
+                            } catch (e) {
+                                console.log('Error al procesar fecha:', fechaVenta);
                             }
                         }
-                    });
+                    }
 
                     // Calcular valor total del inventario
                     let totalInventario = 0;
@@ -1638,7 +2120,6 @@
                     // Actualizar estadísticas
                     document.getElementById('totalVentasHoy').textContent = formatearPesos(totalHoy);
                     document.getElementById('totalVentasMes').textContent = formatearPesos(totalMes);
-                    document.getElementById('gananciasMes').textContent = formatearPesos(gananciasMes);
                     document.getElementById('totalInventario').textContent = formatearPesos(totalInventario);
                     document.getElementById('numeroFacturas').textContent = numeroFacturas;
 
@@ -1654,7 +2135,6 @@
                 } else {
                     document.getElementById('totalVentasHoy').textContent = '$0.00';
                     document.getElementById('totalVentasMes').textContent = '$0.00';
-                    document.getElementById('gananciasMes').textContent = '$0.00';
                     document.getElementById('numeroFacturas').textContent = '0';
 
                     mostrarAlerta('No hay datos de ventas disponibles', 'warning');
@@ -1738,6 +2218,7 @@
             if (spreadsheetId) {
                 document.getElementById('spreadsheetId').value = spreadsheetId;
                 updateConnectionStatus('connected', 'Configuración cargada desde localStorage');
+                //cargarTodosLosDatos();
             } else {
                 updateConnectionStatus('disconnected', 'Configure el sistema para comenzar');
             }
