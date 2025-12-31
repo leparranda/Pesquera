@@ -1017,50 +1017,6 @@
                     <span>Configure el sistema primero</span>
                 </div>
 
-                <button class="btn" onclick="cargarReportes()" id="btnCargarReportes" style="margin-bottom: 20px;">🔄 ACTUALIZAR REPORTES</button>
-
-                <!-- FILTROS DE REPORTES -->
-                <div class="filter-section" style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                    <h3 style="margin-bottom: 15px;">🔍 Filtros de Reportes</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Desde:</label>
-                            <input type="date" id="filtroFechaDesde" onchange="aplicarFiltrosReportes()">
-                        </div>
-                        <div class="form-group">
-                            <label>Hasta:</label>
-                            <input type="date" id="filtroFechaHasta" onchange="aplicarFiltrosReportes()">
-                        </div>
-                        <div class="form-group">
-                            <label>Cliente:</label>
-                            <input 
-                                list="listaClientes" 
-                                id="filtroCliente" 
-                                placeholder="Seleccione o escriba el cliente"
-                                onchange="aplicarFiltrosReportes()"
-                                oninput="aplicarFiltrosReportes()"
-                                autocomplete="off"
-                            >
-                            <datalist id="listaClientes">
-                            </datalist>
-                        </div>
-                        <div class="form-group">
-                            <label>Producto:</label>
-                            <select id="filtroProducto" onchange="aplicarFiltrosReportes()">
-                                <option value="">Todos los productos</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>&nbsp;</label>
-                            <button class="btn" onclick="limpiarFiltrosReportes()" style="background: #6c757d;">
-                                🗑️ LIMPIAR FILTROS
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-value" id="totalVentasHoy">$0.00</div>
@@ -1084,6 +1040,8 @@
                     </div>
                 </div>
 
+                <button class="btn" onclick="cargarReportes()" id="btnCargarReportes">🔄 ACTUALIZAR REPORTES</button>
+
                 <h3>📈 Últimas Ventas</h3>
                 <div class="table-container">
                     <table id="tablaUltimasVentas">
@@ -1094,7 +1052,6 @@
                                 <th>Cliente</th>
                                 <th>Productos</th>
                                 <th>Total</th>
-                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -1121,17 +1078,6 @@
         // =================== CONFIGURACIÓN INICIAL ===================
         console.log('🚀 Iniciando PESQUERA RINCON DEL MAR...');
 
-        // Verificar si se debe resetear el sistema
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('reset') === 'true') {
-            console.log('🔄 Reseteando localStorage...');
-            localStorage.removeItem('sesionPesquera');
-            localStorage.removeItem('ultimoLogin');
-            console.log('✅ LocalStorage limpiado');
-            // Remover el parámetro de la URL
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-
         // Configuración de la API
         const API_KEY = 'AIzaSyBHyIgNRB_Td-Zq9p2FwxSDruIsz0EOvlk';
         const SHEETS_API_BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
@@ -1143,9 +1089,6 @@
         let ventaActual = [];
         let inventarioData = {};
         let preciosData = {};
-        
-        // Variables para reportes
-        let ventasCompletasData = []; // Almacenará todas las ventas sin filtrar
 
         // Configuración de empresa
         let config = {
@@ -2301,42 +2244,23 @@
                     let gananciasMes = 0;
                     let numeroFacturas = ventasData.length - 1; // -1 por el encabezado
 
-                    // Procesar ventas y guardar datos completos
+                    // Procesar ventas
                     const ventasParaTabla = [];
-                    const clientesSet = new Set();
-                    const productosSet = new Set();
-                    
                     for (let i = 1; i < ventasData.length; i++) {
                         const venta = ventasData[i];
                         if (venta[1] && venta[4]) {
                             const fechaVenta = venta[1];
                             const totalVenta = parseFloat(venta[4]) || 0;
                             const productosTexto = venta[3] || '';
-                            const cliente = venta[2] || 'N/A';
 
                             // Agregar a tabla de últimas ventas
                             ventasParaTabla.push({
                                 numero: venta[0],
                                 fecha: fechaVenta,
-                                cliente: cliente,
+                                cliente: venta[2] || 'N/A',
                                 productos: productosTexto,
                                 total: totalVenta
                             });
-
-                            // Agregar clientes únicos
-                            if (cliente && cliente !== 'N/A') {
-                                clientesSet.add(cliente);
-                            }
-
-                            // Extraer productos únicos
-                            const productos = productosTexto.split(', ');
-                            for (const productoStr of productos) {
-                                const match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs\)$/);
-                                if (match) {
-                                    const tipoPescado = match[1].trim();
-                                    productosSet.add(tipoPescado);
-                                }
-                            }
 
                             // Ventas de hoy
                             if (fechaVenta === hoy) {
@@ -2370,12 +2294,6 @@
                             }
                         }
                     }
-
-                    // Guardar datos completos para filtros
-                    ventasCompletasData = ventasParaTabla;
-
-                    // Poblar filtros
-                    poblarFiltrosReportes(clientesSet, productosSet);
 
                     // Calcular valor total del inventario
                     let totalInventario = 0;
@@ -2424,7 +2342,7 @@
 
             if (ventas.length === 0) {
                 const fila = tbody.insertRow();
-                fila.innerHTML = '<td colspan="6" style="text-align: center;">No hay ventas registradas</td>';
+                fila.innerHTML = '<td colspan="5" style="text-align: center;">No hay ventas registradas</td>';
                 return;
             }
 
@@ -2436,16 +2354,6 @@
                     <td>${venta.cliente}</td>
                     <td>${venta.productos}</td>
                     <td>${formatearPesos(venta.total)}</td>
-                    <td style="text-align: center;">
-                        <button 
-                            class="btn-small" 
-                            onclick="regenerarFactura('${venta.numero}', '${venta.fecha}', '${venta.cliente.replace(/'/g, "\\'")}', \`${venta.productos}\`, ${venta.total})"
-                            style="background: #17a2b8; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;"
-                            title="Ver/Imprimir Factura"
-                        >
-                            📄 Ver Factura
-                        </button>
-                    </td>
                 `;
             });
         }
@@ -2804,323 +2712,6 @@
             // Mostrar login por defecto
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('sistemaPrincipal').style.display = 'none';
-        }
-
-        // =================== FUNCIONES DE FILTRADO DE REPORTES ===================
-
-        // Poblar los filtros con los datos únicos
-        function poblarFiltrosReportes(clientesSet, productosSet) {
-            // Normalizar nombres de clientes (convertir a formato capitalizado)
-            const clientesNormalizados = new Map();
-            Array.from(clientesSet).forEach(cliente => {
-                // Capitalizar: primera letra en mayúscula, resto en minúscula
-                const nombreNormalizado = cliente.charAt(0).toUpperCase() + cliente.slice(1).toLowerCase();
-                clientesNormalizados.set(nombreNormalizado, nombreNormalizado);
-            });
-
-            // Poblar datalist de clientes
-            const listaClientes = document.getElementById('listaClientes');
-            listaClientes.innerHTML = '';
-            const clientesOrdenados = Array.from(clientesNormalizados.keys()).sort();
-            clientesOrdenados.forEach(cliente => {
-                listaClientes.innerHTML += `<option value="${cliente}">`;
-            });
-
-            // Poblar filtro de productos
-            const filtroProducto = document.getElementById('filtroProducto');
-            filtroProducto.innerHTML = '<option value="">Todos los productos</option>';
-            const productosOrdenados = Array.from(productosSet).sort();
-            productosOrdenados.forEach(producto => {
-                filtroProducto.innerHTML += `<option value="${producto}">${producto}</option>`;
-            });
-        }
-
-        // Aplicar filtros a los reportes
-        function aplicarFiltrosReportes() {
-            if (ventasCompletasData.length === 0) {
-                return;
-            }
-
-            // Obtener valores de filtros
-            const filtroFechaDesde = document.getElementById('filtroFechaDesde').value;
-            const filtroFechaHasta = document.getElementById('filtroFechaHasta').value;
-            const filtroCliente = document.getElementById('filtroCliente').value.trim();
-            const filtroProducto = document.getElementById('filtroProducto').value;
-
-            // Filtrar datos
-            let datosFiltrados = ventasCompletasData.filter(venta => {
-                // Filtro por fecha
-                if (filtroFechaDesde || filtroFechaHasta) {
-                    try {
-                        const fechaVenta = new Date(venta.fecha.split('/').reverse().join('-'));
-                        
-                        if (filtroFechaDesde) {
-                            const fechaDesde = new Date(filtroFechaDesde);
-                            if (fechaVenta < fechaDesde) return false;
-                        }
-                        
-                        if (filtroFechaHasta) {
-                            const fechaHasta = new Date(filtroFechaHasta);
-                            fechaHasta.setHours(23, 59, 59, 999); // Incluir todo el día
-                            if (fechaVenta > fechaHasta) return false;
-                        }
-                    } catch (e) {
-                        console.log('Error al filtrar por fecha:', venta.fecha);
-                        return false;
-                    }
-                }
-
-                // Filtro por cliente (comparación normalizada sin case-sensitive y búsqueda parcial)
-                if (filtroCliente) {
-                    const clienteVentaNormalizado = venta.cliente.toLowerCase();
-                    const filtroClienteNormalizado = filtroCliente.toLowerCase();
-                    
-                    // Buscar si el nombre contiene el texto del filtro
-                    if (!clienteVentaNormalizado.includes(filtroClienteNormalizado)) {
-                        return false;
-                    }
-                }
-
-                // Filtro por producto
-                if (filtroProducto && !venta.productos.includes(filtroProducto)) {
-                    return false;
-                }
-
-                return true;
-            });
-
-            // Actualizar tabla con datos filtrados
-            actualizarTablaUltimasVentas(datosFiltrados.slice().reverse());
-
-            // Actualizar estadísticas con datos filtrados
-            actualizarEstadisticasFiltradas(datosFiltrados);
-
-            // Mostrar mensaje si hay filtros activos
-            const hayFiltrosActivos = filtroFechaDesde || filtroFechaHasta || filtroCliente || filtroProducto;
-            
-            if (hayFiltrosActivos) {
-                mostrarAlerta(`Mostrando ${datosFiltrados.length} de ${ventasCompletasData.length} ventas`, 'info');
-            }
-        }
-
-        // Actualizar estadísticas con datos filtrados
-        function actualizarEstadisticasFiltradas(datosFiltrados) {
-            const hoy = new Date().toLocaleDateString();
-            const mesActual = new Date().getMonth();
-            const añoActual = new Date().getFullYear();
-
-            let totalHoy = 0;
-            let totalMes = 0;
-            let gananciasMes = 0;
-            let numeroFacturas = datosFiltrados.length;
-
-            datosFiltrados.forEach(venta => {
-                // Ventas de hoy
-                if (venta.fecha === hoy) {
-                    totalHoy += venta.total;
-                }
-
-                // Ventas del mes
-                try {
-                    const fecha = new Date(venta.fecha.split('/').reverse().join('-'));
-                    if (fecha.getMonth() === mesActual && fecha.getFullYear() === añoActual) {
-                        totalMes += venta.total;
-                        
-                        // Calcular ganancias
-                        const productos = venta.productos.split(', ');
-                        for (const productoStr of productos) {
-                            const match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs\)$/);
-                            if (match) {
-                                const tipoPescado = match[1].trim();
-                                const cantidad = parseFloat(match[2]);
-                                
-                                if (preciosData[tipoPescado]) {
-                                    const gananciaPorLibra = preciosData[tipoPescado].ganancia || 0;
-                                    gananciasMes += (cantidad * gananciaPorLibra);
-                                }
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.log('Error al procesar fecha:', venta.fecha);
-                }
-            });
-
-            // Calcular valor total del inventario (no afectado por filtros)
-            let totalInventario = 0;
-            for (const tipo in inventarioData) {
-                totalInventario += inventarioData[tipo].valorTotal;
-            }
-
-            // Actualizar estadísticas en la UI
-            document.getElementById('totalVentasHoy').textContent = formatearPesos(totalHoy);
-            document.getElementById('totalVentasMes').textContent = formatearPesos(totalMes);
-            document.getElementById('gananciasMes').textContent = formatearPesos(gananciasMes);
-            document.getElementById('totalInventario').textContent = formatearPesos(totalInventario);
-            document.getElementById('numeroFacturas').textContent = numeroFacturas;
-        }
-
-        // Limpiar todos los filtros
-        function limpiarFiltrosReportes() {
-            document.getElementById('filtroFechaDesde').value = '';
-            document.getElementById('filtroFechaHasta').value = '';
-            document.getElementById('filtroCliente').value = '';
-            document.getElementById('filtroProducto').value = '';
-
-            // Volver a mostrar todos los datos
-            if (ventasCompletasData.length > 0) {
-                actualizarTablaUltimasVentas(ventasCompletasData.slice(-10).reverse());
-                aplicarFiltrosReportes(); // Recalcular estadísticas
-                mostrarAlerta('Filtros limpiados', 'success');
-            }
-        }
-
-        // =================== REGENERAR FACTURA ===================
-
-        // Función para regenerar y mostrar una factura anterior
-        function regenerarFactura(numero, fecha, cliente, productosTexto, total) {
-            // Parsear los productos del texto
-            // Formato esperado: "Pargo (2.5 lbs), Atún (3.0 lbs)"
-            const productosArray = [];
-            const productos = productosTexto.split(', ');
-            
-            for (const productoStr of productos) {
-                const match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs\)$/);
-                if (match) {
-                    const tipoPescado = match[1].trim();
-                    const cantidad = parseFloat(match[2]);
-                    
-                    // Obtener precio del producto (si existe en preciosData)
-                    let precioUnitario = 0;
-                    if (preciosData[tipoPescado]) {
-                        precioUnitario = preciosData[tipoPescado].precioVenta || 0;
-                    }
-                    
-                    productosArray.push({
-                        tipo: tipoPescado,
-                        cantidad: cantidad,
-                        precio: precioUnitario,
-                        subtotal: cantidad * precioUnitario
-                    });
-                }
-            }
-
-            // Crear objeto de venta
-            const venta = {
-                numero: numero,
-                fecha: fecha,
-                total: total
-            };
-
-            // Generar HTML de la factura
-            const facturaHTML = `
-                <div class="factura">
-                    <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #3498db;">
-                        <h2>🐟 ${config.nombreEmpresa}</h2>
-                        <p>${config.direccionEmpresa}</p>
-                        <p>📞 ${config.telefonoEmpresa}</p>
-                        <p><strong>FACTURA #${numero.toString().padStart(6, '0')}</strong></p>
-                        <p>Fecha: ${fecha}</p>
-                        <p style="color: #e74c3c; font-weight: bold;">⚠️ REIMPRESIÓN</p>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
-                        <div>
-                            <h4>DATOS DEL CLIENTE:</h4>
-                            <p><strong>Nombre:</strong> ${cliente}</p>
-                        </div>
-                        <div>
-                            <h4>DATOS DE VENTA:</h4>
-                            <p><strong>Fecha:</strong> ${fecha}</p>
-                            <p><strong>Factura:</strong> #${numero.toString().padStart(6, '0')}</p>
-                        </div>
-                    </div>
-                    
-                    <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
-                        <thead>
-                            <tr style="background: #3498db; color: white;">
-                                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">PRODUCTO</th>
-                                <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">CANTIDAD (LBS)</th>
-                                <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">PRECIO UNIT.</th>
-                                <th style="padding: 10px; text-align: right; border: 1px solid #ddd;">SUBTOTAL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${productosArray.map(producto => `
-                                <tr>
-                                    <td style="padding: 10px; border: 1px solid #ddd;">${producto.tipo}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${producto.cantidad.toFixed(1)}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${formatearPesos(producto.precio)}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${formatearPesos(producto.subtotal)}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                    
-                    <div style="text-align: right; padding: 20px; background: #f8f9fa; border-radius: 10px; margin-top: 20px;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: #28a745;">
-                            TOTAL: ${formatearPesos(total)}
-                        </div>
-                        <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
-                            ¡Gracias por su compra! Pescado fresco del día.
-                        </p>
-                    </div>
-                    
-                    <div class="no-print" style="text-align: center; margin-top: 20px;">
-                        <button class="btn btn-warning" onclick="window.print()">🖨️ IMPRIMIR FACTURA</button>
-                        <button class="btn" onclick="cerrarFacturaRegenerada()">❌ CERRAR</button>
-                    </div>
-                </div>
-            `;
-
-            // Abrir en nueva ventana
-            const ventanaFactura = window.open('', '_blank', 'width=800,height=600');
-            ventanaFactura.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Factura #${numero.toString().padStart(6, '0')}</title>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            padding: 20px;
-                            max-width: 800px;
-                            margin: 0 auto;
-                        }
-                        .factura {
-                            background: white;
-                            padding: 30px;
-                        }
-                        @media print {
-                            .no-print {
-                                display: none;
-                            }
-                        }
-                        .btn {
-                            padding: 10px 20px;
-                            margin: 5px;
-                            border: none;
-                            border-radius: 5px;
-                            cursor: pointer;
-                            font-size: 14px;
-                        }
-                        .btn-warning {
-                            background: #ffc107;
-                            color: #000;
-                        }
-                    </style>
-                </head>
-                <body>
-                    ${facturaHTML}
-                    <script>
-                        function cerrarFacturaRegenerada() {
-                            window.close();
-                        }
-                    </script>
-                </body>
-                </html>
-            `);
-            ventanaFactura.document.close();
         }
 
     </script>
