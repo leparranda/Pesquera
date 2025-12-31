@@ -507,11 +507,15 @@
         }
         
         .stat-value#totalVentasMes {
+            color: #9b59b6;
+        }
+        
+        .stat-value#gananciasMes {
             color: #28a745;
         }
         
         .stat-value#totalInventario {
-            color: #e74c3c;
+            color: #ff9800;
         }
         
         .stat-value#numeroFacturas {
@@ -782,6 +786,11 @@
             <div id="inventario" class="section">
                 <h2>📦 Control de Inventario</h2>
 
+                <div class="connection-status" id="inventarioStatus">
+                    <span>🔧</span>
+                    <span>Configure el sistema primero</span>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tipo de Pescado:</label>
@@ -857,6 +866,11 @@
             <div id="precios" class="section">
                 <h2>💰 Configuración de Precios de Venta</h2>
 
+                <div class="connection-status" id="preciosStatus">
+                    <span>🔧</span>
+                    <span>Configure el sistema primero</span>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tipo de Pescado:</label>
@@ -905,6 +919,11 @@
             <div id="ventas" class="section">
                 <h2>🧾 Registro de Ventas</h2>
 
+                <div class="connection-status" id="ventasStatus">
+                    <span>🔧</span>
+                    <span>Configure el sistema primero</span>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>Cliente:</label>
@@ -914,6 +933,14 @@
                         <label>Teléfono:</label>
                         <input type="tel" id="telefonoCliente" placeholder="Teléfono (opcional)">
                     </div>
+                    <div class="form-group">
+                        <label>Descuento por Libra (COP):</label>
+                        <input type="number" id="descuentoPorLibra" placeholder="0" min="0" step="100" value="0">
+                    </div>
+                </div>
+
+                <div style="background: #fff3cd; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
+                    <small>💡 <strong>Descuento por Mayor:</strong> Si aplicas descuento por libra, se restará ese valor del precio de venta de cada libra vendida.</small>
                 </div>
 
                 <h3>Productos a Vender:</h3>
@@ -967,6 +994,11 @@
             <div id="historico" class="section">
                 <h2>📋 Histórico de Entradas de Mercancía</h2>
 
+                <div class="connection-status" id="historicoStatus">
+                    <span>🔧</span>
+                    <span>Configure el sistema primero</span>
+                </div>
+
                 <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
                     <strong>ℹ️ Información:</strong> Este histórico se actualiza automáticamente cada vez que agregas mercancía al inventario. Los datos quedan guardados permanentemente.
                 </div>
@@ -993,16 +1025,16 @@
                 </div>
 
                 <div class="stats-grid" style="margin-bottom: 20px;">
-                    <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                        <div class="stat-value" id="totalEntradasHistorico">0</div>
+                    <div class="stat-card" style="background: #f8f9fa;">
+                        <div class="stat-value" id="totalEntradasHistorico" style="color: #9b59b6;">0</div>
                         <div class="stat-label">TOTAL ENTRADAS</div>
                     </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                        <div class="stat-value" id="totalLibrasHistorico">0</div>
+                    <div class="stat-card" style="background: #f8f9fa;">
+                        <div class="stat-value" id="totalLibrasHistorico" style="color: #e91e63;">0</div>
                         <div class="stat-label">TOTAL LIBRAS</div>
                     </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                        <div class="stat-value" id="totalInversionHistorico">$0</div>
+                    <div class="stat-card" style="background: #f8f9fa;">
+                        <div class="stat-value" id="totalInversionHistorico" style="color: #00bcd4;">$0</div>
                         <div class="stat-label">INVERSIÓN TOTAL</div>
                     </div>
                 </div>
@@ -1033,7 +1065,12 @@
 
             <!-- SECCIÓN REPORTES -->
             <div id="reportes" class="section">
-                <h2>📊 Reportes y Estadísticas</h2>
+                <h2>Reportes y Estadísticas</h2>
+
+                <div class="connection-status" id="reportesStatus">
+                    <span>🔧</span>
+                    <span>Configure el sistema primero</span>
+                </div>
 
                 <button class="btn" onclick="cargarReportes()" id="btnCargarReportes" style="margin-bottom: 20px;">🔄 ACTUALIZAR REPORTES</button>
 
@@ -2174,6 +2211,7 @@
 
             const cliente = document.getElementById('nombreCliente').value || 'Cliente General';
             const telefono = document.getElementById('telefonoCliente').value || 'N/A';
+            const descuentoPorLibra = parseFloat(document.getElementById('descuentoPorLibra').value) || 0;
 
             const btnGenerar = document.getElementById('btnGenerarFactura');
             btnGenerar.disabled = true;
@@ -2188,7 +2226,15 @@
                     }
                 }
 
-                const total = ventaActual.reduce((sum, producto) => sum + producto.subtotal, 0);
+                // Calcular subtotal sin descuento
+                const subtotalSinDescuento = ventaActual.reduce((sum, producto) => sum + producto.subtotal, 0);
+                
+                // Calcular descuento total (descuento por libra * total de libras)
+                const totalLibras = ventaActual.reduce((sum, producto) => sum + producto.cantidad, 0);
+                const descuentoTotal = descuentoPorLibra * totalLibras;
+                
+                // Total a pagar
+                const total = subtotalSinDescuento - descuentoTotal;
 
                 // Obtener número de factura
                 const numeroFactura = await obtenerSiguienteNumeroFactura();
@@ -2205,7 +2251,11 @@
                     fecha: new Date().toLocaleDateString(),
                     cliente: cliente,
                     productos: ventaActual.map(p => `${p.tipo} (${p.cantidad.toFixed(1)} lbs)`).join(', '),
-                    total: total
+                    total: total,
+                    descuentoPorLibra: descuentoPorLibra,
+                    descuentoTotal: descuentoTotal,
+                    subtotalSinDescuento: subtotalSinDescuento,
+                    totalLibras: totalLibras
                 };
 
                 await Promise.all([
@@ -2215,7 +2265,7 @@
                 ]);
 
                 // Generar HTML de factura
-                generarHTMLFactura(venta, ventaActual, cliente, telefono);
+                generarHTMLFactura(venta, ventaActual, cliente, telefono, subtotalSinDescuento, descuentoTotal, descuentoPorLibra, totalLibras);
 
                 // Limpiar venta
                 limpiarVenta();
@@ -2253,7 +2303,10 @@
                 venta.fecha,
                 venta.cliente,
                 venta.productos,
-                venta.total
+                venta.total,
+                venta.descuentoPorLibra || 0,
+                venta.descuentoTotal || 0,
+                venta.subtotalSinDescuento || venta.total
             ];
 
             await agregarFilaHoja('Ventas', filaNuevaVenta);
@@ -2287,7 +2340,7 @@
         }
 
         // Generar HTML de factura
-        function generarHTMLFactura(venta, productos, cliente, telefono) {
+        function generarHTMLFactura(venta, productos, cliente, telefono, subtotalSinDescuento = 0, descuentoTotal = 0, descuentoPorLibra = 0, totalLibras = 0) {
             const facturaHTML = `
                 <div class="factura">
                     <div style="text-align: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px dashed #000;">
@@ -2305,33 +2358,44 @@
                     <div style="margin: 10px 0; padding: 5px 0; border-bottom: 1px dashed #000;">
                         <p style="margin: 2px 0; font-size: 0.9em;"><strong>CLIENTE:</strong></p>
                         <p style="margin: 2px 0; font-size: 0.85em;">${cliente}</p>
-                        ${telefono ? `<p style="margin: 2px 0; font-size: 0.85em;">Tel: ${telefono}</p>` : ''}
+                        ${telefono && telefono !== 'N/A' ? `<p style="margin: 2px 0; font-size: 0.85em;">Tel: ${telefono}</p>` : ''}
                     </div>
                     
-                    <table style="width: 100%; margin: 10px 0; border-collapse: collapse; font-size: 0.85em;">
+                    <table style="width: 100%; margin: 10px 0; border-collapse: collapse; font-size: 0.9em;">
                         <thead>
-                            <tr style="border-bottom: 1px solid #000;">
-                                <th style="padding: 4px 2px; text-align: left;">PRODUCTO</th>
-                                <th style="padding: 4px 2px; text-align: center;">CANT</th>
-                                <th style="padding: 4px 2px; text-align: right;">PRECIO</th>
-                                <th style="padding: 4px 2px; text-align: right;">TOTAL</th>
+                            <tr style="border-bottom: 2px solid #000;">
+                                <th style="padding: 5px 3px; text-align: left;">PRODUCTO</th>
+                                <th style="padding: 5px 3px; text-align: center;">CANT</th>
+                                <th style="padding: 5px 3px; text-align: right;">TOTAL</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${productos.map(producto => `
                                 <tr style="border-bottom: 1px dashed #ccc;">
-                                    <td style="padding: 4px 2px;">${producto.tipo}</td>
-                                    <td style="padding: 4px 2px; text-align: center;">${producto.cantidad.toFixed(1)}</td>
-                                    <td style="padding: 4px 2px; text-align: right;">${formatearPesos(producto.precio)}</td>
-                                    <td style="padding: 4px 2px; text-align: right;"><strong>${formatearPesos(producto.subtotal)}</strong></td>
+                                    <td style="padding: 5px 3px; text-align: left;">${producto.tipo}</td>
+                                    <td style="padding: 5px 3px; text-align: center;">${producto.cantidad.toFixed(1)} lbs</td>
+                                    <td style="padding: 5px 3px; text-align: right;"><strong>${formatearPesos(producto.subtotal)}</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px dashed #ccc;">
+                                    <td colspan="3" style="padding: 2px 3px 5px 20px; font-size: 0.85em; color: #666; text-align: left;">@ ${formatearPesos(producto.precio)}/lb</td>
                                 </tr>
                             `).join('')}
                         </tbody>
                     </table>
                     
-                    <div style="text-align: right; padding: 10px 0; margin-top: 10px; border-top: 2px solid #000;">
-                        <div style="font-size: 1.3em; font-weight: bold;">
-                            TOTAL: ${formatearPesos(venta.total)}
+                    <div style="text-align: right; padding: 10px 0; margin-top: 10px; border-top: 1px dashed #000;">
+                        ${descuentoTotal > 0 ? `
+                            <div style="font-size: 0.95em; margin: 5px 0;">
+                                <span style="color: #666;">Subtotal:</span> <strong>${formatearPesos(subtotalSinDescuento)}</strong>
+                            </div>
+                            <div style="font-size: 0.95em; margin: 5px 0; color: #28a745;">
+                                <span>Descuento (${formatearPesos(descuentoPorLibra)}/lb × ${totalLibras.toFixed(1)} lbs):</span> <strong>-${formatearPesos(descuentoTotal)}</strong>
+                            </div>
+                            <div style="border-top: 2px solid #000; margin: 8px 0; padding-top: 8px;">
+                        ` : '<div style="border-top: 2px solid #000; padding-top: 8px;">'}
+                            <div style="font-size: 1.3em; font-weight: bold;">
+                                TOTAL A PAGAR: ${formatearPesos(venta.total)}
+                            </div>
                         </div>
                     </div>
                     
@@ -2355,6 +2419,7 @@
             ventaActual = [];
             document.getElementById('nombreCliente').value = '';
             document.getElementById('telefonoCliente').value = '';
+            document.getElementById('descuentoPorLibra').value = '0';
             actualizarTablaVentaActual();
             cargarInventarioParaVentas();
         }
@@ -2404,6 +2469,9 @@
                             const totalVenta = parseFloat(venta[4]) || 0;
                             const productosTexto = venta[3] || '';
                             const cliente = venta[2] || 'N/A';
+                            const descuentoPorLibra = parseFloat(venta[5]) || 0;
+                            const descuentoTotal = parseFloat(venta[6]) || 0;
+                            const subtotalSinDescuento = parseFloat(venta[7]) || totalVenta;
 
                             // Agregar a tabla de últimas ventas
                             ventasParaTabla.push({
@@ -2411,7 +2479,10 @@
                                 fecha: fechaVenta,
                                 cliente: cliente,
                                 productos: productosTexto,
-                                total: totalVenta
+                                total: totalVenta,
+                                descuentoPorLibra: descuentoPorLibra,
+                                descuentoTotal: descuentoTotal,
+                                subtotalSinDescuento: subtotalSinDescuento
                             });
 
                             // Agregar clientes únicos
@@ -2530,7 +2601,7 @@
                     <td style="text-align: center;">
                         <button 
                             class="btn-small" 
-                            onclick="regenerarFactura('${venta.numero}', '${venta.fecha}', '${venta.cliente.replace(/'/g, "\\'")}', \`${venta.productos}\`, ${venta.total})"
+                            onclick="regenerarFactura('${venta.numero}', '${venta.fecha}', '${venta.cliente.replace(/'/g, "\\'")}', \`${venta.productos}\`, ${venta.total}, ${venta.descuentoPorLibra || 0}, ${venta.descuentoTotal || 0}, ${venta.subtotalSinDescuento || venta.total})"
                             style="background: #17a2b8; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; margin-right: 5px;"
                             title="Ver/Imprimir Factura"
                         >
@@ -3077,17 +3148,19 @@
         // =================== REGENERAR FACTURA ===================
 
         // Función para regenerar y mostrar una factura anterior
-        function regenerarFactura(numero, fecha, cliente, productosTexto, total) {
+        function regenerarFactura(numero, fecha, cliente, productosTexto, total, descuentoPorLibra = 0, descuentoTotal = 0, subtotalSinDescuento = 0) {
             // Parsear los productos del texto
             // Formato esperado: "Pargo (2.5 lbs), Atún (3.0 lbs)"
             const productosArray = [];
             const productos = productosTexto.split(', ');
+            let totalLibrasCalculado = 0;
             
             for (const productoStr of productos) {
                 const match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs\)$/);
                 if (match) {
                     const tipoPescado = match[1].trim();
                     const cantidad = parseFloat(match[2]);
+                    totalLibrasCalculado += cantidad;
                     
                     // Obtener precio del producto (si existe en preciosData)
                     let precioUnitario = 0;
@@ -3102,6 +3175,11 @@
                         subtotal: cantidad * precioUnitario
                     });
                 }
+            }
+
+            // Si no hay subtotal guardado, usar el total
+            if (subtotalSinDescuento === 0 || subtotalSinDescuento === total) {
+                subtotalSinDescuento = total + descuentoTotal;
             }
 
             // Crear objeto de venta
@@ -3131,30 +3209,41 @@
                         <p style="margin: 2px 0; font-size: 0.85em;">${cliente}</p>
                     </div>
                     
-                    <table style="width: 100%; margin: 10px 0; border-collapse: collapse; font-size: 0.85em;">
+                    <table style="width: 100%; margin: 10px 0; border-collapse: collapse; font-size: 0.9em;">
                         <thead>
-                            <tr style="border-bottom: 1px solid #000;">
-                                <th style="padding: 4px 2px; text-align: left;">PRODUCTO</th>
-                                <th style="padding: 4px 2px; text-align: center;">CANT</th>
-                                <th style="padding: 4px 2px; text-align: right;">PRECIO</th>
-                                <th style="padding: 4px 2px; text-align: right;">TOTAL</th>
+                            <tr style="border-bottom: 2px solid #000;">
+                                <th style="padding: 5px 3px; text-align: left;">PRODUCTO</th>
+                                <th style="padding: 5px 3px; text-align: center;">CANT</th>
+                                <th style="padding: 5px 3px; text-align: right;">TOTAL</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${productosArray.map(producto => `
                                 <tr style="border-bottom: 1px dashed #ccc;">
-                                    <td style="padding: 4px 2px;">${producto.tipo}</td>
-                                    <td style="padding: 4px 2px; text-align: center;">${producto.cantidad.toFixed(1)}</td>
-                                    <td style="padding: 4px 2px; text-align: right;">${formatearPesos(producto.precio)}</td>
-                                    <td style="padding: 4px 2px; text-align: right;"><strong>${formatearPesos(producto.subtotal)}</strong></td>
+                                    <td style="padding: 5px 3px; text-align: left;">${producto.tipo}</td>
+                                    <td style="padding: 5px 3px; text-align: center;">${producto.cantidad.toFixed(1)} lbs</td>
+                                    <td style="padding: 5px 3px; text-align: right;"><strong>${formatearPesos(producto.subtotal)}</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px dashed #ccc;">
+                                    <td colspan="3" style="padding: 2px 3px 5px 20px; font-size: 0.85em; color: #666; text-align: left;">@ ${formatearPesos(producto.precio)}/lb</td>
                                 </tr>
                             `).join('')}
                         </tbody>
                     </table>
                     
-                    <div style="text-align: right; padding: 10px 0; margin-top: 10px; border-top: 2px solid #000;">
-                        <div style="font-size: 1.3em; font-weight: bold;">
-                            TOTAL: ${formatearPesos(total)}
+                    <div style="text-align: right; padding: 10px 0; margin-top: 10px; border-top: 1px dashed #000;">
+                        ${descuentoTotal > 0 ? `
+                            <div style="font-size: 0.95em; margin: 5px 0;">
+                                <span style="color: #666;">Subtotal:</span> <strong>${formatearPesos(subtotalSinDescuento)}</strong>
+                            </div>
+                            <div style="font-size: 0.95em; margin: 5px 0; color: #28a745;">
+                                <span>Descuento (${formatearPesos(descuentoPorLibra)}/lb × ${totalLibrasCalculado.toFixed(1)} lbs):</span> <strong>-${formatearPesos(descuentoTotal)}</strong>
+                            </div>
+                            <div style="border-top: 2px solid #000; margin: 8px 0; padding-top: 8px;">
+                        ` : '<div style="border-top: 2px solid #000; padding-top: 8px;">'}
+                            <div style="font-size: 1.3em; font-weight: bold;">
+                                TOTAL: ${formatearPesos(total)}
+                            </div>
                         </div>
                     </div>
                     
