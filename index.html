@@ -1135,7 +1135,7 @@
         // Configuración de la API
         const API_KEY = 'AIzaSyBHyIgNRB_Td-Zq9p2FwxSDruIsz0EOvlk';
         const SHEETS_API_BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksZdobQBT-nDgBQk4tDHgdjJmCN83wW3pAi7Qc0yPbKIiRNEqYXxhAL8Y0HFCbOlk/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx2T-85v0ARb3WpIcj7jtC8jdayAct3fKyvEYGCstuqjZN2Cv9ZUJ4Kn2lQtzn52rF1/exec';
 
         // Variables globales
         let spreadsheetId = localStorage.getItem('spreadsheetId') || '';
@@ -1184,6 +1184,18 @@
 
         function llamarAPIConJSONP(data = null) {
           return new Promise((resolve, reject) => {
+            // Calcular tamaño de los datos
+            const dataJson = data ? JSON.stringify(data) : '';
+            const dataSize = dataJson.length;
+            
+            // Si los datos son muy grandes, informar al usuario
+            if (dataSize > 2000) {
+              console.warn(`⚠️ Datos grandes detectados: ${dataSize} caracteres`);
+              console.warn(`Esto puede causar errores. Límite recomendado: 2000`);
+            }
+            
+            console.log(`📡 Enviando petición JSONP (${dataSize} chars)`);
+            
             const callbackName = 'jsonp_callback_' + Math.random().toString(36).substr(2, 9);
             const script = document.createElement('script');
 
@@ -1209,29 +1221,49 @@
             });
 
             if (data) {
-              params.append('data', JSON.stringify(data));
+              params.append('data', dataJson);
             }
 
             // Configurar script
-            script.src = `${APPS_SCRIPT_URL}?${params}`;
-            script.onerror = () => {
+            const fullUrl = `${APPS_SCRIPT_URL}?${params}`;
+            script.src = fullUrl;
+            
+            // Mostrar URL truncada en caso de error
+            script.onerror = (error) => {
               delete window[callbackName];
               if (document.body.contains(script)) {
                 document.body.removeChild(script);
               }
-              reject(new Error('Error en la solicitud JSONP'));
+              console.error('❌ Error JSONP completo:', {
+                urlLength: fullUrl.length,
+                urlPreview: fullUrl.substring(0, 200) + '...',
+                dataSize: dataSize,
+                error: error
+              });
+              
+              // Mensaje específico si la URL es muy larga
+              let errorMsg = 'Error en la solicitud JSONP';
+              if (fullUrl.length > 8000) {
+                errorMsg += '. La URL es demasiado larga (' + fullUrl.length + ' chars). Contacte al desarrollador.';
+              }
+              
+              reject(new Error(errorMsg));
             };
 
-            // Timeout de 30 segundos
+            // Timeout de 45 segundos
             setTimeout(() => {
               if (window[callbackName]) {
                 delete window[callbackName];
                 if (document.body.contains(script)) {
                   document.body.removeChild(script);
                 }
-                reject(new Error('Timeout en la solicitud JSONP'));
+                console.error('⏱️ Timeout JSONP:', {
+                  urlLength: fullUrl.length,
+                  dataSize: dataSize
+                });
+                reject(new Error('Timeout en la solicitud JSONP (45s). La operación tomó demasiado tiempo.'));
               }
-            }, 30000);
+            }, 45000);
 
             document.body.appendChild(script);
           });
@@ -1370,6 +1402,50 @@
           };
 
           return await llamarAPIConJSONP(requestData);
+        }
+
+        // Función auxiliar para escribir con reintentos
+        async function escribirHojaConReintento(nombreHoja, datos, intentos = 3) {
+          for (let i = 0; i < intentos; i++) {
+            try {
+              console.log(`📝 Intento ${i + 1}/${intentos} de escribir en ${nombreHoja}...`);
+              await escribirHoja(nombreHoja, datos);
+              console.log(`✅ Escritura exitosa en ${nombreHoja}`);
+              return;
+            } catch (error) {
+              console.error(`❌ Error en intento ${i + 1}:`, error.message);
+              if (i === intentos - 1) {
+                throw error; // Lanzar el error en el último intento
+              }
+              // Esperar antes de reintentar (2, 4, 6 segundos)
+              const tiempoEspera = (i + 1) * 2000;
+              console.log(`⏳ Esperando ${tiempoEspera/1000}s antes de reintentar...`);
+              await new Promise(resolve => setTimeout(resolve, tiempoEspera));
+            }
+          }
+        }
+
+        // Función auxiliar para agregar fila con reintentos
+        async function agregarFilaConReintento(nombreHoja, fila, intentos = 3) {
+          for (let i = 0; i < intentos; i++) {
+            try {
+              console.log(`📝 Intento ${i + 1}/${intentos} de agregar fila en ${nombreHoja}...`);
+              await agregarFilaHoja(nombreHoja, fila);
+              console.log(`✅ Fila agregada exitosamente en ${nombreHoja}`);
+              return;
+            } catch (error) {
+              console.error(`❌ Error en intento ${i + 1}:`, error.message);
+              if (i === intentos - 1) {
+                // En el último intento, no lanzar error para agregar (es opcional)
+                console.warn(`⚠️ No se pudo agregar fila después de ${intentos} intentos`);
+                return;
+              }
+              // Esperar antes de reintentar
+              const tiempoEspera = (i + 1) * 2000;
+              console.log(`⏳ Esperando ${tiempoEspera/1000}s antes de reintentar...`);
+              await new Promise(resolve => setTimeout(resolve, tiempoEspera));
+            }
+          }
         }
 
 
@@ -2440,10 +2516,18 @@
                         <button 
                             class="btn-small" 
                             onclick="regenerarFactura('${venta.numero}', '${venta.fecha}', '${venta.cliente.replace(/'/g, "\\'")}', \`${venta.productos}\`, ${venta.total})"
-                            style="background: #17a2b8; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;"
+                            style="background: #17a2b8; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; margin-right: 5px;"
                             title="Ver/Imprimir Factura"
                         >
-                            📄 Ver Factura
+                            📄 Ver
+                        </button>
+                        <button 
+                            class="btn-small" 
+                            onclick="solicitarEliminacionFactura('${venta.numero}', '${venta.fecha}', '${venta.cliente.replace(/'/g, "\\'")}', \`${venta.productos}\`, ${venta.total})"
+                            style="background: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;"
+                            title="Eliminar Factura"
+                        >
+                            🗑️ Eliminar
                         </button>
                     </td>
                 `;
@@ -3121,6 +3205,275 @@
                 </html>
             `);
             ventanaFactura.document.close();
+        }
+
+        // =================== ELIMINACIÓN DE FACTURAS ===================
+
+        // Contraseña para eliminar facturas
+        const CONTRASEÑA_ELIMINACION = 'alejandra26';
+
+        // Función para solicitar eliminación de factura
+        function solicitarEliminacionFactura(numero, fecha, cliente, productosTexto, total) {
+            // Crear modal de confirmación
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            `;
+
+            modal.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                    <h3 style="color: #dc3545; margin-bottom: 20px; text-align: center;">
+                        ⚠️ ELIMINAR FACTURA #${numero.toString().padStart(6, '0')}
+                    </h3>
+                    
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <p style="margin: 5px 0;"><strong>Cliente:</strong> ${cliente}</p>
+                        <p style="margin: 5px 0;"><strong>Fecha:</strong> ${fecha}</p>
+                        <p style="margin: 5px 0;"><strong>Total:</strong> ${formatearPesos(total)}</p>
+                        <p style="margin: 5px 0;"><strong>Productos:</strong> ${productosTexto}</p>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: bold;">Motivo de eliminación:</label>
+                        <select id="motivoEliminacion" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 14px;">
+                            <option value="">Seleccionar motivo...</option>
+                            <option value="Error">Error en la venta</option>
+                            <option value="Devolución">Devolución del cliente</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: bold;">Contraseña de autorización:</label>
+                        <input 
+                            type="password" 
+                            id="contraseñaEliminacion" 
+                            placeholder="Ingrese la contraseña"
+                            style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 14px;"
+                        >
+                    </div>
+
+                    <div id="errorEliminacion" style="color: #dc3545; margin-bottom: 15px; display: none; text-align: center; font-weight: bold;"></div>
+
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button 
+                            onclick="confirmarEliminacionFactura('${numero}', '${fecha}', '${cliente.replace(/'/g, "\\'")}', \`${productosTexto}\`, ${total})"
+                            style="background: #dc3545; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;"
+                        >
+                            🗑️ ELIMINAR
+                        </button>
+                        <button 
+                            onclick="this.closest('div[style*=\"position: fixed\"]').remove()"
+                            style="background: #6c757d; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;"
+                        >
+                            ❌ CANCELAR
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            
+            // Focus en el select de motivo
+            setTimeout(() => document.getElementById('motivoEliminacion').focus(), 100);
+        }
+
+        // Función para confirmar eliminación
+        async function confirmarEliminacionFactura(numero, fecha, cliente, productosTexto, total) {
+            const motivo = document.getElementById('motivoEliminacion').value;
+            const contraseña = document.getElementById('contraseñaEliminacion').value;
+            const errorDiv = document.getElementById('errorEliminacion');
+
+            // Validar motivo
+            if (!motivo) {
+                errorDiv.textContent = '⚠️ Debe seleccionar un motivo';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Validar contraseña
+            if (contraseña !== CONTRASEÑA_ELIMINACION) {
+                errorDiv.textContent = '❌ Contraseña incorrecta';
+                errorDiv.style.display = 'block';
+                document.getElementById('contraseñaEliminacion').value = '';
+                document.getElementById('contraseñaEliminacion').focus();
+                return;
+            }
+
+            // Confirmar acción
+            if (!confirm(`¿Está SEGURO que desea eliminar la factura #${numero.toString().padStart(6, '0')}?\n\nEsta acción:\n- Devolverá los productos al inventario\n- Eliminará la venta de los registros\n- Se guardará en el historial de eliminaciones\n\n¿Continuar?`)) {
+                return;
+            }
+
+            try {
+                // Deshabilitar botones
+                const botones = document.querySelectorAll('button');
+                botones.forEach(btn => btn.disabled = true);
+
+                // Mostrar cargando
+                errorDiv.textContent = '⏳ Procesando eliminación... Por favor espere.';
+                errorDiv.style.color = '#ffc107';
+                errorDiv.style.display = 'block';
+
+                await eliminarFactura(numero, fecha, cliente, productosTexto, total, motivo);
+
+                // Cerrar modal
+                document.querySelector('div[style*="position: fixed"]').remove();
+
+                mostrarAlerta('✅ Factura eliminada exitosamente. Inventario y reportes actualizados.', 'success');
+
+                // Recargar datos (con espera entre llamadas)
+                setTimeout(async () => {
+                    try {
+                        await cargarInventario();
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        await cargarReportes();
+                    } catch (error) {
+                        console.error('Error al recargar datos:', error);
+                        mostrarAlerta('⚠️ Factura eliminada pero hubo un error al recargar. Actualice la página.', 'warning');
+                    }
+                }, 1000);
+
+            } catch (error) {
+                errorDiv.textContent = '❌ Error: ' + error.message;
+                errorDiv.style.color = '#dc3545';
+                errorDiv.style.display = 'block';
+                
+                // Log completo para debugging
+                console.error('Error completo al eliminar factura:', error);
+                console.error('Stack:', error.stack);
+                
+                // Rehabilitar botones
+                const botones = document.querySelectorAll('button');
+                botones.forEach(btn => btn.disabled = false);
+                
+                // Mensajes más específicos según el tipo de error
+                let mensajeUsuario = error.message;
+                if (error.message.includes('JSONP')) {
+                    mensajeUsuario = '❌ Error de conexión con Google Sheets. Verifique:\n' +
+                                   '1. La URL del Apps Script está correcta\n' +
+                                   '2. El script está publicado como Web App\n' +
+                                   '3. Los permisos están configurados correctamente';
+                } else if (error.message.includes('Timeout')) {
+                    mensajeUsuario = '❌ La operación tomó demasiado tiempo. Intente nuevamente.';
+                }
+                
+                mostrarAlerta(mensajeUsuario, 'danger');
+            }
+        }
+
+        // Función principal para eliminar factura
+        async function eliminarFactura(numero, fecha, cliente, productosTexto, total, motivo) {
+            if (!isConfigured) {
+                throw new Error('Sistema no configurado');
+            }
+
+            console.log('🗑️ Iniciando proceso de eliminación de factura #' + numero);
+
+            // 1. Parsear productos para devolver al inventario
+            const productos = productosTexto.split(', ');
+            const productosDevueltos = [];
+
+            for (const productoStr of productos) {
+                const match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs\)$/);
+                if (match) {
+                    const tipoPescado = match[1].trim();
+                    const cantidad = parseFloat(match[2]);
+                    productosDevueltos.push({ tipo: tipoPescado, cantidad: cantidad });
+                }
+            }
+
+            console.log('📦 Productos a devolver:', productosDevueltos);
+
+            // 2. Leer inventario actual
+            console.log('📖 Leyendo inventario actual...');
+            const inventarioData = await leerHoja('Inventario');
+            const nuevasFilasInventario = [];
+
+            // Copiar encabezados
+            if (inventarioData.length > 0) {
+                nuevasFilasInventario.push(inventarioData[0]);
+            }
+
+            // Actualizar inventario devolviendo productos
+            // Estructura: Tipo, Stock, PrecioPromedio, ValorTotal, UltimaActualizacion
+            for (let i = 1; i < inventarioData.length; i++) {
+                const fila = inventarioData[i];
+                const tipo = fila[0];
+                let stock = parseFloat(fila[1]) || 0;
+                const precioPromedio = parseFloat(fila[2]) || 0;
+
+                // Buscar si este producto fue vendido en la factura
+                const productoDevuelto = productosDevueltos.find(p => p.tipo === tipo);
+                if (productoDevuelto) {
+                    // Devolver al inventario
+                    stock += productoDevuelto.cantidad;
+                    console.log(`✅ Devolviendo ${productoDevuelto.cantidad} lbs de ${tipo} al inventario (nuevo stock: ${stock})`);
+                }
+
+                // Recalcular valor total
+                const valorTotal = stock * precioPromedio;
+                const fechaActualizacion = new Date().toLocaleDateString();
+
+                nuevasFilasInventario.push([
+                    tipo,
+                    stock,
+                    precioPromedio,
+                    valorTotal,
+                    fechaActualizacion
+                ]);
+            }
+
+            // 3. Preparar registro de eliminación
+            const fechaEliminacion = new Date().toLocaleDateString();
+            const horaEliminacion = new Date().toLocaleTimeString();
+
+            const registroEliminacion = [
+                numero,
+                fecha,
+                cliente,
+                productosTexto,
+                total,
+                motivo,
+                fechaEliminacion,
+                horaEliminacion
+            ];
+
+            // 4. Usar operación combinada optimizada
+            // Esto evita enviar las 126 filas de ventas por la URL
+            try {
+                console.log('💾 Ejecutando operación combinada optimizada...');
+                console.log('📊 Tamaño de inventario:', nuevasFilasInventario.length, 'filas');
+                console.log('🎯 Factura a eliminar:', numero);
+                
+                const resultado = await llamarAPIConJSONP({
+                    action: 'actualizarInventarioYEliminarVenta',
+                    spreadsheetId: spreadsheetId,
+                    inventarioNuevo: nuevasFilasInventario,
+                    numeroFactura: numero.toString(),
+                    registroEliminacion: registroEliminacion
+                });
+                
+                console.log('✅ Resultado:', resultado);
+                
+                if (resultado.error) {
+                    throw new Error(resultado.error);
+                }
+                
+                console.log('✅ Factura eliminada exitosamente y todos los cambios guardados');
+                
+            } catch (error) {
+                console.error('❌ Error crítico durante la eliminación:', error);
+                throw new Error(`No se pudieron guardar todos los cambios: ${error.message}`);
+            }
         }
 
     </script>
