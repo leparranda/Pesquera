@@ -1188,7 +1188,7 @@
         // Configuración de la API
         const API_KEY = 'AIzaSyBHyIgNRB_Td-Zq9p2FwxSDruIsz0EOvlk';
         const SHEETS_API_BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksZdobQBT-nDgBQk4tDHgdjJmCN83wW3pAi7Qc0yPbKIiRNEqYXxhAL8Y0HFCbOlk/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx2T-85v0ARb3WpIcj7jtC8jdayAct3fKyvEYGCstuqjZN2Cv9ZUJ4Kn2lQtzn52rF1/exec';
 
         // Variables globales
         let spreadsheetId = localStorage.getItem('spreadsheetId') || '';
@@ -1456,6 +1456,7 @@
 
           return await llamarAPIConJSONP(requestData);
         }
+
 
         // Función auxiliar para escribir con reintentos
         async function escribirHojaConReintento(nombreHoja, datos, intentos = 3) {
