@@ -688,6 +688,7 @@
                     <div class="tab" onclick="showSection('inventario')">📦 INVENTARIO</div>
                     <div class="tab" onclick="showSection('precios')">💰 PRECIOS</div>
                     <div class="tab" onclick="showSection('ventas')">🧾 VENTAS</div>
+                    <div class="tab" onclick="showSection('historico')">📋 HISTÓRICO</div>
                     <div class="tab" onclick="showSection('reportes')">📊 REPORTES</div>
                 </div>
 
@@ -786,6 +787,10 @@
                         <input type="number" id="precioCompra" step="500" min="500" placeholder="Ej: 12000">
                     </div>
                     <div class="form-group">
+                        <label>Proveedor (opcional):</label>
+                        <input type="text" id="proveedorInventario" placeholder="Nombre del proveedor">
+                    </div>
+                    <div class="form-group">
                         <label>&nbsp;</label>
                         <button class="btn btn-success" onclick="agregarInventario()" id="btnAgregarInventario">
                             + AGREGAR AL INVENTARIO
@@ -828,7 +833,7 @@
                     </div>
                     <div class="form-group">
                         <label>Precio de Compra ($/lb):</label>
-                        <input type="number" id="precioCompraActual" step="0.01" min="0" readonly style="background-color: #f8f9fa;">
+                        <input type="number" id="precioCompraActual" step="1" min="0" placeholder="Ej: 8000">
                     </div>
                     <div class="form-group">
                         <label>Margen de Ganancia (%):</label>
@@ -836,7 +841,7 @@
                     </div>
                     <div class="form-group">
                         <label>Precio de Venta (por libra):</label>
-                        <input type="number" id="precioVentaManual" step="0.01" min="0" placeholder="O ingrese manualmente" oninput="calcularMargenDesdeVenta()">
+                        <input type="number" id="precioVentaManual" step="1" min="0" placeholder="O ingrese manualmente" oninput="calcularMargenDesdeVenta()">
                     </div>
                     <div class="form-group">
                         <label>&nbsp;</label>
@@ -928,6 +933,79 @@
                 </div>
 
                 <div id="facturaGenerada"></div>
+            </div>
+
+            <!-- SECCIÓN HISTÓRICO -->
+            <div id="historico" class="section">
+                <h2>📋 Histórico de Entradas de Mercancía</h2>
+
+                <div class="connection-status" id="historicoStatus">
+                    <span>🔧</span>
+                    <span>Configure el sistema primero</span>
+                </div>
+
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
+                    <strong>ℹ️ Información:</strong> Este histórico se actualiza automáticamente cada vez que agregas mercancía al inventario. Los datos quedan guardados permanentemente.
+                </div>
+
+                <div class="form-row" style="margin-bottom: 20px;">
+                    <div class="form-group" style="flex: 0 0 auto;">
+                        <label>&nbsp;</label>
+                        <button class="btn" onclick="cargarHistorico()" id="btnCargarHistorico">🔄 ACTUALIZAR HISTÓRICO</button>
+                    </div>
+                    
+                    <div class="form-group" style="flex: 1;">
+                        <label>Filtrar por Tipo:</label>
+                        <select id="filtroTipoHistorico" onchange="filtrarHistorico()">
+                            <option value="">Todos los tipos</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="flex: 1;">
+                        <label>Filtrar por Mes:</label>
+                        <select id="filtroMesHistorico" onchange="filtrarHistorico()">
+                            <option value="">Todos los meses</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="stats-grid" style="margin-bottom: 20px;">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="stat-value" id="totalEntradasHistorico">0</div>
+                        <div class="stat-label">TOTAL ENTRADAS</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="stat-value" id="totalLibrasHistorico">0</div>
+                        <div class="stat-label">TOTAL LIBRAS</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <div class="stat-value" id="totalInversionHistorico">$0</div>
+                        <div class="stat-label">INVERSIÓN TOTAL</div>
+                    </div>
+                </div>
+
+                <h3>📦 Registro de Entradas</h3>
+                <div class="table-container">
+                    <table id="tablaHistorico">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo de Pescado</th>
+                                <th>Cantidad (lbs)</th>
+                                <th>Precio Compra ($/lb)</th>
+                                <th>Proveedor</th>
+                                <th>Valor Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 30px; color: #999;">
+                                    Haga clic en "🔄 ACTUALIZAR HISTÓRICO" para cargar los datos
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- SECCIÓN REPORTES -->
@@ -1546,9 +1624,10 @@
             const tipo = document.getElementById('tipoPescadoInventario').value;
             const libras = parseFloat(document.getElementById('librasRecibidas').value);
             const precio = parseFloat(document.getElementById('precioCompra').value);
+            const proveedor = document.getElementById('proveedorInventario').value.trim();
 
             if (!tipo || !libras || !precio) {
-                mostrarAlerta('Complete todos los campos', 'warning');
+                mostrarAlerta('Complete todos los campos obligatorios', 'warning');
                 return;
             }
 
@@ -1569,7 +1648,7 @@
                 inventarioData[tipo].precioPromedio = inventarioData[tipo].valorTotal / inventarioData[tipo].stock;
                 inventarioData[tipo].ultimaActualizacion = new Date().toLocaleDateString();
 
-                // Preparar datos para escribir
+                // Preparar datos para escribir en Inventario
                 const datosInventario = [
                     ['Tipo', 'Stock', 'PrecioPromedio', 'ValorTotal', 'UltimaActualizacion'],
                     ...Object.entries(inventarioData).map(([tipoPez, datos]) => [
@@ -1583,13 +1662,40 @@
 
                 await escribirHoja('Inventario', datosInventario);
 
+                // =================== REGISTRAR EN HISTÓRICO ===================
+                const fechaActual = new Date().toLocaleDateString();
+                const valorTotal = libras * precio;
+                const proveedorFinal = proveedor || 'No especificado';
+
+                // Leer histórico actual
+                let datosHistorico = [];
+                try {
+                    datosHistorico = await leerHoja('Historico');
+                    if (datosHistorico.length === 0) {
+                        // Si está vacío, crear con encabezados
+                        datosHistorico = [['Tipo', 'Cantidad', 'PrecioCompra', 'Proveedor', 'Fecha', 'ValorTotal']];
+                    }
+                } catch (error) {
+                    console.log('Creando nueva hoja de histórico');
+                    datosHistorico = [['Tipo', 'Cantidad', 'PrecioCompra', 'Proveedor', 'Fecha', 'ValorTotal']];
+                }
+
+                // Agregar nueva entrada al histórico
+                datosHistorico.push([tipo, libras, precio, proveedorFinal, fechaActual, valorTotal]);
+
+                // Escribir histórico actualizado
+                await escribirHoja('Historico', datosHistorico);
+                console.log('✅ Entrada registrada en histórico');
+                // =================== FIN REGISTRO HISTÓRICO ===================
+
                 // Limpiar formulario
                 document.getElementById('tipoPescadoInventario').value = '';
                 document.getElementById('librasRecibidas').value = '';
                 document.getElementById('precioCompra').value = '';
+                document.getElementById('proveedorInventario').value = '';
 
                 actualizarTablaInventario();
-                mostrarAlerta('Inventario actualizado correctamente', 'success');
+                mostrarAlerta('✅ Inventario actualizado y registrado en histórico', 'success');
 
             } catch (error) {
                 mostrarAlerta(`Error al actualizar inventario: ${error.message}`, 'danger');
@@ -1649,12 +1755,20 @@
             const tipo = document.getElementById('tipoPescadoPrecio').value;
             const precioCompraInput = document.getElementById('precioCompraActual');
             
-            if (tipo && inventarioData[tipo]) {
-                precioCompraInput.value = inventarioData[tipo].precioPromedio.toFixed(2);
-                // Limpiar campos
+            if (tipo && preciosData[tipo]) {
+                // Usar el precio de compra de la tabla de Precios
+                precioCompraInput.value = Math.round(preciosData[tipo].precioCompra);
+                // Cargar también el margen y precio de venta si existen
+                document.getElementById('margenGanancia').value = preciosData[tipo].margen.toFixed(2);
+                document.getElementById('precioVentaManual').value = Math.round(preciosData[tipo].precioVenta);
+            } else if (tipo && inventarioData[tipo]) {
+                // Si no hay precio configurado, usar el precio promedio del inventario como referencia
+                precioCompraInput.value = Math.round(inventarioData[tipo].precioPromedio);
+                // Limpiar otros campos
                 document.getElementById('margenGanancia').value = '';
                 document.getElementById('precioVentaManual').value = '';
             } else {
+                // Limpiar todos los campos
                 precioCompraInput.value = '';
                 document.getElementById('margenGanancia').value = '';
                 document.getElementById('precioVentaManual').value = '';
@@ -1668,7 +1782,8 @@
             
             if (precioCompra && margen) {
                 const precioVenta = precioCompra * (1 + margen / 100);
-                document.getElementById('precioVentaManual').value = precioVenta.toFixed(2);
+                // Redondear a número entero para pesos colombianos
+                document.getElementById('precioVentaManual').value = Math.round(precioVenta);
             }
         }
 
@@ -1691,21 +1806,21 @@
             }
 
             const tipo = document.getElementById('tipoPescadoPrecio').value;
-            const margen = parseFloat(document.getElementById('margenGanancia').value);
-            const precioManual = parseFloat(document.getElementById('precioVentaManual').value);
+            const precioCompraInput = parseFloat(document.getElementById('precioCompraActual').value);
+            const precioVentaInput = parseFloat(document.getElementById('precioVentaManual').value);
 
             if (!tipo) {
                 mostrarAlerta('Seleccione un tipo de pescado', 'warning');
                 return;
             }
 
-            if (!inventarioData[tipo]) {
-                mostrarAlerta('Este pescado no existe en el inventario', 'warning');
+            if (!precioCompraInput || precioCompraInput <= 0) {
+                mostrarAlerta('Ingrese un precio de compra válido', 'warning');
                 return;
             }
 
-            if (!precioManual) {
-                mostrarAlerta('Ingrese un precio de venta', 'warning');
+            if (!precioVentaInput || precioVentaInput <= 0) {
+                mostrarAlerta('Ingrese un precio de venta válido', 'warning');
                 return;
             }
 
@@ -1714,15 +1829,17 @@
             btnConfigurar.innerHTML = '<span class="loading"></span> GUARDANDO...';
 
             try {
-                const precioCompra = inventarioData[tipo].precioPromedio;
-                const precioVenta = precioManual;
+                // Usar los precios ingresados por el usuario
+                const precioCompra = precioCompraInput;
+                const precioVenta = precioVentaInput;
                 const margenCalculado = ((precioVenta - precioCompra) / precioCompra) * 100;
+                const ganancia = precioVenta - precioCompra;
 
                 preciosData[tipo] = {
                     precioCompra: precioCompra,
                     margen: margenCalculado,
                     precioVenta: precioVenta,
-                    ganancia: precioVenta - precioCompra
+                    ganancia: ganancia
                 };
 
                 // Preparar datos para escribir
@@ -1743,6 +1860,10 @@
                 document.getElementById('tipoPescadoPrecio').value = '';
                 document.getElementById('precioCompraActual').value = '';
                 document.getElementById('margenGanancia').value = '';
+                document.getElementById('precioVentaManual').value = '';
+
+                actualizarTablaPrecios();
+                mostrarAlerta('Precio configurado correctamente', 'success');
                 document.getElementById('precioVentaManual').value = '';
 
                 actualizarTablaPrecios();
@@ -2270,6 +2391,181 @@
                     <td ${claseEstado}>${estado}</td>
                 `;
             });
+        }
+
+        // =================== FUNCIONES DE HISTÓRICO ===================
+
+        let datosHistoricoCompletos = [];
+
+        // Cargar histórico
+        window.cargarHistorico = async function() {
+            if (!isConfigured) {
+                mostrarAlerta('Configure el sistema primero', 'warning');
+                return;
+            }
+
+            const btnCargar = document.getElementById('btnCargarHistorico');
+            btnCargar.disabled = true;
+            btnCargar.innerHTML = '<span class="loading"></span> CARGANDO...';
+
+            try {
+                updateConnectionStatus('loading', 'Cargando histórico...');
+
+                const historicoData = await leerHoja('Historico');
+
+                if (historicoData.length > 1) {
+                    datosHistoricoCompletos = [];
+
+                    // Procesar datos (saltar encabezado)
+                    for (let i = 1; i < historicoData.length; i++) {
+                        const fila = historicoData[i];
+                        if (fila[0]) {
+                            datosHistoricoCompletos.push({
+                                tipo: fila[0],
+                                cantidad: parseFloat(fila[1]) || 0,
+                                precioCompra: parseFloat(fila[2]) || 0,
+                                proveedor: fila[3] || 'No especificado',
+                                fecha: fila[4] || '',
+                                valorTotal: parseFloat(fila[5]) || 0
+                            });
+                        }
+                    }
+
+                    // Llenar filtros
+                    llenarFiltrosHistorico();
+
+                    // Mostrar todos los datos
+                    actualizarTablaHistorico(datosHistoricoCompletos);
+
+                    // Actualizar estadísticas
+                    actualizarEstadisticasHistorico(datosHistoricoCompletos);
+
+                    updateConnectionStatus('connected', 'Histórico cargado correctamente');
+                    mostrarAlerta(`✅ Histórico cargado: ${datosHistoricoCompletos.length} entradas`, 'success');
+
+                } else {
+                    datosHistoricoCompletos = [];
+                    document.querySelector('#tablaHistorico tbody').innerHTML = 
+                        '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #999;">📦 No hay entradas registradas en el histórico</td></tr>';
+                    
+                    document.getElementById('totalEntradasHistorico').textContent = '0';
+                    document.getElementById('totalLibrasHistorico').textContent = '0';
+                    document.getElementById('totalInversionHistorico').textContent = '$0';
+
+                    mostrarAlerta('No hay datos en el histórico', 'warning');
+                }
+
+            } catch (error) {
+                updateConnectionStatus('disconnected', `Error: ${error.message}`);
+                mostrarAlerta(`Error al cargar histórico: ${error.message}`, 'danger');
+            } finally {
+                btnCargar.disabled = false;
+                btnCargar.innerHTML = '🔄 ACTUALIZAR HISTÓRICO';
+            }
+        };
+
+        // Llenar filtros de histórico
+        function llenarFiltrosHistorico() {
+            // Filtro de tipo
+            const filtroTipo = document.getElementById('filtroTipoHistorico');
+            const tipos = [...new Set(datosHistoricoCompletos.map(d => d.tipo))].sort();
+            
+            filtroTipo.innerHTML = '<option value="">Todos los tipos</option>';
+            tipos.forEach(tipo => {
+                filtroTipo.innerHTML += `<option value="${tipo}">${tipo}</option>`;
+            });
+
+            // Filtro de mes
+            const filtroMes = document.getElementById('filtroMesHistorico');
+            const meses = [...new Set(datosHistoricoCompletos.map(d => {
+                try {
+                    const fecha = new Date(d.fecha.split('/').reverse().join('-'));
+                    return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+                } catch (e) {
+                    return '';
+                }
+            }).filter(m => m))].sort().reverse();
+
+            filtroMes.innerHTML = '<option value="">Todos los meses</option>';
+            meses.forEach(mes => {
+                const [año, mesNum] = mes.split('-');
+                const nombreMes = new Date(año, parseInt(mesNum) - 1, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+                filtroMes.innerHTML += `<option value="${mes}">${nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1)}</option>`;
+            });
+        }
+
+        // Filtrar histórico
+        function filtrarHistorico() {
+            const filtroTipo = document.getElementById('filtroTipoHistorico').value;
+            const filtroMes = document.getElementById('filtroMesHistorico').value;
+
+            let datosFiltrados = [...datosHistoricoCompletos];
+
+            // Filtrar por tipo
+            if (filtroTipo) {
+                datosFiltrados = datosFiltrados.filter(d => d.tipo === filtroTipo);
+            }
+
+            // Filtrar por mes
+            if (filtroMes) {
+                datosFiltrados = datosFiltrados.filter(d => {
+                    try {
+                        const fecha = new Date(d.fecha.split('/').reverse().join('-'));
+                        const mesFecha = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+                        return mesFecha === filtroMes;
+                    } catch (e) {
+                        return false;
+                    }
+                });
+            }
+
+            actualizarTablaHistorico(datosFiltrados);
+            actualizarEstadisticasHistorico(datosFiltrados);
+        }
+
+        // Actualizar tabla de histórico
+        function actualizarTablaHistorico(datos) {
+            const tbody = document.querySelector('#tablaHistorico tbody');
+            tbody.innerHTML = '';
+
+            if (datos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #999;">🔍 No hay registros que coincidan con los filtros</td></tr>';
+                return;
+            }
+
+            // Ordenar por fecha descendente (más reciente primero)
+            datos.sort((a, b) => {
+                try {
+                    const fechaA = new Date(a.fecha.split('/').reverse().join('-'));
+                    const fechaB = new Date(b.fecha.split('/').reverse().join('-'));
+                    return fechaB - fechaA;
+                } catch (e) {
+                    return 0;
+                }
+            });
+
+            datos.forEach(entrada => {
+                const fila = tbody.insertRow();
+                fila.innerHTML = `
+                    <td>${entrada.fecha}</td>
+                    <td><strong>${entrada.tipo}</strong></td>
+                    <td style="text-align: center;">${entrada.cantidad.toFixed(1)} lbs</td>
+                    <td style="text-align: right;">${formatearPesos(entrada.precioCompra)}</td>
+                    <td>${entrada.proveedor}</td>
+                    <td style="text-align: right;"><strong>${formatearPesos(entrada.valorTotal)}</strong></td>
+                `;
+            });
+        }
+
+        // Actualizar estadísticas del histórico
+        function actualizarEstadisticasHistorico(datos) {
+            const totalEntradas = datos.length;
+            const totalLibras = datos.reduce((sum, d) => sum + d.cantidad, 0);
+            const totalInversion = datos.reduce((sum, d) => sum + d.valorTotal, 0);
+
+            document.getElementById('totalEntradasHistorico').textContent = totalEntradas;
+            document.getElementById('totalLibrasHistorico').textContent = totalLibras.toFixed(1) + ' lbs';
+            document.getElementById('totalInversionHistorico').textContent = formatearPesos(totalInversion);
         }
 
         // =================== INICIALIZACIÓN ===================
