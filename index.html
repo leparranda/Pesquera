@@ -994,11 +994,6 @@
             <div id="historico" class="section">
                 <h2>📋 Histórico de Entradas de Mercancía</h2>
 
-                <div class="connection-status" id="historicoStatus">
-                    <span>🔧</span>
-                    <span>Configure el sistema primero</span>
-                </div>
-
                 <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
                     <strong>ℹ️ Información:</strong> Este histórico se actualiza automáticamente cada vez que agregas mercancía al inventario. Los datos quedan guardados permanentemente.
                 </div>
@@ -3418,7 +3413,7 @@
                             🗑️ ELIMINAR
                         </button>
                         <button 
-                            onclick="this.closest('div[style*=\"position: fixed\"]').remove()"
+                            onclick="cerrarModalEliminacion()"
                             style="background: #6c757d; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;"
                         >
                             ❌ CANCELAR
@@ -3431,6 +3426,14 @@
             
             // Focus en el select de motivo
             setTimeout(() => document.getElementById('motivoEliminacion').focus(), 100);
+        }
+
+        // Función para cerrar el modal de eliminación
+        function cerrarModalEliminacion() {
+            const modal = document.querySelector('div[style*="position: fixed"]');
+            if (modal) {
+                modal.remove();
+            }
         }
 
         // Función para confirmar eliminación
