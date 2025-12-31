@@ -782,11 +782,6 @@
             <div id="inventario" class="section">
                 <h2>📦 Control de Inventario</h2>
 
-                <div class="connection-status" id="inventarioStatus">
-                    <span>🔧</span>
-                    <span>Configure el sistema primero</span>
-                </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tipo de Pescado:</label>
@@ -1093,8 +1088,6 @@
                                 <option value="">Todos los productos</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group">
                             <label>&nbsp;</label>
                             <button class="btn" onclick="limpiarFiltrosReportes()" style="background: #6c757d;">
@@ -3138,58 +3131,56 @@
                 total: total
             };
 
-            // Generar HTML de la factura
+            // Generar HTML de la factura en formato térmico
             const facturaHTML = `
                 <div class="factura">
-                    <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #3498db;">
-                        <h2>🐟 ${config.nombreEmpresa}</h2>
-                        <p>${config.direccionEmpresa}</p>
-                        <p>📞 ${config.telefonoEmpresa}</p>
-                        <p><strong>FACTURA #${numero.toString().padStart(6, '0')}</strong></p>
-                        <p>Fecha: ${fecha}</p>
-                        <p style="color: #e74c3c; font-weight: bold;">⚠️ REIMPRESIÓN</p>
+                    <div style="text-align: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px dashed #000;">
+                        <h2 style="margin: 5px 0;">🐟 ${config.nombreEmpresa}</h2>
+                        <p style="margin: 2px 0; font-size: 0.9em;">${config.direccionEmpresa}</p>
+                        <p style="margin: 2px 0; font-size: 0.9em;">📞 ${config.telefonoEmpresa}</p>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
-                        <div>
-                            <h4>DATOS DEL CLIENTE:</h4>
-                            <p><strong>Nombre:</strong> ${cliente}</p>
-                        </div>
-                        <div>
-                            <h4>DATOS DE VENTA:</h4>
-                            <p><strong>Fecha:</strong> ${fecha}</p>
-                            <p><strong>Factura:</strong> #${numero.toString().padStart(6, '0')}</p>
-                        </div>
+                    <div style="text-align: center; margin: 10px 0; padding: 8px 0; border-bottom: 1px dashed #000;">
+                        <p style="margin: 2px 0;"><strong>FACTURA #${numero.toString().padStart(6, '0')}</strong></p>
+                        <p style="margin: 2px 0; font-size: 0.85em;">Fecha: ${fecha}</p>
+                        <p style="margin: 5px 0; color: #e74c3c; font-weight: bold; font-size: 0.9em;">⚠️ REIMPRESIÓN</p>
                     </div>
                     
-                    <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+                    <div style="margin: 10px 0; padding: 5px 0; border-bottom: 1px dashed #000;">
+                        <p style="margin: 2px 0; font-size: 0.9em;"><strong>CLIENTE:</strong></p>
+                        <p style="margin: 2px 0; font-size: 0.85em;">${cliente}</p>
+                    </div>
+                    
+                    <table style="width: 100%; margin: 10px 0; border-collapse: collapse; font-size: 0.85em;">
                         <thead>
-                            <tr style="background: #3498db; color: white;">
-                                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">PRODUCTO</th>
-                                <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">CANTIDAD (LBS)</th>
-                                <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">PRECIO UNIT.</th>
-                                <th style="padding: 10px; text-align: right; border: 1px solid #ddd;">SUBTOTAL</th>
+                            <tr style="border-bottom: 1px solid #000;">
+                                <th style="padding: 4px 2px; text-align: left;">PRODUCTO</th>
+                                <th style="padding: 4px 2px; text-align: center;">CANT</th>
+                                <th style="padding: 4px 2px; text-align: right;">PRECIO</th>
+                                <th style="padding: 4px 2px; text-align: right;">TOTAL</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${productosArray.map(producto => `
-                                <tr>
-                                    <td style="padding: 10px; border: 1px solid #ddd;">${producto.tipo}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${producto.cantidad.toFixed(1)}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${formatearPesos(producto.precio)}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${formatearPesos(producto.subtotal)}</td>
+                                <tr style="border-bottom: 1px dashed #ccc;">
+                                    <td style="padding: 4px 2px;">${producto.tipo}</td>
+                                    <td style="padding: 4px 2px; text-align: center;">${producto.cantidad.toFixed(1)}</td>
+                                    <td style="padding: 4px 2px; text-align: right;">${formatearPesos(producto.precio)}</td>
+                                    <td style="padding: 4px 2px; text-align: right;"><strong>${formatearPesos(producto.subtotal)}</strong></td>
                                 </tr>
                             `).join('')}
                         </tbody>
                     </table>
                     
-                    <div style="text-align: right; padding: 20px; background: #f8f9fa; border-radius: 10px; margin-top: 20px;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: #28a745;">
+                    <div style="text-align: right; padding: 10px 0; margin-top: 10px; border-top: 2px solid #000;">
+                        <div style="font-size: 1.3em; font-weight: bold;">
                             TOTAL: ${formatearPesos(total)}
                         </div>
-                        <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
-                            ¡Gracias por su compra! Pescado fresco del día.
-                        </p>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #000;">
+                        <p style="margin: 5px 0; font-size: 0.85em;">¡Gracias por su compra!</p>
+                        <p style="margin: 5px 0; font-size: 0.8em;">🐟 Pescado fresco del día 🐟</p>
                     </div>
                     
                     <div class="no-print" style="text-align: center; margin-top: 20px;">
@@ -3218,8 +3209,52 @@
                             padding: 30px;
                         }
                         @media print {
+                            @page {
+                                size: 80mm auto;
+                                margin: 0;
+                            }
+                            
+                            body {
+                                margin: 0;
+                                padding: 0;
+                            }
+                            
+                            .factura {
+                                width: 80mm !important;
+                                max-width: 80mm !important;
+                                margin: 0 !important;
+                                padding: 5mm !important;
+                                font-size: 10pt !important;
+                            }
+                            
+                            .factura h2 {
+                                font-size: 14pt !important;
+                                margin: 5px 0 !important;
+                            }
+                            
+                            .factura p {
+                                font-size: 9pt !important;
+                                margin: 2px 0 !important;
+                                line-height: 1.3 !important;
+                            }
+                            
+                            .factura table {
+                                font-size: 9pt !important;
+                                width: 100% !important;
+                            }
+                            
+                            .factura th {
+                                font-size: 9pt !important;
+                                padding: 3px 2px !important;
+                            }
+                            
+                            .factura td {
+                                font-size: 9pt !important;
+                                padding: 3px 2px !important;
+                            }
+                            
                             .no-print {
-                                display: none;
+                                display: none !important;
                             }
                         }
                         .btn {
