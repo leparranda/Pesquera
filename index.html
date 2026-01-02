@@ -735,6 +735,7 @@
                     <div class="tab" onclick="showSection('inventario')">📦 INVENTARIO</div>
                     <div class="tab" onclick="showSection('precios')">💰 PRECIOS</div>
                     <div class="tab" onclick="showSection('ventas')">🧾 VENTAS</div>
+                    <div class="tab" onclick="showSection('deudores')">💳 DEUDORES</div>
                     <div class="tab" onclick="showSection('historico')">📋 HISTÓRICO</div>
                     <div class="tab" onclick="showSection('reportes')">📊 REPORTES</div>
                 </div>
@@ -742,7 +743,7 @@
                 <div class="content">
                     <!-- SECCIÓN CONFIGURACIÓN -->
                     <div id="configuracion" class="section active">
-                        <h2>⚙️ Configuración del Sistema</h2>
+                        <h2>Configuración del Sistema</h2>
 
                         <div class="connection-status" id="connectionStatus">
                             <span>🔧</span>
@@ -750,7 +751,7 @@
                         </div>
 
                         <div class="config-section">
-                            <h3>📋 Configuración de Google Sheets</h3>
+                            <h3>Configuración de Google Sheets</h3>
                             <div class="form-group">
                                 <label>ID del Google Sheet:</label>
                                 <input type="text" id="spreadsheetId" placeholder="ID del Google Sheet">
@@ -758,12 +759,12 @@
                                     <!--Obtenga el ID de la URL: https://docs.google.com/spreadsheets/d/<strong>ID_AQUI</strong>/edit<br>-->
                                 </small>
                             </div>
-                            <button class="btn btn-success" onclick="probarConexion()">🔌 PROBAR CONEXIÓN</button>
-                            <button class="btn btn-success" onclick="guardarConfiguracion()">💾 GUARDAR CONFIGURACIÓN</button>
+                            <button class="btn btn-success" onclick="probarConexion()">PROBAR CONEXIÓN</button>
+                            <button class="btn btn-success" onclick="guardarConfiguracion()">GUARDAR CONFIGURACIÓN</button>
                         </div>
 
                         <div class="config-section">
-                            <h3>🏢 Datos de la Empresa</h3>
+                            <h3>Datos de la Empresa</h3>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label>Nombre de la Empresa:</label>
@@ -778,13 +779,13 @@
                                 <label>Dirección:</label>
                                 <textarea id="direccionEmpresa" rows="2">Dirección de la empresa</textarea>
                             </div>
-                            <button class="btn btn-success" onclick="guardarDatosEmpresa()">💾 GUARDAR DATOS</button>
+                            <button class="btn btn-success" onclick="guardarDatosEmpresa()">GUARDAR DATOS</button>
                         </div>
                     </div>
 
             <!-- SECCIÓN INVENTARIO -->
             <div id="inventario" class="section">
-                <h2>📦 Control de Inventario</h2>
+                <h2>Control de Inventario</h2>
 
                 <div class="connection-status" id="inventarioStatus">
                     <span>🔧</span>
@@ -826,12 +827,12 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Libras Recibidas:</label>
-                        <input type="number" id="librasRecibidas" step="1" min="1">
+                        <label>Peso Recibido (kg):</label>
+                        <input type="number" id="librasRecibidas" step="0.01" min="0.01" placeholder="Ej: 2.5">
                     </div>
                     <div class="form-group">
-                        <label>Precio de Compra (por libra):</label>
-                        <input type="number" id="precioCompra" step="500" min="500" placeholder="Ej: 12000">
+                        <label>Precio de Compra (por kg):</label>
+                        <input type="number" id="precioCompra" step="500" min="500" placeholder="Ej: 26000">
                     </div>
                     <div class="form-group">
                         <label>Proveedor (opcional):</label>
@@ -840,7 +841,7 @@
                     <div class="form-group">
                         <label>&nbsp;</label>
                         <button class="btn btn-success" onclick="agregarInventario()" id="btnAgregarInventario">
-                            + AGREGAR AL INVENTARIO
+                            AGREGAR AL INVENTARIO
                         </button>
                     </div>
                 </div>
@@ -850,8 +851,8 @@
                         <thead>
                             <tr>
                                 <th>Tipo de Pescado</th>
-                                <th>Stock Actual (lbs)</th>
-                                <th>Precio Promedio</th>
+                                <th>Stock Actual (kg)</th>
+                                <th>Precio Promedio ($/kg)</th>
                                 <th>Valor Total</th>
                                 <th>Última Actualización</th>
                                 <th>Estado</th>
@@ -864,7 +865,7 @@
 
             <!-- SECCIÓN PRECIOS -->
             <div id="precios" class="section">
-                <h2>💰 Configuración de Precios de Venta</h2>
+                <h2>Configuración de Precios de Venta</h2>
 
                 <div class="connection-status" id="preciosStatus">
                     <span>🔧</span>
@@ -879,21 +880,21 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Precio de Compra ($/lb):</label>
-                        <input type="number" id="precioCompraActual" step="1" min="0" placeholder="Ej: 8000">
+                        <label>Precio de Compra ($/kg):</label>
+                        <input type="number" id="precioCompraActual" step="1" min="0" placeholder="Ej: 18000" readonly style="background-color: #f0f0f0;">
                     </div>
                     <div class="form-group">
                         <label>Margen de Ganancia (%):</label>
                         <input type="number" id="margenGanancia" step="1" min="0" max="500" value="30" oninput="calcularPrecioVentaDesdeMargen()" readonly style="background-color: #e8f5e9;">
                     </div>
                     <div class="form-group">
-                        <label>Precio de Venta (por libra):</label>
+                        <label>Precio de Venta ($/kg):</label>
                         <input type="number" id="precioVentaManual" step="1" min="0" placeholder="O ingrese manualmente" oninput="calcularMargenDesdeVenta()">
                     </div>
                     <div class="form-group">
                         <label>&nbsp;</label>
                         <button class="btn btn-success" onclick="configurarPrecio()" id="btnConfigurarPrecio">
-                            💾 GUARDAR PRECIO
+                            GUARDAR PRECIO
                         </button>
                     </div>
                 </div>
@@ -903,10 +904,10 @@
                         <thead>
                             <tr>
                                 <th>Tipo de Pescado</th>
-                                <th>Precio Compra</th>
+                                <th>Precio Compra ($/kg)</th>
                                 <th>Margen (%)</th>
-                                <th>Precio de Venta</th>
-                                <th>Ganancia por Libra</th>
+                                <th>Precio de Venta ($/kg)</th>
+                                <th>Ganancia por Kilo</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -917,7 +918,7 @@
 
             <!-- SECCIÓN VENTAS -->
             <div id="ventas" class="section">
-                <h2>🧾 Registro de Ventas</h2>
+                <h2>Registro de Ventas</h2>
 
                 <div class="connection-status" id="ventasStatus">
                     <span>🔧</span>
@@ -934,13 +935,16 @@
                         <input type="tel" id="telefonoCliente" placeholder="Teléfono (opcional)">
                     </div>
                     <div class="form-group">
-                        <label>Descuento por Libra (COP):</label>
+                        <label>Tipo de Pago:</label>
+                        <select id="tipoPago">
+                            <option value="pagado">Pagado</option>
+                            <option value="adeuda">Adeuda</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Descuento por Kilo (COP):</label>
                         <input type="number" id="descuentoPorLibra" placeholder="0" min="0" step="100" value="0">
                     </div>
-                </div>
-
-                <div style="background: #fff3cd; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
-                    <small>💡 <strong>Descuento por Mayor:</strong> Si aplicas descuento por libra, se restará ese valor del precio de venta de cada libra vendida.</small>
                 </div>
 
                 <h3>Productos a Vender:</h3>
@@ -952,16 +956,17 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Cantidad (libras):</label>
-                        <input type="number" id="cantidadVenta" step="0.1" min="0">
+                        <label>Peso en Gramos (de la báscula):</label>
+                        <input type="number" id="cantidadVenta" step="1" min="1" placeholder="Ej: 2000" oninput="mostrarConversionKilos()">
+                        <small id="conversionKilos" style="color: #666; font-size: 0.85em; display: block; margin-top: 3px;"></small>
                     </div>
                     <div class="form-group">
-                        <label>Precio por Libra:</label>
-                        <input type="number" id="precioVentaProducto" step="0.01" min="0" readonly>
+                        <label>Precio por Kilo:</label>
+                        <input type="number" id="precioVentaProducto" step="0.01" min="0" readonly style="background-color: #f0f0f0;">
                     </div>
                     <div class="form-group">
                         <label>&nbsp;</label>
-                        <button class="btn btn-success" onclick="agregarProductoVenta()">+ AGREGAR</button>
+                        <button class="btn btn-success" onclick="agregarProductoVenta()">AGREGAR</button>
                     </div>
                 </div>
 
@@ -970,8 +975,8 @@
                         <thead>
                             <tr>
                                 <th>Producto</th>
-                                <th>Cantidad (lbs)</th>
-                                <th>Precio Unitario</th>
+                                <th>Cantidad (kg)</th>
+                                <th>Precio Unitario ($/kg)</th>
                                 <th>Subtotal</th>
                                 <th>Acciones</th>
                             </tr>
@@ -985,7 +990,7 @@
                     
                     <!-- Sistema de cambio -->
                     <div style="border: 2px dashed #28a745; padding: 15px; border-radius: 8px; background: #f8fff8; margin-bottom: 15px;">
-                        <h4 style="color: #28a745; margin-bottom: 10px; text-align: center;">💵 CÁLCULO DE CAMBIO (Opcional)</h4>
+                        <h4 style="color: #28a745; margin-bottom: 10px; text-align: center;">CÁLCULO DE CAMBIO (Opcional)</h4>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                             <div>
                                 <label style="display: block; margin-bottom: 5px; font-size: 0.9em;">Efectivo Recibido ($):</label>
@@ -1003,25 +1008,66 @@
                     </div>
                     
                     <button class="btn btn-warning" onclick="generarFactura()" id="btnGenerarFactura">
-                        🖨️ GENERAR FACTURA
+                        GENERAR FACTURA
                     </button>
                 </div>
 
                 <div id="facturaGenerada"></div>
             </div>
 
+            <!-- SECCIÓN DEUDORES -->
+            <div id="deudores" class="section">
+                <h2>Control de Deudores</h2>
+
+                <!-- RESUMEN GENERAL (sin color de fondo) -->
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px;">
+                    <div style="padding: 20px; border-radius: 10px; text-align: center; border: 2px solid #dee2e6;">
+                        <div style="font-size: 2.5em; font-weight: bold; color: #dc3545; margin-bottom: 10px;" id="totalDeuda">$0</div>
+                        <div style="font-size: 1.1em; color: #666; font-weight: 500;">TOTAL ADEUDADO</div>
+                    </div>
+                    <div style="padding: 20px; border-radius: 10px; text-align: center; border: 2px solid #dee2e6;">
+                        <div style="font-size: 2.5em; font-weight: bold; color: #6c757d; margin-bottom: 10px;" id="cantidadDeudores">0</div>
+                        <div style="font-size: 1.1em; color: #666; font-weight: 500;">CLIENTES CON DEUDA</div>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="cargarDeudores()" id="btnCargarDeudores" style="margin-bottom: 20px;">
+                    ACTUALIZAR DEUDORES
+                </button>
+
+                <h3>📋 Lista de Deudores</h3>
+                <div class="table-container">
+                    <table id="tablaDeudores">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Teléfono</th>
+                                <th>Factura #</th>
+                                <th>Fecha</th>
+                                <th>Productos</th>
+                                <th>Monto Adeudado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 30px; color: #999;">
+                                    Haga clic en "ACTUALIZAR DEUDORES" para cargar los datos
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- SECCIÓN HISTÓRICO -->
             <div id="historico" class="section">
-                <h2>📋 Histórico de Entradas de Mercancía</h2>
-
-                <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
-                    <strong>ℹ️ Información:</strong> Este histórico se actualiza automáticamente cada vez que agregas mercancía al inventario. Los datos quedan guardados permanentemente.
-                </div>
+                <h2>Histórico de Entradas de Mercancía</h2>
 
                 <div class="form-row" style="margin-bottom: 20px;">
                     <div class="form-group" style="flex: 0 0 auto;">
                         <label>&nbsp;</label>
-                        <button class="btn" onclick="cargarHistorico()" id="btnCargarHistorico">🔄 ACTUALIZAR HISTÓRICO</button>
+                        <button class="btn" onclick="cargarHistorico()" id="btnCargarHistorico">ACTUALIZAR HISTÓRICO</button>
                     </div>
                     
                     <div class="form-group" style="flex: 1;">
@@ -1046,7 +1092,7 @@
                     </div>
                     <div class="stat-card" style="background: #f8f9fa;">
                         <div class="stat-value" id="totalLibrasHistorico" style="color: #e91e63;">0</div>
-                        <div class="stat-label">TOTAL LIBRAS</div>
+                        <div class="stat-label">TOTAL KILOGRAMOS</div>
                     </div>
                     <div class="stat-card" style="background: #f8f9fa;">
                         <div class="stat-value" id="totalInversionHistorico" style="color: #00bcd4;">$0</div>
@@ -1054,15 +1100,15 @@
                     </div>
                 </div>
 
-                <h3>📦 Registro de Entradas</h3>
+                <h3>Registro de Entradas</h3>
                 <div class="table-container">
                     <table id="tablaHistorico">
                         <thead>
                             <tr>
                                 <th>Fecha</th>
                                 <th>Tipo de Pescado</th>
-                                <th>Cantidad (lbs)</th>
-                                <th>Precio Compra ($/lb)</th>
+                                <th>Cantidad (kg)</th>
+                                <th>Precio Compra ($/kg)</th>
                                 <th>Proveedor</th>
                                 <th>Valor Total</th>
                             </tr>
@@ -1070,7 +1116,7 @@
                         <tbody>
                             <tr>
                                 <td colspan="6" style="text-align: center; padding: 30px; color: #999;">
-                                    Haga clic en "🔄 ACTUALIZAR HISTÓRICO" para cargar los datos
+                                    Haga clic en "ACTUALIZAR HISTÓRICO" para cargar los datos
                                 </td>
                             </tr>
                         </tbody>
@@ -1087,7 +1133,7 @@
                     <span>Configure el sistema primero</span>
                 </div>
 
-                <button class="btn" onclick="cargarReportes()" id="btnCargarReportes" style="margin-bottom: 20px;">🔄 ACTUALIZAR REPORTES</button>
+                <button class="btn" onclick="cargarReportes()" id="btnCargarReportes" style="margin-bottom: 20px;">ACTUALIZAR REPORTES</button>
 
                 <!-- FILTROS DE REPORTES -->
                 <div class="filter-section" style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
@@ -1123,7 +1169,7 @@
                         <div class="form-group">
                             <label>&nbsp;</label>
                             <button class="btn" onclick="limpiarFiltrosReportes()" style="background: #6c757d;">
-                                🗑️ LIMPIAR FILTROS
+                                LIMPIAR FILTROS
                             </button>
                         </div>
                     </div>
@@ -1156,7 +1202,7 @@
                     </div>
                 </div>
 
-                <h3>📈 Últimas Ventas</h3>
+                <h3>Últimas Ventas</h3>
                 <div class="table-container">
                     <table id="tablaUltimasVentas">
                         <thead>
@@ -1225,6 +1271,74 @@
             direccionEmpresa: localStorage.getItem('direccionEmpresa') || 'Dirección de la empresa',
             telefonoEmpresa: localStorage.getItem('telefonoEmpresa') || '(000) 000-0000'
         };
+
+        // =================== CONSTANTES DE CONVERSIÓN ===================
+        const LIBRAS_A_KILOS = 0.5; // 1 libra = 0.453592 kilogramos
+        const KILOS_A_LIBRAS = 2; // 1 kilogramo = 2.20462 libras
+
+        // Función para convertir gramos a kilogramos
+        function gramosAKilogramos(gramos) {
+            return gramos / 1000;
+        }
+
+        // Función para mostrar conversión en tiempo real
+        window.mostrarConversionKilos = function() {
+            const gramos = parseFloat(document.getElementById('cantidadVenta').value) || 0;
+            const kilos = gramosAKilogramos(gramos);
+            const elemento = document.getElementById('conversionKilos');
+            
+            if (gramos > 0) {
+                elemento.style.display = 'block';
+                elemento.textContent = `= ${kilos.toFixed(3)} kg`;
+            } else {
+                elemento.style.display = 'none';
+                elemento.textContent = '';
+            }
+        };
+
+        // Función para parsear productos (compatible con lbs y kg)
+        function parsearProducto(productoStr) {
+            // Intentar primero con kilogramos (formato nuevo)
+            let match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*kg\)$/);
+            if (match) {
+                return {
+                    tipo: match[1].trim(),
+                    cantidad: parseFloat(match[2]),
+                    unidad: 'kg'
+                };
+            }
+            
+            // Si no, intentar con libras (formato histórico)
+            match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs?\)$/);
+            if (match) {
+                const cantidadLibras = parseFloat(match[2]);
+                return {
+                    tipo: match[1].trim(),
+                    cantidad: cantidadLibras, // MANTENER en libras, no convertir
+                    unidad: 'lbs' // Importante: marcar que está en libras
+                };
+            }
+            
+            return null;
+        }
+
+        // Función para detectar si un registro es en libras (datos históricos) o kilos (datos nuevos)
+        // Los datos históricos tendrán cantidades típicas de libras (1-100), los nuevos en kilos (0.5-50)
+        function esRegistroEnLibras(cantidad) {
+            // Si la cantidad es mayor a 100, asumimos que son datos antiguos en libras
+            // o si es un número entero pequeño común en libras (1, 2, 3, etc.)
+            return false; // Por defecto asumimos que todos los nuevos datos son en kilos
+        }
+
+        // Función para convertir precio por libra a precio por kilo
+        function precioLibraAKilo(precioLibra) {
+            return precioLibra * KILOS_A_LIBRAS;
+        }
+
+        // Función para convertir precio por kilo a precio por libra
+        function precioKiloALibra(precioKilo) {
+            return precioKilo / KILOS_A_LIBRAS;
+        }
 
         console.log('✅ Variables inicializadas correctamente');
 
@@ -1907,7 +2021,7 @@
                 mostrarAlerta(`Error al actualizar inventario: ${error.message}`, 'danger');
             } finally {
                 btnAgregar.disabled = false;
-                btnAgregar.innerHTML = '+ AGREGAR AL INVENTARIO';
+                btnAgregar.innerHTML = 'AGREGAR AL INVENTARIO';
             }
         };
 
@@ -1935,7 +2049,7 @@
 
                 fila.innerHTML = `
                     <td>${tipo}</td>
-                    <td>${datos.stock.toFixed(1)}</td>
+                    <td>${parseFloat(datos.stock.toFixed(3))}</td>
                     <td>${formatearPesos(datos.precioPromedio)}</td>
                     <td>${formatearPesos(datos.valorTotal)}</td>
                     <td>${datos.ultimaActualizacion || 'N/A'}</td>
@@ -2159,16 +2273,19 @@
         // Agregar producto a venta
         window.agregarProductoVenta = function() {
             const tipo = document.getElementById('tipoPescadoVenta').value;
-            const cantidad = parseFloat(document.getElementById('cantidadVenta').value);
+            const gramos = parseFloat(document.getElementById('cantidadVenta').value);
             const precio = parseFloat(document.getElementById('precioVentaProducto').value);
 
-            if (!tipo || !cantidad || !precio) {
+            if (!tipo || !gramos || !precio) {
                 mostrarAlerta('Complete todos los campos del producto', 'warning');
                 return;
             }
 
+            // Convertir gramos a kilos
+            const cantidad = gramosAKilogramos(gramos);
+
             if (cantidad > inventarioData[tipo].stock) {
-                mostrarAlerta(`Solo hay ${inventarioData[tipo].stock.toFixed(1)} libras disponibles de ${tipo}`, 'warning');
+                mostrarAlerta(`Solo hay ${inventarioData[tipo].stock.toFixed(3)} kg disponibles de ${tipo}`, 'warning');
                 return;
             }
 
@@ -2185,6 +2302,7 @@
             document.getElementById('tipoPescadoVenta').value = '';
             document.getElementById('cantidadVenta').value = '';
             document.getElementById('precioVentaProducto').value = '';
+            document.getElementById('conversionKilos').textContent = '';
 
             actualizarTablaVentaActual();
         };
@@ -2200,7 +2318,7 @@
                 const fila = tbody.insertRow();
                 fila.innerHTML = `
                     <td>${producto.tipo}</td>
-                    <td>${producto.cantidad.toFixed(1)}</td>
+                    <td>${producto.cantidad.toFixed(3)}</td>
                     <td>${formatearPesos(producto.precio)}</td>
                     <td>${formatearPesos(producto.subtotal)}</td>
                     <td><button class="btn btn-danger" onclick="eliminarProductoVenta(${index})">Eliminar</button></td>
@@ -2267,6 +2385,7 @@
             const cliente = document.getElementById('nombreCliente').value || 'Cliente General';
             const telefono = document.getElementById('telefonoCliente').value || 'N/A';
             const descuentoPorLibra = parseFloat(document.getElementById('descuentoPorLibra').value) || 0;
+            const tipoPago = document.getElementById('tipoPago').value;
 
             const btnGenerar = document.getElementById('btnGenerarFactura');
             btnGenerar.disabled = true;
@@ -2305,18 +2424,22 @@
                     numero: numeroFactura,
                     fecha: new Date().toLocaleDateString(),
                     cliente: cliente,
-                    productos: ventaActual.map(p => `${p.tipo} (${p.cantidad.toFixed(1)} lbs)`).join(', '),
+                    telefono: telefono,
+                    productos: ventaActual.map(p => `${p.tipo} (${p.cantidad.toFixed(3)} kg)`).join(', '),
                     total: total,
                     descuentoPorLibra: descuentoPorLibra,
                     descuentoTotal: descuentoTotal,
                     subtotalSinDescuento: subtotalSinDescuento,
-                    totalLibras: totalLibras
+                    totalLibras: totalLibras,
+                    tipoPago: tipoPago
                 };
 
                 await Promise.all([
                     guardarVenta(venta),
                     actualizarInventarioEnSheets(),
-                    actualizarNumeroFactura(numeroFactura + 1)
+                    actualizarNumeroFactura(numeroFactura + 1),
+                    // Guardar en hoja de Deudas si el pago es "adeuda"
+                    ...(tipoPago === 'adeuda' ? [guardarDeuda(venta)] : [])
                 ]);
 
                 // Generar HTML de factura
@@ -2331,7 +2454,7 @@
                 mostrarAlerta(`Error al generar factura: ${error.message}`, 'danger');
             } finally {
                 btnGenerar.disabled = false;
-                btnGenerar.innerHTML = '🖨️ GENERAR FACTURA';
+                btnGenerar.innerHTML = 'GENERAR FACTURA';
             }
         };
 
@@ -2394,6 +2517,127 @@
             await escribirHoja('Configuracion', datosConfig);
         }
 
+        // Guardar deuda
+        async function guardarDeuda(venta) {
+            const filaDeuda = [
+                venta.numero,
+                venta.fecha,
+                venta.cliente,
+                venta.telefono || 'N/A',
+                venta.productos,
+                venta.total,
+                'pendiente', // Estado de la deuda
+                '' // FechaPago (vacío hasta que se pague)
+            ];
+
+            await agregarFilaHoja('Deudas', filaDeuda);
+        }
+
+        // Cargar deudores
+        window.cargarDeudores = async function() {
+            if (!isConfigured) {
+                mostrarAlerta('Configure el sistema primero', 'warning');
+                return;
+            }
+
+            const btnCargar = document.getElementById('btnCargarDeudores');
+            btnCargar.disabled = true;
+            btnCargar.innerHTML = '<span class="loading"></span> CARGANDO...';
+
+            try {
+                const datos = await leerHoja('Deudas');
+                
+                if (datos.length <= 1) {
+                    document.getElementById('tablaDeudores').querySelector('tbody').innerHTML = `
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 30px; color: #999;">
+                                No hay deudores registrados
+                            </td>
+                        </tr>
+                    `;
+                    document.getElementById('totalDeuda').textContent = '$0';
+                    document.getElementById('cantidadDeudores').textContent = '0';
+                    return;
+                }
+
+                // Filtrar solo las deudas pendientes
+                const deudores = datos.slice(1).filter(row => row[6] === 'pendiente');
+                
+                let totalDeuda = 0;
+                let html = '';
+                
+                deudores.forEach((deuda, index) => {
+                    const [numeroFactura, fecha, cliente, telefono, productos, monto, estado] = deuda;
+                    const montoNum = parseFloat(monto) || 0;
+                    totalDeuda += montoNum;
+                    
+                    html += `
+                        <tr>
+                            <td>${cliente}</td>
+                            <td>${telefono}</td>
+                            <td>#${numeroFactura}</td>
+                            <td>${fecha}</td>
+                            <td>${productos}</td>
+                            <td style="font-weight: bold; color: #dc3545;">${formatearPesos(montoNum)}</td>
+                            <td>
+                                <button class="btn btn-success" onclick="pagarDeuda(${index + 1})" 
+                                    style="padding: 8px 15px; font-size: 0.9em;">
+                                    PAGAR
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                document.getElementById('tablaDeudores').querySelector('tbody').innerHTML = html;
+                document.getElementById('totalDeuda').textContent = formatearPesos(totalDeuda);
+                document.getElementById('cantidadDeudores').textContent = deudores.length;
+                
+                const statusElement = document.getElementById('deudoresStatus');
+                if (statusElement) {
+                    statusElement.className = 'connection-status status-connected';
+                    statusElement.innerHTML = '<span>✅</span><span>Deudores cargados correctamente</span>';
+                }
+
+            } catch (error) {
+                mostrarAlerta(`Error al cargar deudores: ${error.message}`, 'danger');
+                const statusElement = document.getElementById('deudoresStatus');
+                if (statusElement) {
+                    statusElement.className = 'connection-status status-disconnected';
+                    statusElement.innerHTML = '<span>❌</span><span>Error al cargar deudores</span>';
+                }
+            } finally {
+                btnCargar.disabled = false;
+                btnCargar.innerHTML = 'ACTUALIZAR DEUDORES';
+            }
+        };
+
+        // Pagar deuda
+        window.pagarDeuda = async function(filaIndex) {
+            if (!confirm('¿Confirmar el pago de esta deuda?')) {
+                return;
+            }
+
+            try {
+                const datos = await leerHoja('Deudas');
+                
+                // Actualizar el estado a 'pagado' y agregar fecha de pago
+                datos[filaIndex][6] = 'pagado';
+                datos[filaIndex][7] = new Date().toLocaleDateString(); // FechaPago
+                
+                // Reescribir toda la hoja con los datos actualizados
+                await escribirHoja('Deudas', datos);
+                
+                mostrarAlerta('Deuda marcada como pagada correctamente', 'success');
+                
+                // Recargar la lista de deudores
+                await cargarDeudores();
+                
+            } catch (error) {
+                mostrarAlerta(`Error al marcar deuda como pagada: ${error.message}`, 'danger');
+            }
+        };
+
         // Generar HTML de factura
         function generarHTMLFactura(venta, productos, cliente, telefono, subtotalSinDescuento = 0, descuentoTotal = 0, descuentoPorLibra = 0, totalLibras = 0) {
             const facturaHTML = `
@@ -2428,11 +2672,11 @@
                             ${productos.map(producto => `
                                 <tr style="border-bottom: 1px dashed #ccc;">
                                     <td style="padding: 5px 3px; text-align: left;">${producto.tipo}</td>
-                                    <td style="padding: 5px 3px; text-align: center;">${producto.cantidad.toFixed(1)} lbs</td>
+                                    <td style="padding: 5px 3px; text-align: center;">${producto.cantidad.toFixed(3)} kg</td>
                                     <td style="padding: 5px 3px; text-align: right;"><strong>${formatearPesos(producto.subtotal)}</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px dashed #ccc;">
-                                    <td colspan="3" style="padding: 2px 3px 5px 20px; font-size: 0.85em; color: #666; text-align: left;">@ ${formatearPesos(producto.precio)}/lb</td>
+                                    <td colspan="3" style="padding: 2px 3px 5px 20px; font-size: 0.85em; color: #666; text-align: left;">@ ${formatearPesos(producto.precio)}/kg</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -2444,7 +2688,7 @@
                                 <span style="color: #666;">Subtotal:</span> <strong>${formatearPesos(subtotalSinDescuento)}</strong>
                             </div>
                             <div style="font-size: 0.95em; margin: 5px 0; color: #28a745;">
-                                <span>Descuento (${formatearPesos(descuentoPorLibra)}/lb × ${totalLibras.toFixed(1)} lbs):</span> <strong>-${formatearPesos(descuentoTotal)}</strong>
+                                <span>Descuento (${formatearPesos(descuentoPorLibra)}/kg × ${totalLibras.toFixed(3)} kg):</span> <strong>-${formatearPesos(descuentoTotal)}</strong>
                             </div>
                             <div style="border-top: 2px solid #000; margin: 8px 0; padding-top: 8px;">
                         ` : '<div style="border-top: 2px solid #000; padding-top: 8px;">'}
@@ -2456,12 +2700,12 @@
                     
                     <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #000;">
                         <p style="margin: 5px 0; font-size: 0.85em;">¡Gracias por su compra!</p>
-                        <p style="margin: 5px 0; font-size: 0.8em;">🐟 Pescado fresco del día 🐟</p>
+                        <p style="margin: 5px 0; font-size: 0.8em;">Pescado fresco del día</p>
                     </div>
                     
                     <div class="no-print" style="text-align: center; margin-top: 20px;">
-                        <button class="btn btn-warning" onclick="window.print()">🖨️ IMPRIMIR FACTURA</button>
-                        <button class="btn" onclick="limpiarFactura()">❌ CERRAR</button>
+                        <button class="btn btn-warning" onclick="window.print()">IMPRIMIR FACTURA</button>
+                        <button class="btn" onclick="limpiarFactura()">CERRAR</button>
                     </div>
                 </div>
             `;
@@ -2553,10 +2797,9 @@
                             // Extraer productos únicos
                             const productos = productosTexto.split(', ');
                             for (const productoStr of productos) {
-                                const match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs\)$/);
-                                if (match) {
-                                    const tipoPescado = match[1].trim();
-                                    productosSet.add(tipoPescado);
+                                const producto = parsearProducto(productoStr);
+                                if (producto) {
+                                    productosSet.add(producto.tipo);
                                 }
                             }
 
@@ -2571,14 +2814,17 @@
                             // Calcular ganancias para TODAS las ventas (totales)
                             const productosVenta = productosTexto.split(', ');
                             for (const productoStr of productosVenta) {
-                                const match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs\)$/);
-                                if (match) {
-                                    const tipoPescado = match[1].trim();
-                                    const cantidad = parseFloat(match[2]);
+                                const producto = parsearProducto(productoStr);
+                                if (producto && preciosData[producto.tipo]) {
+                                    const gananciaPorKilo = preciosData[producto.tipo].ganancia || 0;
                                     
-                                    if (preciosData[tipoPescado]) {
-                                        const gananciaPorLibra = preciosData[tipoPescado].ganancia || 0;
-                                        gananciasTotal += (cantidad * gananciaPorLibra);
+                                    if (producto.unidad === 'lbs') {
+                                        // Datos antiguos en libras: dividir el precio entre 2.20462
+                                        const gananciaPorLibra = gananciaPorKilo / KILOS_A_LIBRAS;
+                                        gananciasTotal += (producto.cantidad * gananciaPorLibra);
+                                    } else {
+                                        // Datos nuevos en kilos: usar el precio tal cual
+                                        gananciasTotal += (producto.cantidad * gananciaPorKilo);
                                     }
                                 }
                             }
@@ -2592,14 +2838,17 @@
                                     // Calcular ganancias del mes
                                     const productosMes = productosTexto.split(', ');
                                     for (const productoStr of productosMes) {
-                                        const match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs\)$/);
-                                        if (match) {
-                                            const tipoPescado = match[1].trim();
-                                            const cantidad = parseFloat(match[2]);
+                                        const producto = parsearProducto(productoStr);
+                                        if (producto && preciosData[producto.tipo]) {
+                                            const gananciaPorKilo = preciosData[producto.tipo].ganancia || 0;
                                             
-                                            if (preciosData[tipoPescado]) {
-                                                const gananciaPorLibra = preciosData[tipoPescado].ganancia || 0;
-                                                gananciasMes += (cantidad * gananciaPorLibra);
+                                            if (producto.unidad === 'lbs') {
+                                                // Datos antiguos en libras: dividir el precio entre 2.20462
+                                                const gananciaPorLibra = gananciaPorKilo / KILOS_A_LIBRAS;
+                                                gananciasMes += (producto.cantidad * gananciaPorLibra);
+                                            } else {
+                                                // Datos nuevos en kilos: usar el precio tal cual
+                                                gananciasMes += (producto.cantidad * gananciaPorKilo);
                                             }
                                         }
                                     }
@@ -2656,7 +2905,7 @@
                 mostrarAlerta(`Error al cargar reportes: ${error.message}`, 'danger');
             } finally {
                 btnCargar.disabled = false;
-                btnCargar.innerHTML = '🔄 ACTUALIZAR REPORTES';
+                btnCargar.innerHTML = 'ACTUALIZAR REPORTES';
             }
         };
 
@@ -2694,7 +2943,7 @@
                             style="background: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;"
                             title="Eliminar Factura"
                         >
-                            🗑️ Eliminar
+                            Eliminar
                         </button>
                     </td>
                 `;
@@ -2730,7 +2979,7 @@
 
                 fila.innerHTML = `
                     <td>${tipo}</td>
-                    <td>${datos.stock.toFixed(1)} lbs</td>
+                    <td>${parseFloat(datos.stock.toFixed(3))} kg</td>
                     <td ${claseEstado}>${estado}</td>
                 `;
             });
@@ -2803,7 +3052,7 @@
                 mostrarAlerta(`Error al cargar histórico: ${error.message}`, 'danger');
             } finally {
                 btnCargar.disabled = false;
-                btnCargar.innerHTML = '🔄 ACTUALIZAR HISTÓRICO';
+                btnCargar.innerHTML = 'ACTUALIZAR HISTÓRICO';
             }
         };
 
@@ -3330,12 +3579,12 @@
                     
                     <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #000;">
                         <p style="margin: 5px 0; font-size: 0.85em;">¡Gracias por su compra!</p>
-                        <p style="margin: 5px 0; font-size: 0.8em;">🐟 Pescado fresco del día 🐟</p>
+                        <p style="margin: 5px 0; font-size: 0.8em;">Pescado fresco del día</p>
                     </div>
                     
                     <div class="no-print" style="text-align: center; margin-top: 20px;">
-                        <button class="btn btn-warning" onclick="window.print()">🖨️ IMPRIMIR FACTURA</button>
-                        <button class="btn" onclick="cerrarFacturaRegenerada()">❌ CERRAR</button>
+                        <button class="btn btn-warning" onclick="window.print()">IMPRIMIR FACTURA</button>
+                        <button class="btn" onclick="cerrarFacturaRegenerada()">CERRAR</button>
                     </div>
                 </div>
             `;
@@ -3495,7 +3744,7 @@
                             onclick="confirmarEliminacionFactura('${numero}', '${fecha}', '${cliente.replace(/'/g, "\\'")}', \`${productosTexto}\`, ${total})"
                             style="background: #dc3545; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;"
                         >
-                            🗑️ ELIMINAR
+                            ELIMINAR
                         </button>
                         <button 
                             onclick="cerrarModalEliminacion()"
