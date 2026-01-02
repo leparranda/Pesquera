@@ -3480,13 +3480,22 @@
         // Función para regenerar y mostrar una factura anterior
         function regenerarFactura(numero, fecha, cliente, productosTexto, total, descuentoPorLibra = 0, descuentoTotal = 0, subtotalSinDescuento = 0) {
             // Parsear los productos del texto
-            // Formato esperado: "Pargo (2.5 lbs), Atún (3.0 lbs)"
+            // Formato esperado: "Pargo (2.500 kg)" o "Pargo (2.5 lbs)" para históricos
             const productosArray = [];
             const productos = productosTexto.split(', ');
             let totalLibrasCalculado = 0;
             
             for (const productoStr of productos) {
-                const match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs\)$/);
+                // Intentar primero con kilogramos (formato nuevo)
+                let match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*kg\)$/);
+                let unidad = 'kg';
+                
+                // Si no coincide, intentar con libras (formato histórico)
+                if (!match) {
+                    match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs?\)$/);
+                    unidad = 'lbs';
+                }
+                
                 if (match) {
                     const tipoPescado = match[1].trim();
                     const cantidad = parseFloat(match[2]);
@@ -3502,7 +3511,8 @@
                         tipo: tipoPescado,
                         cantidad: cantidad,
                         precio: precioUnitario,
-                        subtotal: cantidad * precioUnitario
+                        subtotal: cantidad * precioUnitario,
+                        unidad: unidad
                     });
                 }
             }
@@ -3551,11 +3561,11 @@
                             ${productosArray.map(producto => `
                                 <tr style="border-bottom: 1px dashed #ccc;">
                                     <td style="padding: 5px 3px; text-align: left;">${producto.tipo}</td>
-                                    <td style="padding: 5px 3px; text-align: center;">${producto.cantidad.toFixed(1)} lbs</td>
+                                    <td style="padding: 5px 3px; text-align: center;">${producto.cantidad.toFixed(producto.unidad === 'kg' ? 3 : 1)} ${producto.unidad}</td>
                                     <td style="padding: 5px 3px; text-align: right;"><strong>${formatearPesos(producto.subtotal)}</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px dashed #ccc;">
-                                    <td colspan="3" style="padding: 2px 3px 5px 20px; font-size: 0.85em; color: #666; text-align: left;">@ ${formatearPesos(producto.precio)}/lb</td>
+                                    <td colspan="3" style="padding: 2px 3px 5px 20px; font-size: 0.85em; color: #666; text-align: left;">@ ${formatearPesos(producto.precio)}/${producto.unidad}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -3567,7 +3577,7 @@
                                 <span style="color: #666;">Subtotal:</span> <strong>${formatearPesos(subtotalSinDescuento)}</strong>
                             </div>
                             <div style="font-size: 0.95em; margin: 5px 0; color: #28a745;">
-                                <span>Descuento (${formatearPesos(descuentoPorLibra)}/lb × ${totalLibrasCalculado.toFixed(1)} lbs):</span> <strong>-${formatearPesos(descuentoTotal)}</strong>
+                                <span>Descuento (${formatearPesos(descuentoPorLibra)}/${productosArray[0]?.unidad || 'kg'} × ${totalLibrasCalculado.toFixed(productosArray[0]?.unidad === 'kg' ? 3 : 1)} ${productosArray[0]?.unidad || 'kg'}):</span> <strong>-${formatearPesos(descuentoTotal)}</strong>
                             </div>
                             <div style="border-top: 2px solid #000; margin: 8px 0; padding-top: 8px;">
                         ` : '<div style="border-top: 2px solid #000; padding-top: 8px;">'}
