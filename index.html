@@ -981,8 +981,28 @@
                 </div>
 
                 <div style="text-align: right; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-                    <div style="font-size: 1.2em;"><strong>TOTAL A PAGAR: $<span id="totalVenta">0.00</span></strong></div>
-                    <button class="btn btn-warning" onclick="generarFactura()" id="btnGenerarFactura" style="margin-top: 15px;">
+                    <div style="font-size: 1.2em; margin-bottom: 15px;"><strong>TOTAL A PAGAR: $<span id="totalVenta">0.00</span></strong></div>
+                    
+                    <!-- Sistema de cambio -->
+                    <div style="border: 2px dashed #28a745; padding: 15px; border-radius: 8px; background: #f8fff8; margin-bottom: 15px;">
+                        <h4 style="color: #28a745; margin-bottom: 10px; text-align: center;">💵 CÁLCULO DE CAMBIO (Opcional)</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-size: 0.9em;">Efectivo Recibido ($):</label>
+                                <input type="number" id="efectivoRecibido" step="100" min="0" placeholder="Ej: 50000" 
+                                    oninput="calcularCambio()" style="width: 100%; padding: 12px; font-size: 16px; border: 2px solid #28a745; border-radius: 5px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-size: 0.9em;">CAMBIO A DEVOLVER:</label>
+                                <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; border: 2px solid #4caf50; text-align: center;">
+                                    <span style="font-size: 24px; font-weight: bold; color: #2e7d32;">$<span id="cambioDevolver">0</span></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="alertaCambio" style="display: none; margin-top: 10px; padding: 10px; border-radius: 5px; text-align: center;"></div>
+                    </div>
+                    
+                    <button class="btn btn-warning" onclick="generarFactura()" id="btnGenerarFactura">
                         🖨️ GENERAR FACTURA
                     </button>
                 </div>
@@ -1109,7 +1129,7 @@
                     </div>
                 </div>
 
-                <div class="stats-grid">
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
                     <div class="stat-card">
                         <div class="stat-value" id="totalVentasHoy">$0.00</div>
                         <div class="stat-label">VENTAS DE HOY</div>
@@ -1119,16 +1139,20 @@
                         <div class="stat-label">VENTAS DEL MES</div>
                     </div>
                     <div class="stat-card">
+                        <div class="stat-value" id="totalVentasHistorico">$0.00</div>
+                        <div class="stat-label">VENTAS TOTALES</div>
+                    </div>
+                    <div class="stat-card">
                         <div class="stat-value" id="gananciasMes">$0.00</div>
                         <div class="stat-label">GANANCIAS DEL MES</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="totalInventario">$0.00</div>
-                        <div class="stat-label">VALOR INVENTARIO</div>
+                        <div class="stat-value" id="gananciasTotal">$0.00</div>
+                        <div class="stat-label">GANANCIAS TOTALES</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="numeroFacturas">0</div>
-                        <div class="stat-label">FACTURAS EMITIDAS</div>
+                        <div class="stat-value" id="totalInventario">$0.00</div>
+                        <div class="stat-label">VALOR INVENTARIO</div>
                     </div>
                 </div>
 
@@ -2185,7 +2209,42 @@
             });
 
             document.getElementById('totalVenta').textContent = formatearNumero(total);
+            
+            // Recalcular cambio si hay efectivo ingresado
+            calcularCambio();
         }
+
+        // Calcular cambio para la venta
+        window.calcularCambio = function() {
+            const totalVenta = ventaActual.reduce((sum, producto) => sum + producto.subtotal, 0);
+            const efectivoRecibido = parseFloat(document.getElementById('efectivoRecibido').value) || 0;
+            const alertaCambio = document.getElementById('alertaCambio');
+            const cambioDevolver = document.getElementById('cambioDevolver');
+            
+            if (efectivoRecibido === 0) {
+                cambioDevolver.textContent = '0';
+                alertaCambio.style.display = 'none';
+                return;
+            }
+            
+            const cambio = efectivoRecibido - totalVenta;
+            
+            if (cambio < 0) {
+                cambioDevolver.textContent = '0';
+                alertaCambio.style.display = 'block';
+                alertaCambio.style.background = '#ffe6e6';
+                alertaCambio.style.color = '#d32f2f';
+                alertaCambio.style.border = '1px solid #d32f2f';
+                alertaCambio.innerHTML = `<strong>⚠️ ADVERTENCIA:</strong> El efectivo recibido es INSUFICIENTE. Faltan: <strong>${formatearPesos(Math.abs(cambio))}</strong>`;
+            } else {
+                cambioDevolver.textContent = formatearNumero(cambio);
+                alertaCambio.style.display = 'block';
+                alertaCambio.style.background = '#e8f5e9';
+                alertaCambio.style.color = '#2e7d32';
+                alertaCambio.style.border = '1px solid #4caf50';
+                alertaCambio.innerHTML = `✅ <strong>Cambio correcto:</strong> Devolver ${formatearPesos(cambio)} al cliente`;
+            }
+        };
 
         // Eliminar producto de venta
         window.eliminarProductoVenta = function(index) {
@@ -2416,6 +2475,9 @@
             document.getElementById('nombreCliente').value = '';
             document.getElementById('telefonoCliente').value = '';
             document.getElementById('descuentoPorLibra').value = '0';
+            document.getElementById('efectivoRecibido').value = '';
+            document.getElementById('cambioDevolver').textContent = '0';
+            document.getElementById('alertaCambio').style.display = 'none';
             actualizarTablaVentaActual();
             cargarInventarioParaVentas();
         }
@@ -2450,7 +2512,9 @@
 
                     let totalHoy = 0;
                     let totalMes = 0;
+                    let totalHistorico = 0; // Nueva variable para ventas totales
                     let gananciasMes = 0;
+                    let gananciasTotal = 0; // Nueva variable para ganancias totales
                     let numeroFacturas = ventasData.length - 1; // -1 por el encabezado
 
                     // Procesar ventas y guardar datos completos
@@ -2501,16 +2565,33 @@
                                 totalHoy += totalVenta;
                             }
 
-                            // Ventas del mes y ganancias
+                            // Sumar TODAS las ventas al total histórico
+                            totalHistorico += totalVenta;
+
+                            // Calcular ganancias para TODAS las ventas (totales)
+                            const productosVenta = productosTexto.split(', ');
+                            for (const productoStr of productosVenta) {
+                                const match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs\)$/);
+                                if (match) {
+                                    const tipoPescado = match[1].trim();
+                                    const cantidad = parseFloat(match[2]);
+                                    
+                                    if (preciosData[tipoPescado]) {
+                                        const gananciaPorLibra = preciosData[tipoPescado].ganancia || 0;
+                                        gananciasTotal += (cantidad * gananciaPorLibra);
+                                    }
+                                }
+                            }
+
+                            // Ventas del mes y ganancias del mes
                             try {
                                 const fecha = new Date(fechaVenta.split('/').reverse().join('-'));
                                 if (fecha.getMonth() === mesActual && fecha.getFullYear() === añoActual) {
                                     totalMes += totalVenta;
                                     
                                     // Calcular ganancias del mes
-                                    // Formato esperado: "Pargo (2.5 lbs), Atún (3.0 lbs)"
-                                    const productos = productosTexto.split(', ');
-                                    for (const productoStr of productos) {
+                                    const productosMes = productosTexto.split(', ');
+                                    for (const productoStr of productosMes) {
                                         const match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs\)$/);
                                         if (match) {
                                             const tipoPescado = match[1].trim();
@@ -2544,9 +2625,11 @@
                     // Actualizar estadísticas
                     document.getElementById('totalVentasHoy').textContent = formatearPesos(totalHoy);
                     document.getElementById('totalVentasMes').textContent = formatearPesos(totalMes);
+                    document.getElementById('totalVentasHistorico').textContent = formatearPesos(totalHistorico);
                     document.getElementById('gananciasMes').textContent = formatearPesos(gananciasMes);
+                    document.getElementById('gananciasTotal').textContent = formatearPesos(gananciasTotal);
                     document.getElementById('totalInventario').textContent = formatearPesos(totalInventario);
-                    document.getElementById('numeroFacturas').textContent = numeroFacturas;
+                    // document.getElementById('numeroFacturas').textContent = numeroFacturas; // Removido del diseño
 
                     // Actualizar tabla de últimas ventas (últimas 10)
                     actualizarTablaUltimasVentas(ventasParaTabla.slice(-10).reverse());
@@ -2560,8 +2643,10 @@
                 } else {
                     document.getElementById('totalVentasHoy').textContent = '$0.00';
                     document.getElementById('totalVentasMes').textContent = '$0.00';
+                    document.getElementById('totalVentasHistorico').textContent = '$0.00';
                     document.getElementById('gananciasMes').textContent = '$0.00';
-                    document.getElementById('numeroFacturas').textContent = '0';
+                    document.getElementById('gananciasTotal').textContent = '$0.00';
+                    // document.getElementById('numeroFacturas').textContent = '0'; // Removido del diseño
 
                     mostrarAlerta('No hay datos de ventas disponibles', 'warning');
                 }
