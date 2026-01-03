@@ -943,7 +943,7 @@
                     </div>
                     <div class="form-group">
                         <label>Descuento por Kilo (COP):</label>
-                        <input type="number" id="descuentoPorLibra" placeholder="0" min="0" step="100" value="0">
+                        <input type="number" id="descuentoPorLibra" placeholder="0" min="0" step="100" value="0" oninput="actualizarTablaVentaActual()">
                     </div>
                 </div>
 
@@ -2326,7 +2326,13 @@
                 total += producto.subtotal;
             });
 
-            document.getElementById('totalVenta').textContent = formatearNumero(total);
+            // Aplicar descuento si hay
+            const descuentoPorKilo = parseFloat(document.getElementById('descuentoPorLibra').value) || 0;
+            const totalKilos = ventaActual.reduce((sum, producto) => sum + producto.cantidad, 0);
+            const descuentoTotal = descuentoPorKilo * totalKilos;
+            const totalConDescuento = total - descuentoTotal;
+
+            document.getElementById('totalVenta').textContent = formatearNumero(totalConDescuento);
             
             // Recalcular cambio si hay efectivo ingresado
             calcularCambio();
@@ -2334,7 +2340,14 @@
 
         // Calcular cambio para la venta
         window.calcularCambio = function() {
-            const totalVenta = ventaActual.reduce((sum, producto) => sum + producto.subtotal, 0);
+            const subtotal = ventaActual.reduce((sum, producto) => sum + producto.subtotal, 0);
+            
+            // Aplicar descuento
+            const descuentoPorKilo = parseFloat(document.getElementById('descuentoPorLibra').value) || 0;
+            const totalKilos = ventaActual.reduce((sum, producto) => sum + producto.cantidad, 0);
+            const descuentoTotal = descuentoPorKilo * totalKilos;
+            const totalVenta = subtotal - descuentoTotal;
+            
             const efectivoRecibido = parseFloat(document.getElementById('efectivoRecibido').value) || 0;
             const alertaCambio = document.getElementById('alertaCambio');
             const cambioDevolver = document.getElementById('cambioDevolver');
