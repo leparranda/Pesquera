@@ -413,60 +413,87 @@
 
         @media print {
             @page {
-                size: 80mm auto;
+                size: 58mm auto;
                 margin: 0;
             }
             
             body * {
                 visibility: hidden;
+                color: #000 !important;
+                background: white !important;
             }
             
             .factura, .factura * {
                 visibility: visible;
+                color: #000 !important;
+                background: white !important;
             }
             
             .factura {
                 position: absolute;
                 left: 0;
                 top: 0;
-                width: 80mm !important;
-                max-width: 80mm !important;
+                width: 58mm !important;
+                max-width: 58mm !important;
                 margin: 0 !important;
-                padding: 5mm !important;
-                box-shadow: none;
-                border: none;
-                font-size: 10pt !important;
+                padding: 2mm !important;
+                box-shadow: none !important;
+                border: none !important;
+                font-size: 8pt !important;
+                font-family: 'Courier New', monospace !important;
+                background: white !important;
             }
             
             .factura h2 {
-                font-size: 14pt !important;
-                margin: 5px 0 !important;
+                font-size: 11pt !important;
+                margin: 3px 0 !important;
+                font-weight: bold !important;
+                color: #000 !important;
             }
             
             .factura h4 {
-                font-size: 11pt !important;
-                margin: 8px 0 3px 0 !important;
+                font-size: 9pt !important;
+                margin: 5px 0 2px 0 !important;
+                font-weight: bold !important;
+                color: #000 !important;
             }
             
             .factura p {
-                font-size: 9pt !important;
-                margin: 2px 0 !important;
-                line-height: 1.3 !important;
+                font-size: 8pt !important;
+                margin: 1px 0 !important;
+                line-height: 1.2 !important;
+                color: #000 !important;
             }
             
             .factura table {
-                font-size: 9pt !important;
+                font-size: 8pt !important;
                 width: 100% !important;
+                color: #000 !important;
             }
             
             .factura th {
-                font-size: 9pt !important;
-                padding: 3px 2px !important;
+                font-size: 8pt !important;
+                padding: 2px 1px !important;
+                font-weight: bold !important;
+                color: #000 !important;
+                border-bottom: 1px solid #000 !important;
             }
             
             .factura td {
-                font-size: 9pt !important;
-                padding: 3px 2px !important;
+                font-size: 8pt !important;
+                padding: 2px 1px !important;
+                color: #000 !important;
+            }
+            
+            .factura strong {
+                font-weight: bold !important;
+                color: #000 !important;
+            }
+            
+            /* Forzar todos los elementos a negro */
+            .factura * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             
             .no-print {
