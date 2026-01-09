@@ -1418,9 +1418,9 @@
             const facturaHTML = `
                 <div class="factura">
                     <div style="text-align: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px dashed #000;">
-                        <h2 style="margin: 5px 0;">🐟 ${config.nombreEmpresa}</h2>
+                        <h2 style="margin: 5px 0;">${config.nombreEmpresa}</h2>
                         <p style="margin: 2px 0; font-size: 0.9em;">${config.direccionEmpresa}</p>
-                        <p style="margin: 2px 0; font-size: 0.9em;">📞 ${config.telefonoEmpresa}</p>
+                        <p style="margin: 2px 0; font-size: 0.9em;">Tel: ${config.telefonoEmpresa}</p>
                     </div>
                     
                     <div style="text-align: center; margin: 10px 0; padding: 8px 0; border-bottom: 1px dashed #000;">
@@ -1451,7 +1451,7 @@
                                     <td style="padding: 5px 3px; text-align: right;"><strong>${formatearPesos(producto.subtotal)}</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px dashed #ccc;">
-                                    <td colspan="3" style="padding: 2px 3px 5px 20px; font-size: 0.85em; color: #666; text-align: left;">@ ${formatearPesos(producto.precio)}/kg</td>
+                                    <td colspan="3" style="padding: 2px 3px 5px 20px; font-size: 0.85em; text-align: left;">@ ${formatearPesos(producto.precio)}/kg</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -1460,9 +1460,9 @@
                     <div style="text-align: right; padding: 10px 0; margin-top: 10px; border-top: 1px dashed #000;">
                         ${descuentoTotal > 0 ? `
                             <div style="font-size: 0.95em; margin: 5px 0;">
-                                <span style="color: #666;">Subtotal:</span> <strong>${formatearPesos(subtotalSinDescuento)}</strong>
+                                <span>Subtotal:</span> <strong>${formatearPesos(subtotalSinDescuento)}</strong>
                             </div>
-                            <div style="font-size: 0.95em; margin: 5px 0; color: #28a745;">
+                            <div style="font-size: 0.95em; margin: 5px 0;">
                                 <span>Descuento (${formatearPesos(descuentoPorLibra)}/kg × ${totalLibras.toFixed(3)} kg):</span> <strong>-${formatearPesos(descuentoTotal)}</strong>
                             </div>
                             <div style="border-top: 2px solid #000; margin: 8px 0; padding-top: 8px;">
@@ -2308,15 +2308,15 @@
             const facturaHTML = `
                 <div class="factura">
                     <div style="text-align: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px dashed #000;">
-                        <h2 style="margin: 5px 0;">🐟 ${config.nombreEmpresa}</h2>
+                        <h2 style="margin: 5px 0;">${config.nombreEmpresa}</h2>
                         <p style="margin: 2px 0; font-size: 0.9em;">${config.direccionEmpresa}</p>
-                        <p style="margin: 2px 0; font-size: 0.9em;">📞 ${config.telefonoEmpresa}</p>
+                        <p style="margin: 2px 0; font-size: 0.9em;">Tel: ${config.telefonoEmpresa}</p>
                     </div>
                     
                     <div style="text-align: center; margin: 10px 0; padding: 8px 0; border-bottom: 1px dashed #000;">
                         <p style="margin: 2px 0;"><strong>FACTURA #${numero.toString().padStart(6, '0')}</strong></p>
                         <p style="margin: 2px 0; font-size: 0.85em;">Fecha: ${fecha}</p>
-                        <p style="margin: 5px 0; color: #e74c3c; font-weight: bold; font-size: 0.9em;">⚠️ REIMPRESIÓN</p>
+                        <p style="margin: 5px 0; font-weight: bold; font-size: 0.9em;">REIMPRESION</p>
                     </div>
                     
                     <div style="margin: 10px 0; padding: 5px 0; border-bottom: 1px dashed #000;">
@@ -2340,7 +2340,7 @@
                                     <td style="padding: 5px 3px; text-align: right;"><strong>${formatearPesos(producto.subtotal)}</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px dashed #ccc;">
-                                    <td colspan="3" style="padding: 2px 3px 5px 20px; font-size: 0.85em; color: #666; text-align: left;">@ ${formatearPesos(producto.precio)}/${producto.unidad}</td>
+                                    <td colspan="3" style="padding: 2px 3px 5px 20px; font-size: 0.85em; text-align: left;">@ ${formatearPesos(producto.precio)}/${producto.unidad}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -2349,9 +2349,9 @@
                     <div style="text-align: right; padding: 10px 0; margin-top: 10px; border-top: 1px dashed #000;">
                         ${descuentoTotal > 0 ? `
                             <div style="font-size: 0.95em; margin: 5px 0;">
-                                <span style="color: #666;">Subtotal:</span> <strong>${formatearPesos(subtotalSinDescuento)}</strong>
+                                <span>Subtotal:</span> <strong>${formatearPesos(subtotalSinDescuento)}</strong>
                             </div>
-                            <div style="font-size: 0.95em; margin: 5px 0; color: #28a745;">
+                            <div style="font-size: 0.95em; margin: 5px 0;">
                                 <span>Descuento (${formatearPesos(descuentoPorLibra)}/${productosArray[0]?.unidad || 'kg'} × ${totalLibrasCalculado.toFixed(productosArray[0]?.unidad === 'kg' ? 3 : 1)} ${productosArray[0]?.unidad || 'kg'}):</span> <strong>-${formatearPesos(descuentoTotal)}</strong>
                             </div>
                             <div style="border-top: 2px solid #000; margin: 8px 0; padding-top: 8px;">
