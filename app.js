@@ -1435,7 +1435,7 @@
                         ${telefono && telefono !== 'N/A' ? `<p style="margin: 2px 0; font-size: 0.85em;">Tel: ${telefono}</p>` : ''}
                     </div>
                     
-                    <table style="width: 100%; margin: 10px 0; border-collapse: collapse; font-size: 0.9em; table-layout: fixed;">
+                    <table style="width: 100%; margin: 10px 0; border-collapse: collapse; font-size: 1em; table-layout: fixed;">
                         <colgroup>
                             <col style="width: 40%;">
                             <col style="width: 30%;">
@@ -1443,20 +1443,20 @@
                         </colgroup>
                         <thead>
                             <tr style="border-bottom: 2px solid #000;">
-                                <th style="padding: 5px 3px; text-align: left; width: 40%;">PRODUCTO</th>
-                                <th style="padding: 5px 3px; text-align: center; width: 30%;">CANT</th>
-                                <th style="padding: 5px 3px; text-align: right; width: 30%;">TOTAL</th>
+                                <th style="padding: 5px 3px; text-align: left; width: 40%; font-size: 1em;">PRODUCTO</th>
+                                <th style="padding: 5px 3px; text-align: center; width: 30%; font-size: 1em;">CANT</th>
+                                <th style="padding: 5px 3px; text-align: right; width: 30%; font-size: 1em;">TOTAL</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${productos.map(producto => `
                                 <tr style="border-bottom: 1px dashed #ccc;">
-                                    <td style="padding: 5px 3px; text-align: left; width: 40%;">${producto.tipo}</td>
-                                    <td style="padding: 5px 3px; text-align: center; width: 30%;">${producto.cantidad.toFixed(3)} kg</td>
-                                    <td style="padding: 5px 3px; text-align: right; width: 30%;"><strong>${formatearPesos(producto.subtotal)}</strong></td>
+                                    <td style="padding: 5px 3px; text-align: left; width: 40%; font-size: 1em; font-weight: bold;">${producto.tipo}</td>
+                                    <td style="padding: 5px 3px; text-align: center; width: 30%; font-size: 1em;">${producto.cantidad.toFixed(3)} kg</td>
+                                    <td style="padding: 5px 3px; text-align: right; width: 30%; font-size: 1em;"><strong>${formatearPesos(producto.subtotal)}</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px dashed #ccc;">
-                                    <td colspan="3" style="padding: 2px 3px 5px 10px; font-size: 0.85em; text-align: left;">@ ${formatearPesos(producto.precio)}/kg</td>
+                                    <td colspan="3" style="padding: 2px 3px 5px 10px; font-size: 0.9em; text-align: left;">@ ${formatearPesos(producto.precio)}/kg</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -1472,7 +1472,7 @@
                             </div>
                             <div style="border-top: 2px solid #000; margin: 8px 0; padding-top: 8px;">
                         ` : '<div style="border-top: 2px solid #000; padding-top: 8px;">'}
-                            <div style="font-size: 1.3em; font-weight: bold;">
+                            <div style="font-size: 1.4em; font-weight: bold;">
                                 TOTAL A PAGAR: ${formatearPesos(venta.total)}
                             </div>
                         </div>
@@ -2329,7 +2329,7 @@
                         <p style="margin: 2px 0; font-size: 0.85em;">${cliente}</p>
                     </div>
                     
-                    <table style="width: 100%; margin: 10px 0; border-collapse: collapse; font-size: 0.9em; table-layout: fixed;">
+                    <table style="width: 100%; margin: 10px 0; border-collapse: collapse; font-size: 1em; table-layout: fixed;">
                         <colgroup>
                             <col style="width: 40%;">
                             <col style="width: 30%;">
@@ -2337,20 +2337,20 @@
                         </colgroup>
                         <thead>
                             <tr style="border-bottom: 2px solid #000;">
-                                <th style="padding: 5px 3px; text-align: left; width: 40%;">PRODUCTO</th>
-                                <th style="padding: 5px 3px; text-align: center; width: 30%;">CANT</th>
-                                <th style="padding: 5px 3px; text-align: right; width: 30%;">TOTAL</th>
+                                <th style="padding: 5px 3px; text-align: left; width: 40%; font-size: 1em;">PRODUCTO</th>
+                                <th style="padding: 5px 3px; text-align: center; width: 30%; font-size: 1em;">CANT</th>
+                                <th style="padding: 5px 3px; text-align: right; width: 30%; font-size: 1em;">TOTAL</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${productosArray.map(producto => `
                                 <tr style="border-bottom: 1px dashed #ccc;">
-                                    <td style="padding: 5px 3px; text-align: left; width: 40%;">${producto.tipo}</td>
-                                    <td style="padding: 5px 3px; text-align: center; width: 30%;">${producto.cantidad.toFixed(producto.unidad === 'kg' ? 3 : 1)} ${producto.unidad}</td>
-                                    <td style="padding: 5px 3px; text-align: right; width: 30%;"><strong>${formatearPesos(producto.subtotal)}</strong></td>
+                                    <td style="padding: 5px 3px; text-align: left; width: 40%; font-size: 1em; font-weight: bold;">${producto.tipo}</td>
+                                    <td style="padding: 5px 3px; text-align: center; width: 30%; font-size: 1em;">${producto.cantidad.toFixed(producto.unidad === 'kg' ? 3 : 1)} ${producto.unidad}</td>
+                                    <td style="padding: 5px 3px; text-align: right; width: 30%; font-size: 1em;"><strong>${formatearPesos(producto.subtotal)}</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px dashed #ccc;">
-                                    <td colspan="3" style="padding: 2px 3px 5px 10px; font-size: 0.85em; text-align: left;">@ ${formatearPesos(producto.precio)}/${producto.unidad}</td>
+                                    <td colspan="3" style="padding: 2px 3px 5px 10px; font-size: 0.9em; text-align: left;">@ ${formatearPesos(producto.precio)}/${producto.unidad}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -2366,7 +2366,7 @@
                             </div>
                             <div style="border-top: 2px solid #000; margin: 8px 0; padding-top: 8px;">
                         ` : '<div style="border-top: 2px solid #000; padding-top: 8px;">'}
-                            <div style="font-size: 1.3em; font-weight: bold;">
+                            <div style="font-size: 1.4em; font-weight: bold;">
                                 TOTAL: ${formatearPesos(total)}
                             </div>
                         </div>
