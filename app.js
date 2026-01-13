@@ -521,7 +521,7 @@
                         ['Tipo', 'PrecioCompra', 'Margen', 'PrecioVenta', 'Ganancia']
                     ],
                     'Ventas': [
-                        ['NumeroFactura', 'Fecha', 'Cliente', 'Productos', 'Total']
+                        ['NumeroFactura', 'Fecha', 'Cliente', 'Productos', 'Total', 'DescuentoPorKg', 'DescuentoTotal', 'SubtotalSinDescuento']
                     ],
                     'Configuracion': [
                         ['UltimoNumeroFactura', 'NombreEmpresa', 'DireccionEmpresa', 'TelefonoEmpresa'],
@@ -1592,46 +1592,53 @@
                             totalHistorico += totalVenta;
 
                             // Calcular ganancias para TODAS las ventas (totales)
+                            let gananciaVentaTotal = 0;
                             const productosVenta = productosTexto.split(', ');
                             for (const productoStr of productosVenta) {
                                 const producto = parsearProducto(productoStr);
                                 if (producto && preciosData[producto.tipo]) {
                                     const gananciaPorKilo = preciosData[producto.tipo].ganancia || 0;
-                                    
+
                                     if (producto.unidad === 'lbs') {
-                                        // Datos antiguos en libras: dividir el precio entre 2.20462
+                                        // Datos antiguos en libras: dividir entre 2.20462 para pasar ganancia a libra
                                         const gananciaPorLibra = gananciaPorKilo / KILOS_A_LIBRAS;
-                                        gananciasTotal += (producto.cantidad * gananciaPorLibra);
+                                        gananciaVentaTotal += (producto.cantidad * gananciaPorLibra);
                                     } else {
-                                        // Datos nuevos en kilos: usar el precio tal cual
-                                        gananciasTotal += (producto.cantidad * gananciaPorKilo);
+                                        // Datos nuevos en kilos: usar la ganancia por kilo tal cual
+                                        gananciaVentaTotal += (producto.cantidad * gananciaPorKilo);
                                     }
                                 }
                             }
+                            // Los descuentos reducen el ingreso, por tanto reducen la ganancia
+                            gananciaVentaTotal -= (descuentoTotal || 0);
+                            gananciasTotal += gananciaVentaTotal;
 
                             // Ventas del mes y ganancias del mes
                             try {
                                 const fecha = new Date(fechaVenta.split('/').reverse().join('-'));
                                 if (fecha.getMonth() === mesActual && fecha.getFullYear() === añoActual) {
                                     totalMes += totalVenta;
-                                    
-                                    // Calcular ganancias del mes
+
+                                    // Calcular ganancias del mes (incluye descuentos)
+                                    let gananciaVentaMes = 0;
                                     const productosMes = productosTexto.split(', ');
                                     for (const productoStr of productosMes) {
                                         const producto = parsearProducto(productoStr);
                                         if (producto && preciosData[producto.tipo]) {
                                             const gananciaPorKilo = preciosData[producto.tipo].ganancia || 0;
-                                            
+
                                             if (producto.unidad === 'lbs') {
-                                                // Datos antiguos en libras: dividir el precio entre 2.20462
+                                                // Datos antiguos en libras: dividir entre 2.20462 para pasar ganancia a libra
                                                 const gananciaPorLibra = gananciaPorKilo / KILOS_A_LIBRAS;
-                                                gananciasMes += (producto.cantidad * gananciaPorLibra);
+                                                gananciaVentaMes += (producto.cantidad * gananciaPorLibra);
                                             } else {
-                                                // Datos nuevos en kilos: usar el precio tal cual
-                                                gananciasMes += (producto.cantidad * gananciaPorKilo);
+                                                // Datos nuevos en kilos: usar la ganancia por kilo tal cual
+                                                gananciaVentaMes += (producto.cantidad * gananciaPorKilo);
                                             }
                                         }
                                     }
+                                    gananciaVentaMes -= (descuentoTotal || 0);
+                                    gananciasMes += gananciaVentaMes;
                                 }
                             } catch (e) {
                                 console.log('Error al procesar fecha:', fechaVenta);
