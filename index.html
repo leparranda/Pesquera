@@ -22,7 +22,7 @@
                     <input 
                         type="text" 
                         id="username" 
-                        placeholder="👤 Usuario" 
+                        placeholder="👤 Usuario o correo" 
                         required
                         autocomplete="username"
                     >
@@ -56,20 +56,21 @@
             <div class="container">
                 <div class="header">
                     <button class="logout-btn" onclick="cerrarSesion()">
-                        🚪 Cerrar Sesión
+                        Cerrar Sesión
                     </button>
-                    <h1>🐟 PESQUERA RINCON DEL MAR</h1>
+                    <h1>PESQUERA RINCON DEL MAR</h1>
                     <p>Control de Inventario y Facturación</p>
                 </div>
 
                 <div class="tabs">
-                    <div class="tab active" onclick="showSection('configuracion')">⚙️ CONFIGURACIÓN</div>
-                    <div class="tab" onclick="showSection('inventario')">📦 INVENTARIO</div>
-                    <div class="tab" onclick="showSection('precios')">💰 PRECIOS</div>
-                    <div class="tab" onclick="showSection('ventas')">🧾 VENTAS</div>
-                    <div class="tab" onclick="showSection('deudores')">💳 DEUDORES</div>
-                    <div class="tab" onclick="showSection('historico')">📋 HISTÓRICO</div>
-                    <div class="tab" onclick="showSection('reportes')">📊 REPORTES</div>
+                    <div class="tab active" onclick="showSection('configuracion')">CONFIGURACIÓN</div>
+                    <div class="tab" onclick="showSection('inventario')">INVENTARIO</div>
+                    <div class="tab" onclick="showSection('precios')">PRECIOS</div>
+                    <div class="tab" onclick="showSection('ventas')">VENTAS</div>
+                                        <div class="tab" onclick="showSection('gastos')">GASTOS</div>
+<div class="tab" onclick="showSection('deudores')">DEUDORES</div>
+                    <div class="tab" onclick="showSection('historico')">HISTÓRICO</div>
+                    <div class="tab" onclick="showSection('reportes')">REPORTES</div>
                 </div>
 
                 <div class="content">
@@ -79,23 +80,9 @@
 
                         <div class="connection-status" id="connectionStatus">
                             <span>🔧</span>
-                            <span>Configure el sistema para comenzar</span>
+                            <span>Listo para conectar</span>
                         </div>
-
-                        <div class="config-section">
-                            <h3>Configuración de Google Sheets</h3>
-                            <div class="form-group">
-                                <label>ID del Google Sheet:</label>
-                                <input type="text" id="spreadsheetId" placeholder="ID del Google Sheet">
-                                <small style="color: #666; font-size: 12px;">
-                                    <!--Obtenga el ID de la URL: https://docs.google.com/spreadsheets/d/<strong>ID_AQUI</strong>/edit<br>-->
-                                </small>
-                            </div>
-                            <button class="btn btn-success" onclick="probarConexion()">PROBAR CONEXIÓN</button>
-                            <button class="btn btn-success" onclick="guardarConfiguracion()">GUARDAR CONFIGURACIÓN</button>
-                        </div>
-
-                        <div class="config-section">
+<div class="config-section">
                             <h3>Datos de la Empresa</h3>
                             <div class="form-row">
                                 <div class="form-group">
@@ -111,7 +98,10 @@
                                 <label>Dirección:</label>
                                 <textarea id="direccionEmpresa" rows="2">Dirección de la empresa</textarea>
                             </div>
-                            <button class="btn btn-success" onclick="guardarDatosEmpresa()">GUARDAR DATOS</button>
+                            <div class="btn-row">
+    <button class="btn btn-success" onclick="probarConexion()">PROBAR CONEXIÓN</button>
+    <button class="btn btn-success" onclick="guardarDatosEmpresa()">GUARDAR DATOS</button>
+</div>
                         </div>
                     </div>
 
@@ -160,7 +150,7 @@
                     </div>
                     <div class="form-group">
                         <label>Peso Recibido (kg):</label>
-                        <input type="number" id="librasRecibidas" step="0.01" min="0.01" placeholder="Ej: 2.5">
+                        <input type="number" id="kilosRecibidos" step="0.01" min="0.01" placeholder="Ej: 2.5">
                     </div>
                     <div class="form-group">
                         <label>Precio de Compra (por kg):</label>
@@ -184,7 +174,7 @@
                             <tr>
                                 <th>Tipo de Pescado</th>
                                 <th>Stock Actual (kg)</th>
-                                <th>Precio Promedio ($/kg)</th>
+                                <th>Precio Compra ($/kg)</th>
                                 <th>Valor Total</th>
                                 <th>Última Actualización</th>
                                 <th>Estado</th>
@@ -273,10 +263,6 @@
                             <option value="adeuda">Adeuda</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Descuento por Kilo (COP):</label>
-                        <input type="number" id="descuentoPorLibra" placeholder="0" min="0" step="100" value="0" oninput="actualizarTablaVentaActual()">
-                    </div>
                 </div>
 
                 <h3>Productos a Vender:</h3>
@@ -296,9 +282,25 @@
                         <label>Precio por Kilo:</label>
                         <input type="number" id="precioVentaProducto" step="0.01" min="0" readonly style="background-color: #f0f0f0;">
                     </div>
+                </div>
+
+                <!-- Descuento individual del producto -->
+                <div class="form-row" style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                    <div class="form-group">
+                        <label>Descuento Individual:</label>
+                        <select id="tipoDescuentoIndividual" onchange="toggleDescuentoIndividual()">
+                            <option value="ninguno">Sin descuento</option>
+                            <option value="porcentaje">Porcentaje (%)</option>
+                            <option value="dinero">Dinero (COP por kg)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="grupoDescuentoIndividual" style="display: none;">
+                        <label id="labelDescuentoIndividual">Descuento:</label>
+                        <input type="number" id="descuentoIndividual" placeholder="0" min="0" step="0.01" value="0">
+                    </div>
                     <div class="form-group">
                         <label>&nbsp;</label>
-                        <button class="btn btn-success" onclick="agregarProductoVenta()">AGREGAR</button>
+                        <button class="btn btn-success" onclick="agregarProductoVenta()">AGREGAR PRODUCTO</button>
                     </div>
                 </div>
 
@@ -309,6 +311,7 @@
                                 <th>Producto</th>
                                 <th>Cantidad (kg)</th>
                                 <th>Precio Unitario ($/kg)</th>
+                                <th>Descuento</th>
                                 <th>Subtotal</th>
                                 <th>Acciones</th>
                             </tr>
@@ -317,8 +320,38 @@
                     </table>
                 </div>
 
+                <!-- Descuento Global -->
+                <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                    <h4 style="margin-bottom: 15px; color: #1976d2;">Descuento Total de la Factura</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Tipo de Descuento Global:</label>
+                            <select id="tipoDescuentoGlobal" onchange="toggleDescuentoGlobal()">
+                                <option value="ninguno">Sin descuento</option>
+                                <option value="porcentaje">Porcentaje (%)</option>
+                                <option value="dinero">Dinero (COP por kg)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="grupoDescuentoGlobal" style="display: none;">
+                            <label id="labelDescuentoGlobal">Descuento:</label>
+                            <input type="number" id="descuentoGlobal" placeholder="0" min="0" step="0.01" value="0" oninput="actualizarTablaVentaActual()">
+                        </div>
+                    </div>
+                </div>
+
                 <div style="text-align: right; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-                    <div style="font-size: 1.2em; margin-bottom: 15px;"><strong>TOTAL A PAGAR: $<span id="totalVenta">0.00</span></strong></div>
+                    <div style="margin-bottom: 10px;">
+                        <span style="font-size: 1em;">Subtotal: </span>
+                        <span style="font-size: 1.1em;"><strong>$<span id="subtotalVenta">0.00</span></strong></span>
+                    </div>
+                    <div style="margin-bottom: 10px;" id="descuentoGlobalDisplay" style="display: none;">
+                        <span style="font-size: 1em; color: #f44336;">Descuento Global: </span>
+                        <span style="font-size: 1.1em; color: #f44336;"><strong>-$<span id="montoDescuentoGlobal">0.00</span></strong></span>
+                    </div>
+                    <div style="font-size: 1.3em; margin-bottom: 15px; padding-top: 10px; border-top: 2px solid #ddd;">
+                        <span>TOTAL A PAGAR: </span>
+                        <span style="color: #2e7d32;"><strong>$<span id="totalVenta">0.00</span></strong></span>
+                    </div>
                     
                     <!-- Sistema de cambio -->
                     <div style="border: 2px dashed #28a745; padding: 15px; border-radius: 8px; background: #f8fff8; margin-bottom: 15px;">
@@ -345,6 +378,78 @@
                 </div>
 
                 <div id="facturaGenerada"></div>
+            </div>
+
+            <!-- SECCIÓN GASTOS -->
+            <div id="gastos" class="section">
+                <h2>Registro de Gastos</h2>
+
+                <div class="connection-status" id="gastosStatus">
+                    <span>🔧</span>
+                    <span>Configure el sistema primero</span>
+                </div>
+
+                <div class="config-section">
+                    <h3>Agregar nuevo gasto</h3>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;">
+                            <label>¿En qué se gastó?</label>
+                            <input type="text" id="gastoConcepto" placeholder="Ej: Bolsas, hielo, gasolina, etc.">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Valor (COP)</label>
+                            <input type="number" id="gastoValor" min="0" step="100" placeholder="Ej: 50000">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Fecha</label>
+                            <input type="date" id="gastoFecha">
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button class="btn btn-success" onclick="agregarGasto()" id="btnAgregarGasto">REGISTRAR</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3>Filtrar por rango de fecha</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Desde</label>
+                            <input type="date" id="gastosDesde">
+                        </div>
+                        <div class="form-group">
+                            <label>Hasta</label>
+                            <input type="date" id="gastosHasta">
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button class="btn btn-warning" onclick="filtrarGastos()">FILTRAR</button>
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button class="btn" onclick="limpiarFiltroGastos()">LIMPIAR</button>
+                        </div>
+                    </div>
+
+                    <div style="text-align: right; margin-top: 10px; font-size: 1.2em;">
+                        <strong>TOTAL GASTOS: <span id="totalGastos">$0</span></strong>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="tablaGastos">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Concepto</th>
+                                    <th>Valor</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <!-- SECCIÓN DEUDORES -->
@@ -423,7 +528,7 @@
                         <div class="stat-label">TOTAL ENTRADAS</div>
                     </div>
                     <div class="stat-card" style="background: #f8f9fa;">
-                        <div class="stat-value" id="totalLibrasHistorico" style="color: #e91e63;">0</div>
+                        <div class="stat-value" id="totalKilosHistorico" style="color: #e91e63;">0</div>
                         <div class="stat-label">TOTAL KILOGRAMOS</div>
                     </div>
                     <div class="stat-card" style="background: #f8f9fa;">
@@ -550,7 +655,7 @@
                         <tbody></tbody>
                     </table>
                 </div>
-                <h3 style="margin-top: 30px;">⚠️ Stock Bajo (menos de 10 lbs)</h3>
+                <h3 style="margin-top: 30px;">⚠️ Stock Bajo (menos de 10 kg)</h3>
                 <div class="table-container">
                     <table id="tablaStockBajo">
                         <thead>
@@ -567,6 +672,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js" defer></script>
 </body>
 </html>
