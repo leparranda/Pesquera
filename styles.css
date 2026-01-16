@@ -282,7 +282,20 @@
             color: #212529;
         }
 
-        .connection-status {
+        
+        /* Botones en fila (Configuración) */
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .btn-row .btn {
+            width: auto;
+            flex: 0 0 auto;
+        }
+.connection-status {
             display: flex;
             align-items: center;
             gap: 10px;
