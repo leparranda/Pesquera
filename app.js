@@ -1,5 +1,5 @@
 // =================== CONFIGURACIÓN INICIAL ===================
-        console.log('🚀 Iniciando PESQUERA RINCON DEL MAR...');
+        console.log('Iniciando PESQUERA RINCON DEL MAR...');
 
         // Verificar si se debe resetear el sistema
         const urlParams = new URLSearchParams(window.location.search);
@@ -12,20 +12,26 @@
             window.history.replaceState({}, document.title, window.location.pathname);
         }
 
-        // Configuración de la API
-        const API_KEY = 'AIzaSyBHyIgNRB_Td-Zq9p2FwxSDruIsz0EOvlk';
-        const SHEETS_API_BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx2T-85v0ARb3WpIcj7jtC8jdayAct3fKyvEYGCstuqjZN2Cv9ZUJ4Kn2lQtzn52rF1/exec';
 
-        // Variables globales
-        let spreadsheetId = localStorage.getItem('spreadsheetId') || '';
-        let isConfigured = false;
+// Variables globales Supabase (embebidas en el código)
+const SUPABASE_URL = 'https://dhkxczscyoahwjeatxku.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_gGt-6YDxdZnWAVoDFEeBvw_V0Cctg8J';
+
+let supabaseUrl = SUPABASE_URL;
+let supabaseAnonKey = SUPABASE_ANON_KEY;
+let supabaseClient = null;
+
+// Variables globales del sistema
+let isConfigured = false;
         let ventaActual = [];
         let inventarioData = {};
         let preciosData = {};
         
         // Variables para reportes
         let ventasCompletasData = []; // Almacenará todas las ventas sin filtrar
+
+        // Datos de gastos
+        let gastosData = [];
 
         // Configuración de empresa
         let config = {
@@ -35,8 +41,8 @@
         };
 
         // =================== CONSTANTES DE CONVERSIÓN ===================
-        const LIBRAS_A_KILOS = 0.5; // 1 libra = 0.453592 kilogramos
-        const KILOS_A_LIBRAS = 2; // 1 kilogramo = 2.20462 libras
+        const LIBRAS_A_KILOS = 0.5; //
+        const KILOS_A_LIBRAS = 2.0; // 
 
         // Función para convertir gramos a kilogramos
         function gramosAKilogramos(gramos) {
@@ -70,36 +76,7 @@
                 };
             }
             
-            // Si no, intentar con libras (formato histórico)
-            match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs?\)$/);
-            if (match) {
-                const cantidadLibras = parseFloat(match[2]);
-                return {
-                    tipo: match[1].trim(),
-                    cantidad: cantidadLibras, // MANTENER en libras, no convertir
-                    unidad: 'lbs' // Importante: marcar que está en libras
-                };
-            }
-            
             return null;
-        }
-
-        // Función para detectar si un registro es en libras (datos históricos) o kilos (datos nuevos)
-        // Los datos históricos tendrán cantidades típicas de libras (1-100), los nuevos en kilos (0.5-50)
-        function esRegistroEnLibras(cantidad) {
-            // Si la cantidad es mayor a 100, asumimos que son datos antiguos en libras
-            // o si es un número entero pequeño común en libras (1, 2, 3, etc.)
-            return false; // Por defecto asumimos que todos los nuevos datos son en kilos
-        }
-
-        // Función para convertir precio por libra a precio por kilo
-        function precioLibraAKilo(precioLibra) {
-            return precioLibra * KILOS_A_LIBRAS;
-        }
-
-        // Función para convertir precio por kilo a precio por libra
-        function precioKiloALibra(precioKilo) {
-            return precioKilo / KILOS_A_LIBRAS;
         }
 
         console.log('✅ Variables inicializadas correctamente');
@@ -129,93 +106,6 @@
             return numeroRedondeado.toLocaleString('es-CO');
         }
 
-
-        function llamarAPIConJSONP(data = null) {
-          return new Promise((resolve, reject) => {
-            // Calcular tamaño de los datos
-            const dataJson = data ? JSON.stringify(data) : '';
-            const dataSize = dataJson.length;
-            
-            // Si los datos son muy grandes, informar al usuario
-            if (dataSize > 2000) {
-              console.warn(`⚠️ Datos grandes detectados: ${dataSize} caracteres`);
-              console.warn(`Esto puede causar errores. Límite recomendado: 2000`);
-            }
-            
-            console.log(`📡 Enviando petición JSONP (${dataSize} chars)`);
-            
-            const callbackName = 'jsonp_callback_' + Math.random().toString(36).substr(2, 9);
-            const script = document.createElement('script');
-
-            // Crear función callback global
-            window[callbackName] = function(response) {
-              // Limpiar
-              delete window[callbackName];
-              if (document.body.contains(script)) {
-                document.body.removeChild(script);
-              }
-
-              // Resolver o rechazar según la respuesta
-              if (response.error) {
-                reject(new Error(response.error));
-              } else {
-                resolve(response);
-              }
-            };
-
-            // Configurar parámetros
-            const params = new URLSearchParams({
-              callback: callbackName
-            });
-
-            if (data) {
-              params.append('data', dataJson);
-            }
-
-            // Configurar script
-            const fullUrl = `${APPS_SCRIPT_URL}?${params}`;
-            script.src = fullUrl;
-            
-            // Mostrar URL truncada en caso de error
-            script.onerror = (error) => {
-              delete window[callbackName];
-              if (document.body.contains(script)) {
-                document.body.removeChild(script);
-              }
-              console.error('❌ Error JSONP completo:', {
-                urlLength: fullUrl.length,
-                urlPreview: fullUrl.substring(0, 200) + '...',
-                dataSize: dataSize,
-                error: error
-              });
-              
-              // Mensaje específico si la URL es muy larga
-              let errorMsg = 'Error en la solicitud JSONP';
-              if (fullUrl.length > 8000) {
-                errorMsg += '. La URL es demasiado larga (' + fullUrl.length + ' chars). Contacte al desarrollador.';
-              }
-              
-              reject(new Error(errorMsg));
-            };
-
-            // Timeout de 45 segundos
-            setTimeout(() => {
-              if (window[callbackName]) {
-                delete window[callbackName];
-                if (document.body.contains(script)) {
-                  document.body.removeChild(script);
-                }
-                console.error('⏱️ Timeout JSONP:', {
-                  urlLength: fullUrl.length,
-                  dataSize: dataSize
-                });
-                reject(new Error('Timeout en la solicitud JSONP (45s). La operación tomó demasiado tiempo.'));
-              }
-            }, 45000);
-
-            document.body.appendChild(script);
-          });
-        }
 
         // =================== FUNCIONES DE UTILIDAD ===================
 
@@ -251,6 +141,7 @@
                 'inventarioStatus', 
                 'preciosStatus',
                 'ventasStatus',
+                'gastosStatus',
                 'reportesStatus'
             ];
 
@@ -298,317 +189,598 @@
             if (seccionId === 'ventas' && isConfigured) {
                 cargarInventarioParaVentas();
             }
+            if (seccionId === 'gastos' && isConfigured) {
+                prepararGastosUI();
+                cargarGastos(); // async, no bloqueante
+            }
         };
 
-        // =================== FUNCIONES DE API ===================
+        // =================== FUNCIONES DE API (SUPABASE) ===================
 
-        // Funciones de la API de Google Sheets
-        async function leerHoja(nombreHoja) {
-            if (!spreadsheetId) {
-                throw new Error('Configure el ID del Google Sheet primero');
+function _ensureSupabase() {
+    if (!window.supabase) {
+        throw new Error('Supabase JS no está cargado. Verifica el <script> de supabase-js en index.html');
+    }
+    if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error('Configure Supabase (URL y Anon Key) primero');
+    }
+
+    // Evitar múltiples instancias de GoTrueClient en el mismo navegador.
+    // Guardamos un singleton en window y solo recreamos si cambian URL/KEY.
+    const configKey = `${supabaseUrl}|${supabaseAnonKey}`;
+    if (window.__pesqueraSupabaseClient && window.__pesqueraSupabaseClient.__configKey === configKey) {
+        supabaseClient = window.__pesqueraSupabaseClient;
+        return supabaseClient;
+    }
+
+    if (!supabaseClient || supabaseClient.__configKey !== configKey) {
+        // Usamos Supabase Auth + RLS (solo usuarios autenticados)
+        supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey, {
+            auth: {
+                // Mantener sesión para no pedir login cada vez
+                persistSession: true,
+                autoRefreshToken: true,
+                // storageKey único del sistema para evitar colisiones con otros proyectos en el mismo navegador
+                storageKey: 'pesquera_auth'
             }
+        });
+        supabaseClient.__configKey = configKey;
+        window.__pesqueraSupabaseClient = supabaseClient;
+    }
+    return supabaseClient;
+}
 
-            const range = `${nombreHoja}!A:Z`;
-            const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${range}?key=${API_KEY}`;
+// =================== HELPERS FECHA/CONFIG ===================
+function _toISO(value) {
+    // Convierte a ISO si es posible; si no, usa "now" para evitar RangeError
+    if (!value) return new Date().toISOString();
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return new Date().toISOString();
+    return d.toISOString();
+}
 
-            const response = await fetch(url);
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`Error al leer ${nombreHoja}: ${errorData.error.message}`);
+// Formatear fecha ISO o dd/mm/yyyy para UI (sin romper por fechas inválidas)
+function _formatFecha(value) {
+    try {
+        if (!value) return '';
+        const d = new Date(value);
+        if (isNaN(d.getTime())) {
+            // Intentar dd/mm/yyyy
+            const parts = String(value).split('/');
+            if (parts.length === 3) {
+                const dd = parts[0].padStart(2,'0');
+                const mm = parts[1].padStart(2,'0');
+                const yyyy = parts[2];
+                const d2 = new Date(`${yyyy}-${mm}-${dd}T00:00:00`);
+                if (!isNaN(d2.getTime())) return d2.toLocaleString('es-CO');
             }
-
-            const data = await response.json();
-            return data.values || [];
+            return String(value);
         }
+        return d.toLocaleString('es-CO');
+    } catch (e) {
+        return String(value || '');
+    }
+}
 
-        async function escribirHoja(nombreHoja, datos) {
-          if (!spreadsheetId) {
-            throw new Error('Configure el ID del Google Sheet primero');
-          }
+async function _cargarConfiguracionDesdeDB() {
+    const sb = _ensureSupabase();
+    const { data, error } = await sb.from('configuracion').select('*').eq('id', 1).maybeSingle();
+    if (error) throw error;
+    if (data) {
+        config.ultimoNumeroFactura = data.ultimo_numero_factura ?? config.ultimoNumeroFactura ?? 0;
+        config.nombreEmpresa = data.nombre_empresa ?? config.nombreEmpresa ?? '';
+        config.direccionEmpresa = data.direccion_empresa ?? config.direccionEmpresa ?? '';
+        config.telefonoEmpresa = data.telefono_empresa ?? config.telefonoEmpresa ?? '';
 
-          const requestData = {
-            action: 'escribirHoja',
-            spreadsheetId: spreadsheetId,
-            nombreHoja: nombreHoja,
-            datos: datos
-          };
-
-          return await llamarAPIConJSONP(requestData);
-        }
-
-        async function agregarFilaHoja(nombreHoja, fila) {
-          if (!spreadsheetId) {
-            throw new Error('Configure el ID del Google Sheet primero');
-          }
-
-          const requestData = {
-            action: 'agregarFila',
-            spreadsheetId: spreadsheetId,
-            nombreHoja: nombreHoja,
-            fila: fila
-          };
-
-          return await llamarAPIConJSONP(requestData);
-        }
+        // Refrescar inputs si existen en el DOM
+        const n = document.getElementById('nombreEmpresa');
+        const d = document.getElementById('direccionEmpresa');
+        const t = document.getElementById('telefonoEmpresa');
+        if (n) n.value = config.nombreEmpresa || '';
+        if (d) d.value = config.direccionEmpresa || '';
+        if (t) t.value = config.telefonoEmpresa || '';
+    }
+}
 
 
-        // Función auxiliar para escribir con reintentos
-        async function escribirHojaConReintento(nombreHoja, datos, intentos = 3) {
-          for (let i = 0; i < intentos; i++) {
-            try {
-              console.log(`📝 Intento ${i + 1}/${intentos} de escribir en ${nombreHoja}...`);
-              await escribirHoja(nombreHoja, datos);
-              console.log(`✅ Escritura exitosa en ${nombreHoja}`);
-              return;
-            } catch (error) {
-              console.error(`❌ Error en intento ${i + 1}:`, error.message);
-              if (i === intentos - 1) {
-                throw error; // Lanzar el error en el último intento
-              }
-              // Esperar antes de reintentar (2, 4, 6 segundos)
-              const tiempoEspera = (i + 1) * 2000;
-              console.log(`⏳ Esperando ${tiempoEspera/1000}s antes de reintentar...`);
-              await new Promise(resolve => setTimeout(resolve, tiempoEspera));
-            }
-          }
-        }
+function _mapSheetToTable(nombreHoja) {
+    const hoja = (nombreHoja || '').toLowerCase().trim();
+    const mapa = {
+        'inventario': 'inventario',
+        'precios': 'precios',
+        'ventas': 'ventas',
+        'deudores': 'deudores',
+        'deudas': 'deudores',
+        'historico': 'historico',
+        'histórico': 'historico',
+        'configuracion': 'configuracion',
+        'configuración': 'configuracion',
+        'eliminaciones': 'eliminaciones'
+    };
+    return mapa[hoja] || null;
+}
 
-        // Función auxiliar para agregar fila con reintentos
-        async function agregarFilaConReintento(nombreHoja, fila, intentos = 3) {
-          for (let i = 0; i < intentos; i++) {
-            try {
-              console.log(`📝 Intento ${i + 1}/${intentos} de agregar fila en ${nombreHoja}...`);
-              await agregarFilaHoja(nombreHoja, fila);
-              console.log(`✅ Fila agregada exitosamente en ${nombreHoja}`);
-              return;
-            } catch (error) {
-              console.error(`❌ Error en intento ${i + 1}:`, error.message);
-              if (i === intentos - 1) {
-                // En el último intento, no lanzar error para agregar (es opcional)
-                console.warn(`⚠️ No se pudo agregar fila después de ${intentos} intentos`);
-                return;
-              }
-              // Esperar antes de reintentar
-              const tiempoEspera = (i + 1) * 2000;
-              console.log(`⏳ Esperando ${tiempoEspera/1000}s antes de reintentar...`);
-              await new Promise(resolve => setTimeout(resolve, tiempoEspera));
-            }
-          }
-        }
+// Crea (si no existe) la fila singleton de configuración
+async function _asegurarConfiguracion() {
+    const sb = _ensureSupabase();
+    const { data, error } = await sb.from('configuracion').select('*').limit(1);
+    if (error) throw error;
+    if (!data || data.length === 0) {
+        const payload = {
+            id: 1,
+            ultimo_numero_factura: 0,
+            nombre_empresa: config.nombreEmpresa,
+            direccion_empresa: config.direccionEmpresa,
+            telefono_empresa: config.telefonoEmpresa
+        };
+        const ins = await sb.from('configuracion').insert(payload);
+        if (ins.error) throw ins.error;
+    }
+}
 
+// Función principal: lee una "hoja" (tabla) y la devuelve como matriz (incluye headers)
+async function leerHoja(nombreHoja) {
+    const sb = _ensureSupabase();
+    const table = _mapSheetToTable(nombreHoja);
+    if (!table) throw new Error(`Hoja/tabla no soportada: ${nombreHoja}`);
 
-        // =================== FUNCIONES PRINCIPALES ===================
+    // Nota: el sistema no carga histórico desde Excel; empezamos desde 0.
+    // Estas lecturas son la fuente de verdad.
+    let query = sb.from(table).select('*');
 
-        // REEMPLAZA tu función window.pruebaBasica con esta versión simplificada
-        window.pruebaBasica = async function() {
-          console.log('🧪 Iniciando prueba básica del sistema...');
-          mostrarAlerta('🧪 Probando solo Google Apps Script con JSONP...', 'warning');
+    // Orden recomendado por tabla
+    if (table === 'inventario' || table === 'precios') query = query.order('tipo', { ascending: true });
+    if (table === 'ventas') query = query.order('numero_factura', { ascending: true });
+    if (table === 'deudores') query = query.order('fecha', { ascending: false });
+    if (table === 'historico') query = query.order('fecha', { ascending: false });
 
-          try {
-            console.log('🚀 Probando Apps Script con JSONP...');
-            console.log('📍 URL que se va a probar:', APPS_SCRIPT_URL);
+    const { data, error } = await query;
+    if (error) throw error;
 
-            // Solo probar JSONP - sin Google Sheets API por ahora
-            const appsScriptResponse = await llamarAPIConJSONP();
-            console.log('✅ Apps Script respuesta:', appsScriptResponse);
+    // Convertimos a formato "values" (como Supabase) para no reescribir todo el sistema
+    if (table === 'inventario') {
+        const header = ['Tipo', 'Stock', 'PrecioCompra', 'ValorTotal', 'UltimaActualizacion'];
+        const rows = (data || []).map(r => [
+            r.tipo ?? '',
+            r.stock ?? 0,
+            r.precio_compra ?? 0,
+            r.valor_total ?? 0,
+            _formatFecha(r.ultima_actualizacion)
+        ]);
+        return [header, ...rows];
+    }
 
-            if (appsScriptResponse.success || appsScriptResponse.message) {
-              mostrarAlerta('✅ Apps Script con JSONP: FUNCIONA PERFECTAMENTE', 'success');
-              console.log('🎉 El sistema está listo para usar');
-            } else {
-              mostrarAlerta('⚠️ Apps Script responde pero con formato inesperado', 'warning');
-              console.log('🔍 Respuesta recibida:', appsScriptResponse);
-            }
-          } catch (appsScriptError) {
-            console.error('❌ Error en Apps Script:', appsScriptError);
-            console.error('🔍 Detalles del error:', {
-              message: appsScriptError.message,
-              url: APPS_SCRIPT_URL,
-              timestamp: new Date().toISOString()
+    if (table === 'precios') {
+        const header = ['Tipo', 'PrecioCompra', 'Margen', 'PrecioVenta', 'Ganancia'];
+        const rows = (data || []).map(r => [
+            r.tipo ?? '',
+            r.precio_compra ?? 0,
+            r.margen ?? 0,
+            r.precio_venta ?? 0,
+            r.ganancia ?? 0
+        ]);
+        return [header, ...rows];
+    }
+
+    if (table === 'ventas') {
+        const header = ['NumeroFactura', 'Fecha', 'Cliente', 'Productos', 'Total', 'DescuentoPorKg', 'DescuentoTotal', 'SubtotalSinDescuento', 'Telefono', 'TipoPago'];
+        const rows = (data || []).map(r => [
+            r.numero_factura ?? '',
+            _formatFecha(r.fecha),
+            r.cliente ?? '',
+            (_normalizeProductosField(r.productos).join(', ')),
+            r.total ?? 0,
+            r.descuento_por_kg ?? 0,
+            r.descuento_total ?? 0,
+            r.subtotal_sin_descuento ?? 0,
+            r.telefono ?? '',
+            r.tipo_pago ?? 'pagado'
+        ]);
+        return [header, ...rows];
+    }
+
+    if (table === 'deudores') {
+        const header = ['NumeroFactura', 'Fecha', 'Cliente', 'Telefono', 'Productos', 'Total', 'Estado', 'FechaPago'];
+        const rows = (data || []).map(r => [
+            r.numero_factura ?? '',
+            _formatFecha(r.fecha),
+            r.cliente ?? '',
+            r.telefono ?? '',
+            (_normalizeProductosField(r.productos).join(', ')),
+            r.total ?? 0,
+            r.estado ?? 'pendiente',
+            _formatFecha(r.fecha_pago)
+        ]);
+        return [header, ...rows];
+    }
+
+    if (table === 'historico') {
+        const header = ['Fecha', 'Tipo', 'Cantidad', 'PrecioCompra', 'Proveedor', 'ValorTotal'];
+        const rows = (data || []).map(r => [
+            _formatFecha(r.fecha),
+            r.tipo ?? '',
+            r.cantidad ?? 0,
+            r.precio_compra ?? 0,
+            r.proveedor ?? '',
+            r.valor_total ?? 0
+        ]);
+        return [header, ...rows];
+    }
+
+    if (table === 'eliminaciones') {
+        const header = ['Fecha', 'NumeroFactura', 'Cliente', 'Productos', 'Total', 'Motivo', 'Usuario'];
+        const rows = (data || []).map(r => [
+            _formatFecha(r.fecha),
+            r.numero_factura ?? '',
+            r.cliente ?? '',
+            r.productos ?? '',
+            r.total ?? 0,
+            r.motivo ?? '',
+            r.usuario ?? ''
+        ]);
+        return [header, ...rows];
+    }
+
+    if (table === 'configuracion') {
+        const header = ['UltimoNumeroFactura', 'NombreEmpresa', 'DireccionEmpresa', 'TelefonoEmpresa'];
+        const r = (data && data[0]) || {};
+        return [header, [
+            r.ultimo_numero_factura ?? 0,
+            r.nombre_empresa ?? config.nombreEmpresa,
+            r.direccion_empresa ?? config.direccionEmpresa,
+            r.telefono_empresa ?? config.telefonoEmpresa
+        ]];
+    }
+
+    return [];
+}
+
+async function escribirHoja(nombreHoja, datos) {
+    const sb = _ensureSupabase();
+    const table = _mapSheetToTable(nombreHoja);
+    if (!table) throw new Error(`Hoja/tabla no soportada: ${nombreHoja}`);
+
+    // Sobrescritura completa (equivalente a "pegar" en Sheets)
+    // OJO: se usa solo en escenarios puntuales. Preferimos upserts en funciones específicas.
+    const header = (datos || [])[0] || [];
+    const rows = (datos || []).slice(1);
+
+    // Borrar todo (equivalente a sobrescribir una hoja completa)
+    if (table === 'configuracion') {
+        // Configuración es singleton (id=1)
+        await _asegurarConfiguracion();
+        await _cargarConfiguracionDesdeDB();
+    } else if (table === 'inventario' || table === 'precios') {
+        // Estas tablas NO tienen columna id (PK = tipo). Usamos un filtro seguro por tipo.
+        const del = await sb.from(table).delete().neq('tipo', '__never__');
+        if (del.error) throw del.error;
+    } else {
+        // Tablas con id UUID
+        const del = await sb.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        if (del.error) throw del.error;
+    }
+
+    // Insertar
+    const payload = [];
+    for (const fila of rows) {
+        if (table === 'inventario') {
+            payload.push({
+                tipo: fila[0],
+                stock: parseFloat(fila[1]) || 0,
+                precio_compra: parseFloat(fila[2]) || 0,
+                valor_total: parseFloat(fila[3]) || 0,
+                ultima_actualizacion: _toISO(fila[4])
             });
-            mostrarAlerta(`❌ Error en Apps Script: ${appsScriptError.message}`, 'danger');
+        } else if (table === 'precios') {
+            payload.push({
+                tipo: fila[0],
+                precio_compra: parseFloat(fila[1]) || 0,
+                margen: parseFloat(fila[2]) || 0,
+                precio_venta: parseFloat(fila[3]) || 0,
+                ganancia: parseFloat(fila[4]) || 0
+            });
+        } else if (table === 'ventas') {
+            payload.push({
+                numero_factura: parseInt(fila[0]) || 0,
+                fecha: _toISO(fila[1]),
+                cliente: fila[2] || '',
+                productos: _normalizeProductosField(fila[3]),
+                total: parseFloat(fila[4]) || 0,
+                descuento_por_kg: parseFloat(fila[5]) || 0,
+                descuento_total: parseFloat(fila[6]) || 0,
+                subtotal_sin_descuento: parseFloat(fila[7]) || 0,
+                telefono: fila[8] || '',
+                tipo_pago: fila[9] || 'pagado'
+            });
+        } else if (table === 'deudores') {
+            payload.push({
+                numero_factura: parseInt(fila[0]) || 0,
+                fecha: _toISO(fila[1]),
+                cliente: fila[2] || '',
+                telefono: fila[3] || '',
+                productos: _normalizeProductosField(fila[4]),
+                total: parseFloat(fila[5]) || 0,
+                estado: fila[6] || 'pendiente',
+                fecha_pago: fila[7] ? _toISO(fila[7]) : null
+            });
+        } else if (table === 'historico') {
+            payload.push({
+                fecha: fila[0] ? _toISO(fila[0]) : new Date().toISOString(),
+                tipo: fila[1] || '',
+                cantidad: parseFloat(fila[2]) || 0,
+                precio_compra: parseFloat(fila[3]) || 0,
+                proveedor: fila[4] || '',
+                valor_total: parseFloat(fila[5]) || 0
+            });
+        } else if (table === 'eliminaciones') {
+            payload.push({
+                fecha: fila[0] ? _toISO(fila[0]) : new Date().toISOString(),
+                numero_factura: parseInt(fila[1]) || 0,
+                cliente: fila[2] || '',
+                productos: fila[3] || '',
+                total: parseFloat(fila[4]) || 0,
+                motivo: fila[5] || '',
+                usuario: fila[6] || ''
+            });
+        } else if (table === 'configuracion') {
+            payload.push({
+                id: 1,
+                ultimo_numero_factura: parseInt(fila[0]) || 0,
+                nombre_empresa: fila[1] || config.nombreEmpresa,
+                direccion_empresa: fila[2] || config.direccionEmpresa,
+                telefono_empresa: fila[3] || config.telefonoEmpresa
+            });
+        }
+    }
 
-            // Mostrar ayuda específica
-            if (appsScriptError.message.includes('Error al cargar script JSONP')) {
-              mostrarAlerta('💡 SOLUCIÓN: Verifica que hayas hecho un nuevo deployment del Apps Script y copiado la URL correcta', 'warning');
-            }
-          }
+    if (payload.length > 0) {
+        if (table === 'inventario' || table === 'precios') {
+            const ins = await sb.from(table).upsert(payload, { onConflict: 'tipo' });
+            if (ins.error) throw ins.error;
+        } else if (table === 'configuracion') {
+            const up = await sb.from('configuracion').upsert(payload[0], { onConflict: 'id' });
+            if (up.error) throw up.error;
+        } else {
+            const ins = await sb.from(table).insert(payload);
+            if (ins.error) throw ins.error;
+        }
+    }
+
+    return { success: true };
+}
+
+async function agregarFilaHoja(nombreHoja, fila) {
+    const sb = _ensureSupabase();
+    const table = _mapSheetToTable(nombreHoja);
+    if (!table) throw new Error(`Hoja/tabla no soportada: ${nombreHoja}`);
+
+    if (table === 'inventario') {
+        const payload = {
+            tipo: fila[0],
+            stock: parseFloat(fila[1]) || 0,
+            precio_compra: parseFloat(fila[2]) || 0,
+            valor_total: parseFloat(fila[3]) || 0,
+            ultima_actualizacion: _toISO(fila[4])
         };
+        const up = await sb.from('inventario').upsert(payload, { onConflict: 'tipo' });
+        if (up.error) throw up.error;
+        return { success: true };
+    }
 
-        // TAMBIÉN agrega esta función para probar la URL directamente
-        window.probarURLDirecta = function() {
-          const url = APPS_SCRIPT_URL;
-          console.log('🌐 Abriendo URL en nueva pestaña:', url);
-          mostrarAlerta('📝 Abriendo Apps Script en nueva pestaña. Deberías ver un JSON con el mensaje de funcionamiento.', 'info');
-          window.open(url, '_blank');
+    if (table === 'precios') {
+        const payload = {
+            tipo: fila[0],
+            precio_compra: parseFloat(fila[1]) || 0,
+            margen: parseFloat(fila[2]) || 0,
+            precio_venta: parseFloat(fila[3]) || 0,
+            ganancia: parseFloat(fila[4]) || 0
         };
+        const up = await sb.from('precios').upsert(payload, { onConflict: 'tipo' });
+        if (up.error) throw up.error;
+        return { success: true };
+    }
 
-        // Probar conexión con Google Sheets
-        window.probarConexion = async function() {
-            console.log('🔌 Iniciando prueba de conexión...');
+    // Para el resto, insert normal
+    const payload = {};
+    if (table === 'historico') {
+        payload.fecha = fila[0] ? _toISO(fila[0]) : new Date().toISOString();
+        payload.tipo = fila[1] || '';
+        payload.cantidad = parseFloat(fila[2]) || 0;
+        payload.precio_compra = parseFloat(fila[3]) || 0;
+        payload.proveedor = fila[4] || '';
+        payload.valor_total = parseFloat(fila[5]) || 0;
+    } else if (table === 'ventas') {
+        payload.numero_factura = parseInt(fila[0]) || 0;
+        payload.fecha = _toISO(fila[1]);
+        payload.cliente = fila[2] || '';
+        payload.productos = _normalizeProductosField(fila[3]);
+        payload.total = parseFloat(fila[4]) || 0;
+        payload.descuento_por_kg = parseFloat(fila[5]) || 0;
+        payload.descuento_total = parseFloat(fila[6]) || 0;
+        payload.subtotal_sin_descuento = parseFloat(fila[7]) || 0;
+        payload.telefono = fila[8] || '';
+        payload.tipo_pago = fila[9] || 'pagado';
+    } else if (table === 'deudores') {
+        payload.numero_factura = parseInt(fila[0]) || 0;
+        payload.fecha = _toISO(fila[1]);
+        payload.cliente = fila[2] || '';
+        payload.telefono = fila[3] || '';
+        // IMPORTANTE: en el sistema los productos suelen venir como texto
+        // "Pargo (2 kg), Atún (1 kg)" (no como JSON). Usamos normalizador.
+        payload.productos = _normalizeProductosField(fila[4]);
+        payload.total = parseFloat(fila[5]) || 0;
+        payload.estado = fila[6] || 'pendiente';
+        payload.fecha_pago = fila[7] ? _toISO(fila[7]) : null;
+    } else if (table === 'eliminaciones') {
+        payload.fecha = fila[0] ? _toISO(fila[0]) : new Date().toISOString();
+        payload.numero_factura = parseInt(fila[1]) || 0;
+        payload.cliente = fila[2] || '';
+        payload.productos = fila[3] || '';
+        payload.total = parseFloat(fila[4]) || 0;
+        payload.motivo = fila[5] || '';
+        payload.usuario = fila[6] || '';
+    }
 
-            const idSheet = document.getElementById('spreadsheetId').value.trim();
+    const ins = await sb.from(table).insert(payload);
+    if (ins.error) throw ins.error;
+    return { success: true };
+}
 
-            if (!idSheet) {
-                mostrarAlerta('⚠️ Ingrese el ID del Google Sheet', 'warning');
-                return;
-            }
+// Helpers
+function _safeJsonParse(value, fallback) {
+    try {
+        if (value === null || value === undefined || value === '') return fallback;
+        if (typeof value === 'object') return value;
+        return JSON.parse(value);
+    } catch (e) {
+        return fallback;
+    }
+}
 
-            updateConnectionStatus('loading', 'Probando conexión...');
 
-            try {
-                const url = `${SHEETS_API_BASE}/${idSheet}?key=${API_KEY}`;
-                const response = await fetch(url);
+function _normalizeProductosField(value) {
+    // Acepta: array, JSON string, o texto "Pargo (2 kg), Atún (1 kg)"
+    if (value === null || value === undefined) return [];
+    if (Array.isArray(value)) return value.filter(Boolean).map(String);
+    if (typeof value === 'object') return Object.values(value).map(String);
+    const s = String(value).trim();
+    if (!s) return [];
+    if (s.startsWith('[')) {
+        const parsed = _safeJsonParse(s, []);
+        if (Array.isArray(parsed)) return parsed.filter(Boolean).map(String);
+    }
+    // Separador principal: coma
+    return s.split(',').map(x => x.trim()).filter(Boolean);
+}
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error.message);
-                }
+// =================== REINTENTOS ===================
+// En Supabase no necesitamos . Conservamos las funciones de reintento por estabilidad.
+async function escribirHojaConReintento(nombreHoja, datos, intentos = 3) {
+    for (let i = 0; i < intentos; i++) {
+        try {
+            console.log(`📝 Intento ${i + 1}/${intentos} de escribir en ${nombreHoja}...`);
+            await escribirHoja(nombreHoja, datos);
+            console.log(`✅ Escritura exitosa en ${nombreHoja}`);
+            return;
+        } catch (error) {
+            console.error(`❌ Error en intento ${i + 1}:`, error.message || error);
+            if (i === intentos - 1) throw error;
+            const tiempoEspera = (i + 1) * 1500;
+            await new Promise(resolve => setTimeout(resolve, tiempoEspera));
+        }
+    }
+}
 
-                const data = await response.json();
-                updateConnectionStatus('connected', `Conectado a: ${data.properties.title}`);
-                mostrarAlerta('✅ Conexión exitosa con Google Sheets', 'success');
+async function agregarFilaConReintento(nombreHoja, fila, intentos = 3) {
+    for (let i = 0; i < intentos; i++) {
+        try {
+            console.log(`Intento ${i + 1}/${intentos} de agregar fila en ${nombreHoja}...`);
+            await agregarFilaHoja(nombreHoja, fila);
+            console.log(`Fila agregada exitosamente en ${nombreHoja}`);
+            return;
+        } catch (error) {
+            console.error(`Error en intento ${i + 1}:`, error.message || error);
+            if (i === intentos - 1) return;
+            const tiempoEspera = (i + 1) * 1500;
+            await new Promise(resolve => setTimeout(resolve, tiempoEspera));
+        }
+    }
+}
 
-                // Verificar hojas necesarias
-                const hojasExistentes = data.sheets.map(sheet => sheet.properties.title);
-                const hojasRequeridas = ['Inventario', 'Precios', 'Ventas', 'Configuracion'];
-                const hojasFaltantes = hojasRequeridas.filter(hoja => !hojasExistentes.includes(hoja));
+// =================== FUNCIONES PRINCIPALES ===================
 
-                if (hojasFaltantes.length > 0) {
-                    mostrarAlerta(`⚠️ Faltan las siguientes hojas: ${hojasFaltantes.join(', ')}. Use el botón "Crear Estructura".`, 'warning');
-                } else {
-                    mostrarAlerta('🎉 Todas las hojas necesarias están disponibles', 'success');
+        // REEMPLAZA tu función // TAMBIÉN agrega esta función para probar la URL directamente
+        // Probar conexión con Supabase
+window.probarConexion = async function() {
+    console.log('🔌 Iniciando prueba de conexión (Supabase)...');
 
-                    // *** AQUÍ ESTÁ LA CORRECCIÓN PRINCIPAL ***
-                    // Actualizar el spreadsheetId temporalmente para poder cargar datos
-                    const spreadsheetIdAnterior = spreadsheetId;
-                    spreadsheetId = idSheet;
+    updateConnectionStatus('loading', 'Probando conexión con Supabase...');
 
-                    try {
-                        // Cargar datos existentes de las hojas
-                        console.log('📊 Cargando datos existentes...');
-                        await cargarTodosLosDatos();
-                        mostrarAlerta('📊 Datos cargados correctamente desde Google Sheets', 'success');
-                    } catch (errorCarga) {
-                        console.error('Error al cargar datos:', errorCarga);
-                        mostrarAlerta(`⚠️ Conexión exitosa pero error al cargar datos: ${errorCarga.message}`, 'warning');
-                        spreadsheetId = spreadsheetIdAnterior; // Restaurar ID anterior si falla
-                    }
-                }
+    try {
+        // Credenciales ya están embebidas en el código (SUPABASE_URL / SUPABASE_ANON_KEY)
+        _ensureSupabase();
 
-            } catch (error) {
-                updateConnectionStatus('disconnected', `Error: ${error.message}`);
-                mostrarAlerta(`❌ Error de conexión: ${error.message}`, 'danger');
-            }
+        // Validar que existan tablas/config mínima
+        await _asegurarConfiguracion();
+        await _cargarConfiguracionDesdeDB();
+
+        isConfigured = true;
+
+        updateConnectionStatus('connected', 'Conectado a Supabase');
+        mostrarAlerta('Conexión exitosa con Supabase', 'success');
+
+        // Cargar todo al conectar
+        await cargarTodosLosDatos();
+    } catch (error) {
+        console.error('❌ Error de conexión Supabase:', error);
+        isConfigured = false;
+        updateConnectionStatus('disconnected', '❌ Error de conexión a Supabase');
+        mostrarAlerta('❌ Error conectando a Supabase: ' + (error.message || error), 'danger');
+    }
+};
+
+// Guardar configuración de Supabase
+window.guardarConfiguracion = async function() {
+    // Ya no se guardan credenciales en pantalla/localStorage.
+    // Dejamos esta función por compatibilidad (si algún botón viejo la llama).
+    return window.probarConexion();
+};
+
+window.guardarDatosEmpresa = async function() {
+    try {
+        _ensureSupabase();
+
+        config.nombreEmpresa = (document.getElementById('nombreEmpresa')?.value || '').trim();
+        config.direccionEmpresa = (document.getElementById('direccionEmpresa')?.value || '').trim();
+        config.telefonoEmpresa = (document.getElementById('telefonoEmpresa')?.value || '').trim();
+
+        // También guardamos en localStorage para que cargue rápido (fallback)
+        localStorage.setItem('nombreEmpresa', config.nombreEmpresa);
+        localStorage.setItem('direccionEmpresa', config.direccionEmpresa);
+        localStorage.setItem('telefonoEmpresa', config.telefonoEmpresa);
+
+        // Persistir en Supabase (tabla configuracion, singleton id=1)
+        const sb = _ensureSupabase();
+        const payload = {
+            id: 1,
+            nombre_empresa: config.nombreEmpresa,
+            direccion_empresa: config.direccionEmpresa,
+            telefono_empresa: config.telefonoEmpresa
         };
+        const { error } = await sb.from('configuracion').upsert(payload, { onConflict: 'id' });
+        if (error) throw error;
 
-        // Crear estructura de hojas
-        window.crearEstructuraHojas = async function() {
-            if (!spreadsheetId) {
-                mostrarAlerta('⚠️ Configure el ID del Google Sheet primero', 'warning');
-                return;
-            }
-
-            try {
-                updateConnectionStatus('loading', 'Creando estructura...');
-
-                const estructuras = {
-                    'Inventario': [
-                        ['Tipo', 'Stock', 'PrecioPromedio', 'ValorTotal', 'UltimaActualizacion']
-                    ],
-                    'Precios': [
-                        ['Tipo', 'PrecioCompra', 'Margen', 'PrecioVenta', 'Ganancia']
-                    ],
-                    'Ventas': [
-                        ['NumeroFactura', 'Fecha', 'Cliente', 'Productos', 'Total', 'DescuentoPorKg', 'DescuentoTotal', 'SubtotalSinDescuento']
-                    ],
-                    'Configuracion': [
-                        ['UltimoNumeroFactura', 'NombreEmpresa', 'DireccionEmpresa', 'TelefonoEmpresa'],
-                        [1, config.nombreEmpresa, config.direccionEmpresa, config.telefonoEmpresa]
-                    ]
-                };
-
-                let hojasCreadas = 0;
-                for (const [nombreHoja, datos] of Object.entries(estructuras)) {
-                    try {
-                        await escribirHoja(nombreHoja, datos);
-                        hojasCreadas++;
-                    } catch (error) {
-                        mostrarAlerta(`Error al crear hoja ${nombreHoja}: ${error.message}`, 'danger');
-                    }
-                }
-
-                if (hojasCreadas === Object.keys(estructuras).length) {
-                    updateConnectionStatus('connected', 'Estructura creada correctamente');
-                    mostrarAlerta('🎉 Estructura de hojas creada exitosamente', 'success');
-                }
-
-            } catch (error) {
-                updateConnectionStatus('disconnected', `Error: ${error.message}`);
-                mostrarAlerta(`❌ Error al crear estructura: ${error.message}`, 'danger');
-            }
-        };
-
-        // Guardar configuración
-        window.guardarConfiguracion = async function() {
-            const newSpreadsheetId = document.getElementById('spreadsheetId').value.trim();
-
-            if (!newSpreadsheetId) {
-                mostrarAlerta('⚠️ Ingrese el ID del Google Sheet', 'warning');
-                return;
-            }
-
-            spreadsheetId = newSpreadsheetId;
-            localStorage.setItem('spreadsheetId', spreadsheetId);
-            isConfigured = true;
-
-            mostrarAlerta('💾 Configuración guardada correctamente', 'success');
-
-            // Cargar datos después de guardar configuración
-            try {
-                await cargarTodosLosDatos();
-                mostrarAlerta('📊 Datos cargados correctamente', 'success');
-            } catch (error) {
-                console.error('Error al cargar datos después de guardar configuración:', error);
-                mostrarAlerta(`⚠️ Configuración guardada pero error al cargar datos: ${error.message}`, 'warning');
-            }
-        };
-
-        // Guardar datos de empresa
-        window.guardarDatosEmpresa = function() {
-            config.nombreEmpresa = document.getElementById('nombreEmpresa').value;
-            config.direccionEmpresa = document.getElementById('direccionEmpresa').value;
-            config.telefonoEmpresa = document.getElementById('telefonoEmpresa').value;
-
-            localStorage.setItem('nombreEmpresa', config.nombreEmpresa);
-            localStorage.setItem('direccionEmpresa', config.direccionEmpresa);
-            localStorage.setItem('telefonoEmpresa', config.telefonoEmpresa);
-
-            mostrarAlerta('💾 Datos de empresa guardados', 'success');
-        };
+        mostrarAlerta('Datos de la pesquera guardados en la base de datos', 'success');
+    } catch (error) {
+        console.error('❌ Error guardando datos de la pesquera:', error);
+        mostrarAlerta('❌ No se pudieron guardar los datos de la pesquera: ' + (error.message || error), 'danger');
+    }
+};
 
         // =================== FUNCIONES DE DATOS ===================
 
         // Cargar todos los datos
         async function cargarTodosLosDatos() {
-            if (!spreadsheetId) {
-                throw new Error('Configure el ID del Google Sheet primero');
-            }
+            // Validar Supabase
+            _ensureSupabase();
 
-            try {
+            // Asegurar y cargar configuración desde DB
+            await _asegurarConfiguracion();
+            await _cargarConfiguracionDesdeDB();
+
+try {
                 updateConnectionStatus('loading', 'Cargando datos...');
 
-                console.log('📊 Cargando inventario...');
+                console.log('Cargando inventario...');
                 await cargarInventario();
 
-                console.log('💰 Cargando precios...');
+                console.log('Cargando precios...');
                 await cargarPrecios();
 
                 updateConnectionStatus('connected', 'Datos cargados correctamente');
                 isConfigured = true;
 
-                console.log('✅ Todos los datos cargados exitosamente');
+                console.log('Todos los datos cargados exitosamente');
 
             } catch (error) {
                 console.error('❌ Error al cargar datos:', error);
@@ -629,7 +801,7 @@
                         if (fila[0]) {
                             inventarioData[fila[0]] = {
                                 stock: parseFloat(fila[1]) || 0,
-                                precioPromedio: parseFloat(fila[2]) || 0,
+                                precioCompra: parseFloat(fila[2]) || 0,
                                 valorTotal: parseFloat(fila[3]) || 0,
                                 ultimaActualizacion: fila[4] || ''
                             };
@@ -704,11 +876,14 @@
             }
 
             const tipo = document.getElementById('tipoPescadoInventario').value;
-            const libras = parseFloat(document.getElementById('librasRecibidas').value);
+            const cantidadInput = document.getElementById('kilosRecibidos') || document.getElementById('librasRecibidas');
+            const kilos = parseFloat((cantidadInput && cantidadInput.value) || '');
             const precio = parseFloat(document.getElementById('precioCompra').value);
-            const proveedor = document.getElementById('proveedorInventario').value.trim();
+            // Soportar distintos IDs por compatibilidad
+            const proveedorEl = document.getElementById('proveedorInventario') || document.getElementById('proveedor');
+            const proveedor = (proveedorEl && proveedorEl.value ? proveedorEl.value : '').trim();
 
-            if (!tipo || !libras || !precio) {
+            if (!tipo || !kilos || !precio) {
                 mostrarAlerta('Complete todos los campos obligatorios', 'warning');
                 return;
             }
@@ -720,23 +895,24 @@
             try {
                 // Calcular nuevo inventario
                 if (!inventarioData[tipo]) {
-                    inventarioData[tipo] = { stock: 0, precioPromedio: 0, valorTotal: 0 };
+                    inventarioData[tipo] = { stock: 0, precioCompra: 0, valorTotal: 0 };
                 }
 
                 const valorAnterior = inventarioData[tipo].valorTotal;
 
-                inventarioData[tipo].stock += libras;
-                inventarioData[tipo].valorTotal = valorAnterior + (libras * precio);
-                inventarioData[tipo].precioPromedio = inventarioData[tipo].valorTotal / inventarioData[tipo].stock;
+                inventarioData[tipo].stock += kilos;
+                // Precio de compra NO es promedio: guardamos el último precio pagado al recibir
+                inventarioData[tipo].precioCompra = precio;
+                inventarioData[tipo].valorTotal = valorAnterior + (kilos * precio);
                 inventarioData[tipo].ultimaActualizacion = new Date().toLocaleDateString();
 
                 // Preparar datos para escribir en Inventario
                 const datosInventario = [
-                    ['Tipo', 'Stock', 'PrecioPromedio', 'ValorTotal', 'UltimaActualizacion'],
+                    ['Tipo', 'Stock', 'PrecioCompra', 'ValorTotal', 'UltimaActualizacion'],
                     ...Object.entries(inventarioData).map(([tipoPez, datos]) => [
                         tipoPez,
                         datos.stock,
-                        datos.precioPromedio,
+                        datos.precioCompra,
                         datos.valorTotal,
                         datos.ultimaActualizacion
                     ])
@@ -746,7 +922,7 @@
 
                 // =================== REGISTRAR EN HISTÓRICO ===================
                 const fechaActual = new Date().toLocaleDateString();
-                const valorTotal = libras * precio;
+                const valorTotal = kilos * precio;
                 const proveedorFinal = proveedor || 'No especificado';
 
                 // Leer histórico actual
@@ -755,15 +931,15 @@
                     datosHistorico = await leerHoja('Historico');
                     if (datosHistorico.length === 0) {
                         // Si está vacío, crear con encabezados
-                        datosHistorico = [['Tipo', 'Cantidad', 'PrecioCompra', 'Proveedor', 'Fecha', 'ValorTotal']];
+                        datosHistorico = [['Fecha', 'Tipo', 'CantidadKg', 'PrecioCompra', 'Proveedor', 'ValorTotal']];
                     }
                 } catch (error) {
                     console.log('Creando nueva hoja de histórico');
-                    datosHistorico = [['Tipo', 'Cantidad', 'PrecioCompra', 'Proveedor', 'Fecha', 'ValorTotal']];
+                    datosHistorico = [['Fecha', 'Tipo', 'CantidadKg', 'PrecioCompra', 'Proveedor', 'ValorTotal']];
                 }
 
                 // Agregar nueva entrada al histórico
-                datosHistorico.push([tipo, libras, precio, proveedorFinal, fechaActual, valorTotal]);
+                datosHistorico.push([new Date().toISOString(), tipo, kilos, precio, proveedorFinal, valorTotal]);
 
                 // Escribir histórico actualizado
                 await escribirHoja('Historico', datosHistorico);
@@ -772,7 +948,8 @@
 
                 // Limpiar formulario
                 document.getElementById('tipoPescadoInventario').value = '';
-                document.getElementById('librasRecibidas').value = '';
+                if (document.getElementById('kilosRecibidos')) document.getElementById('kilosRecibidos').value = '';
+                if (document.getElementById('librasRecibidas')) document.getElementById('librasRecibidas').value = '';
                 document.getElementById('precioCompra').value = '';
                 document.getElementById('proveedorInventario').value = '';
 
@@ -812,7 +989,7 @@
                 fila.innerHTML = `
                     <td>${tipo}</td>
                     <td>${parseFloat(datos.stock.toFixed(3))}</td>
-                    <td>${formatearPesos(datos.precioPromedio)}</td>
+                    <td>${formatearPesos(datos.precioCompra)}</td>
                     <td>${formatearPesos(datos.valorTotal)}</td>
                     <td>${datos.ultimaActualizacion || 'N/A'}</td>
                     <td ${claseEstado}>${estado}</td>
@@ -845,7 +1022,7 @@
                 document.getElementById('precioVentaManual').value = Math.round(preciosData[tipo].precioVenta);
             } else if (tipo && inventarioData[tipo]) {
                 // Si no hay precio configurado, usar el precio promedio del inventario como referencia
-                precioCompraInput.value = Math.round(inventarioData[tipo].precioPromedio);
+                precioCompraInput.value = Math.round(inventarioData[tipo].precioCompra);
                 // Limpiar otros campos
                 document.getElementById('margenGanancia').value = '';
                 document.getElementById('precioVentaManual').value = '';
@@ -1015,7 +1192,7 @@
 
             for (const tipo in inventarioData) {
                 if (inventarioData[tipo].stock > 0 && preciosData[tipo]) {
-                    select.innerHTML += `<option value="${tipo}">${tipo} (${inventarioData[tipo].stock.toFixed(1)} lbs disponibles)</option>`;
+                    select.innerHTML += `<option value="${tipo}">${tipo} (${inventarioData[tipo].stock.toFixed(1)} kg disponibles)</option>`;
                 }
             }
 
@@ -1037,6 +1214,10 @@
             const tipo = document.getElementById('tipoPescadoVenta').value;
             const gramos = parseFloat(document.getElementById('cantidadVenta').value);
             const precio = parseFloat(document.getElementById('precioVentaProducto').value);
+            
+            // Obtener datos de descuento individual
+            const tipoDescuentoInd = document.getElementById('tipoDescuentoIndividual').value;
+            const descuentoInd = parseFloat(document.getElementById('descuentoIndividual').value) || 0;
 
             if (!tipo || !gramos || !precio) {
                 mostrarAlerta('Complete todos los campos del producto', 'warning');
@@ -1051,12 +1232,38 @@
                 return;
             }
 
-            const subtotal = cantidad * precio;
+            const subtotalSinDescuento = cantidad * precio;
+            let descuentoProducto = 0;
+            let tipoDescuento = 'ninguno';
+            let valorDescuento = 0;
+
+            // Calcular descuento individual
+            // Nota: cuando el tipo es 'dinero', el valor se interpreta como DESCUENTO POR KG.
+            // Ej: si pones 10.000 y llevas 2.5 kg => descuento total del producto = 25.000.
+            if (tipoDescuentoInd === 'porcentaje' && descuentoInd > 0) {
+                descuentoProducto = (subtotalSinDescuento * descuentoInd) / 100;
+                tipoDescuento = 'porcentaje';
+                valorDescuento = descuentoInd;
+            } else if (tipoDescuentoInd === 'dinero' && descuentoInd > 0) {
+                const descuentoPorKg = descuentoInd;
+                descuentoProducto = descuentoPorKg * cantidad;
+                tipoDescuento = 'dinero';
+                valorDescuento = descuentoPorKg; // guardamos $/kg
+            }
+
+            // Evitar que el descuento deje el subtotal en negativo
+            if (descuentoProducto > subtotalSinDescuento) descuentoProducto = subtotalSinDescuento;
+
+            const subtotal = subtotalSinDescuento - descuentoProducto;
 
             ventaActual.push({
                 tipo: tipo,
                 cantidad: cantidad,
                 precio: precio,
+                subtotalSinDescuento: subtotalSinDescuento,
+                descuentoProducto: descuentoProducto,
+                tipoDescuento: tipoDescuento,
+                valorDescuento: valorDescuento,
                 subtotal: subtotal
             });
 
@@ -1065,6 +1272,9 @@
             document.getElementById('cantidadVenta').value = '';
             document.getElementById('precioVentaProducto').value = '';
             document.getElementById('conversionKilos').textContent = '';
+            document.getElementById('tipoDescuentoIndividual').value = 'ninguno';
+            document.getElementById('descuentoIndividual').value = '0';
+            toggleDescuentoIndividual();
 
             actualizarTablaVentaActual();
         };
@@ -1074,27 +1284,55 @@
             const tbody = document.querySelector('#tablaVentaActual tbody');
             tbody.innerHTML = '';
 
-            let total = 0;
+            let subtotalGeneral = 0;
 
             ventaActual.forEach((producto, index) => {
+                let descuentoTexto = 'Sin descuento';
+                
+                if (producto.tipoDescuento === 'porcentaje') {
+                    descuentoTexto = `${producto.valorDescuento}% (-${formatearPesos(producto.descuentoProducto)})`;
+                } else if (producto.tipoDescuento === 'dinero') {
+                    // En 'dinero', valorDescuento es $/kg y descuentoProducto es el total descontado del item
+                    descuentoTexto = `${formatearPesos(producto.valorDescuento)}/kg (-${formatearPesos(producto.descuentoProducto)})`;
+                }
+
                 const fila = tbody.insertRow();
                 fila.innerHTML = `
                     <td>${producto.tipo}</td>
                     <td>${producto.cantidad.toFixed(3)}</td>
                     <td>${formatearPesos(producto.precio)}</td>
-                    <td>${formatearPesos(producto.subtotal)}</td>
+                    <td style="color: ${producto.descuentoProducto > 0 ? '#f44336' : '#666'};">${descuentoTexto}</td>
+                    <td><strong>${formatearPesos(producto.subtotal)}</strong></td>
                     <td><button class="btn btn-danger" onclick="eliminarProductoVenta(${index})">Eliminar</button></td>
                 `;
-                total += producto.subtotal;
+                subtotalGeneral += producto.subtotal;
             });
 
-            // Aplicar descuento si hay
-            const descuentoPorKilo = parseFloat(document.getElementById('descuentoPorLibra').value) || 0;
-            const totalKilos = ventaActual.reduce((sum, producto) => sum + producto.cantidad, 0);
-            const descuentoTotal = descuentoPorKilo * totalKilos;
-            const totalConDescuento = total - descuentoTotal;
+            // Mostrar subtotal
+            document.getElementById('subtotalVenta').textContent = formatearNumero(subtotalGeneral);
 
-            document.getElementById('totalVenta').textContent = formatearNumero(totalConDescuento);
+            // Calcular descuento global
+            const tipoDescuentoGlobal = document.getElementById('tipoDescuentoGlobal').value;
+            const descuentoGlobal = parseFloat(document.getElementById('descuentoGlobal').value) || 0;
+            let montoDescuentoGlobal = 0;
+
+            if (tipoDescuentoGlobal === 'porcentaje' && descuentoGlobal > 0) {
+                montoDescuentoGlobal = (subtotalGeneral * descuentoGlobal) / 100;
+            } else if (tipoDescuentoGlobal === 'dinero' && descuentoGlobal > 0) {
+                montoDescuentoGlobal = descuentoGlobal;
+            }
+
+            // Mostrar/ocultar el descuento global
+            const descuentoGlobalDisplay = document.getElementById('descuentoGlobalDisplay');
+            if (montoDescuentoGlobal > 0) {
+                descuentoGlobalDisplay.style.display = 'block';
+                document.getElementById('montoDescuentoGlobal').textContent = formatearNumero(montoDescuentoGlobal);
+            } else {
+                descuentoGlobalDisplay.style.display = 'none';
+            }
+
+            const totalFinal = subtotalGeneral - montoDescuentoGlobal;
+            document.getElementById('totalVenta').textContent = formatearNumero(Math.max(0, totalFinal));
             
             // Recalcular cambio si hay efectivo ingresado
             calcularCambio();
@@ -1104,11 +1342,18 @@
         window.calcularCambio = function() {
             const subtotal = ventaActual.reduce((sum, producto) => sum + producto.subtotal, 0);
             
-            // Aplicar descuento
-            const descuentoPorKilo = parseFloat(document.getElementById('descuentoPorLibra').value) || 0;
-            const totalKilos = ventaActual.reduce((sum, producto) => sum + producto.cantidad, 0);
-            const descuentoTotal = descuentoPorKilo * totalKilos;
-            const totalVenta = subtotal - descuentoTotal;
+            // Aplicar descuento global
+            const tipoDescuentoGlobal = document.getElementById('tipoDescuentoGlobal').value;
+            const descuentoGlobal = parseFloat(document.getElementById('descuentoGlobal').value) || 0;
+            let montoDescuentoGlobal = 0;
+
+            if (tipoDescuentoGlobal === 'porcentaje' && descuentoGlobal > 0) {
+                montoDescuentoGlobal = (subtotal * descuentoGlobal) / 100;
+            } else if (tipoDescuentoGlobal === 'dinero' && descuentoGlobal > 0) {
+                montoDescuentoGlobal = descuentoGlobal;
+            }
+
+            const totalVenta = subtotal - montoDescuentoGlobal;
             
             const efectivoRecibido = parseFloat(document.getElementById('efectivoRecibido').value) || 0;
             const alertaCambio = document.getElementById('alertaCambio');
@@ -1139,6 +1384,56 @@
             }
         };
 
+        // Toggle para mostrar/ocultar campo de descuento individual
+        window.toggleDescuentoIndividual = function() {
+            const tipo = document.getElementById('tipoDescuentoIndividual').value;
+            const grupo = document.getElementById('grupoDescuentoIndividual');
+            const label = document.getElementById('labelDescuentoIndividual');
+            const input = document.getElementById('descuentoIndividual');
+            
+            if (tipo === 'ninguno') {
+                grupo.style.display = 'none';
+                input.value = '0';
+            } else {
+                grupo.style.display = 'block';
+                if (tipo === 'porcentaje') {
+                    label.textContent = 'Descuento (%):';
+                    input.placeholder = 'Ej: 10';
+                    input.max = '100';
+                } else if (tipo === 'dinero') {
+                    label.textContent = 'Descuento (COP por kg):';
+                    input.placeholder = 'Ej: 5000 (por kg)';
+                    input.max = '';
+                }
+            }
+        };
+
+        // Toggle para mostrar/ocultar campo de descuento global
+        window.toggleDescuentoGlobal = function() {
+            const tipo = document.getElementById('tipoDescuentoGlobal').value;
+            const grupo = document.getElementById('grupoDescuentoGlobal');
+            const label = document.getElementById('labelDescuentoGlobal');
+            const input = document.getElementById('descuentoGlobal');
+            
+            if (tipo === 'ninguno') {
+                grupo.style.display = 'none';
+                input.value = '0';
+            } else {
+                grupo.style.display = 'block';
+                if (tipo === 'porcentaje') {
+                    label.textContent = 'Descuento (%):';
+                    input.placeholder = 'Ej: 5';
+                    input.max = '100';
+                } else if (tipo === 'dinero') {
+                    label.textContent = 'Descuento (COP por kg):';
+                    input.placeholder = 'Ej: 10000';
+                    input.max = '';
+                }
+            }
+            
+            actualizarTablaVentaActual();
+        };
+
         // Eliminar producto de venta
         window.eliminarProductoVenta = function(index) {
             ventaActual.splice(index, 1);
@@ -1159,8 +1454,11 @@
 
             const cliente = document.getElementById('nombreCliente').value || 'Cliente General';
             const telefono = document.getElementById('telefonoCliente').value || 'N/A';
-            const descuentoPorLibra = parseFloat(document.getElementById('descuentoPorLibra').value) || 0;
             const tipoPago = document.getElementById('tipoPago').value;
+
+            // Obtener información de descuento global
+            const tipoDescuentoGlobal = document.getElementById('tipoDescuentoGlobal').value;
+            const valorDescuentoGlobal = parseFloat(document.getElementById('descuentoGlobal').value) || 0;
 
             const btnGenerar = document.getElementById('btnGenerarFactura');
             btnGenerar.disabled = true;
@@ -1175,14 +1473,28 @@
                     }
                 }
 
-                // Calcular subtotal sin descuento
-                const subtotalSinDescuento = ventaActual.reduce((sum, producto) => sum + producto.subtotal, 0);
-                
-                // Calcular descuento total (descuento por libra * total de libras)
-                const totalLibras = ventaActual.reduce((sum, producto) => sum + producto.cantidad, 0);
-                const descuentoTotal = descuentoPorLibra * totalLibras;
-                
-                // Total a pagar
+                // =================== DESCUENTOS (INDIVIDUAL + GLOBAL) ===================
+                // Subtotal base (antes de cualquier descuento)
+                const subtotalSinDescuento = ventaActual.reduce((sum, p) => sum + (Number(p.subtotalSinDescuento) || 0), 0);
+
+                // Descuento individual total (suma de descuentos por producto)
+                const descuentoIndividualTotal = ventaActual.reduce((sum, p) => sum + (Number(p.descuentoProducto) || 0), 0);
+
+                // Subtotal luego de descuentos individuales (esto es lo que ves como "subtotal" por producto)
+                const subtotalProductos = ventaActual.reduce((sum, p) => sum + (Number(p.subtotal) || 0), 0);
+
+                // Calcular descuento global (se aplica SOBRE el subtotal ya con descuentos individuales)
+                let montoDescuentoGlobal = 0;
+                if (tipoDescuentoGlobal === 'porcentaje' && valorDescuentoGlobal > 0) {
+                    montoDescuentoGlobal = (subtotalProductos * valorDescuentoGlobal) / 100;
+                } else if (tipoDescuentoGlobal === 'dinero' && valorDescuentoGlobal > 0) {
+                    montoDescuentoGlobal = valorDescuentoGlobal;
+                }
+
+                // Descuento total real (individual + global)
+                const descuentoTotal = descuentoIndividualTotal + montoDescuentoGlobal;
+
+                // Total a pagar (subtotal base - descuento total)
                 const total = subtotalSinDescuento - descuentoTotal;
 
                 // Obtener número de factura
@@ -1191,21 +1503,37 @@
                 // Actualizar inventario
                 ventaActual.forEach(producto => {
                     inventarioData[producto.tipo].stock -= producto.cantidad;
-                    inventarioData[producto.tipo].valorTotal = inventarioData[producto.tipo].stock * inventarioData[producto.tipo].precioPromedio;
+                    inventarioData[producto.tipo].valorTotal = inventarioData[producto.tipo].stock * inventarioData[producto.tipo].precioCompra;
                 });
 
-                // Guardar venta
+                // Guardar venta con nueva estructura de descuentos
                 const venta = {
                     numero: numeroFactura,
                     fecha: new Date().toLocaleDateString(),
                     cliente: cliente,
                     telefono: telefono,
+                    productosArray: ventaActual.map(p => `${p.tipo} (${p.cantidad.toFixed(3)} kg)`),
                     productos: ventaActual.map(p => `${p.tipo} (${p.cantidad.toFixed(3)} kg)`).join(', '),
+                    productosDetalle: ventaActual, // Guardamos el detalle completo de productos con descuentos
                     total: total,
-                    descuentoPorLibra: descuentoPorLibra,
+                    subtotalProductos: subtotalProductos,
+                    tipoDescuentoGlobal: tipoDescuentoGlobal,
+                    valorDescuentoGlobal: valorDescuentoGlobal,
+                    montoDescuentoGlobal: montoDescuentoGlobal,
+                    // =================== CAMPOS PARA REPORTES / REIMPRESIÓN ===================
+                    // Guardamos también los campos legacy (por kg / total / subtotal) para que
+                    // la factura en "Reportes" muestre descuentos igual que en la venta.
+                    // - descuentoTotal: monto real descontado
+                    // - subtotalSinDescuento: subtotal antes del descuento
+                    // - descuentoPorKg: valor aproximado por kg (para compatibilidad con formato viejo)
+                    // OJO: estos campos son los que usa "Reportes" y la reimpresión
+                    // Deben representar el descuento REAL aplicado (individual + global)
                     descuentoTotal: descuentoTotal,
                     subtotalSinDescuento: subtotalSinDescuento,
-                    totalLibras: totalLibras,
+                    descuentoPorKg: (ventaActual.reduce((sum, p) => sum + p.cantidad, 0) > 0)
+                        ? (descuentoTotal / ventaActual.reduce((sum, p) => sum + p.cantidad, 0))
+                        : 0,
+                    totalKilos: ventaActual.reduce((sum, p) => sum + p.cantidad, 0),
                     tipoPago: tipoPago
                 };
 
@@ -1218,7 +1546,7 @@
                 ]);
 
                 // Generar HTML de factura
-                generarHTMLFactura(venta, ventaActual, cliente, telefono, subtotalSinDescuento, descuentoTotal, descuentoPorLibra, totalLibras);
+                generarHTMLFactura(venta, ventaActual, cliente, telefono);
 
                 // Limpiar venta
                 limpiarVenta();
@@ -1255,11 +1583,15 @@
                 venta.numero,
                 venta.fecha,
                 venta.cliente,
-                venta.productos,
+                // Guardar productos como array en Supabase (pero soportar texto también)
+                Array.isArray(venta.productosArray) ? JSON.stringify(venta.productosArray) : (venta.productos || ''),
                 venta.total,
-                venta.descuentoPorLibra || 0,
+                // En el sistema es por KG (no por libra)
+                venta.descuentoPorKg || venta.descuentoPorLibra || 0,
                 venta.descuentoTotal || 0,
-                venta.subtotalSinDescuento || venta.total
+                venta.subtotalSinDescuento || venta.total,
+                venta.telefono || '',
+                venta.tipoPago || 'pagado'
             ];
 
             await agregarFilaHoja('Ventas', filaNuevaVenta);
@@ -1268,11 +1600,11 @@
         // Actualizar inventario en sheets
         async function actualizarInventarioEnSheets() {
             const datosInventario = [
-                ['Tipo', 'Stock', 'PrecioPromedio', 'ValorTotal', 'UltimaActualizacion'],
+                ['Tipo', 'Stock', 'PrecioCompra', 'ValorTotal', 'UltimaActualizacion'],
                 ...Object.entries(inventarioData).map(([tipoPez, datos]) => [
                     tipoPez,
                     datos.stock,
-                    datos.precioPromedio,
+                    datos.precioCompra,
                     datos.valorTotal,
                     datos.ultimaActualizacion
                 ])
@@ -1414,73 +1746,79 @@
         };
 
         // Generar HTML de factura
-        function generarHTMLFactura(venta, productos, cliente, telefono, subtotalSinDescuento = 0, descuentoTotal = 0, descuentoPorLibra = 0, totalLibras = 0) {
+        function generarHTMLFactura(venta, productos, cliente, telefono) {
             const facturaHTML = `
                 <div class="factura">
                     <div style="text-align: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px dashed #000;">
-                        <h2 style="margin: 5px 0;">${config.nombreEmpresa}</h2>
-                        <p style="margin: 2px 0; font-size: 0.9em;">${config.direccionEmpresa}</p>
-                        <p style="margin: 2px 0; font-size: 0.9em;">Tel: ${config.telefonoEmpresa}</p>
+                        <h2 style="margin: 5px 0; font-size: 1.3em;">${config.nombreEmpresa}</h2>
+                        <p style="margin: 2px 0; font-size: 0.85em;">${config.direccionEmpresa}</p>
+                        <p style="margin: 2px 0; font-size: 0.85em;">Tel: ${config.telefonoEmpresa}</p>
                     </div>
                     
                     <div style="text-align: center; margin: 10px 0; padding: 8px 0; border-bottom: 1px dashed #000;">
-                        <p style="margin: 2px 0;"><strong>FACTURA #${venta.numero.toString().padStart(6, '0')}</strong></p>
-                        <p style="margin: 2px 0; font-size: 0.85em;">Fecha: ${venta.fecha}</p>
-                        <p style="margin: 2px 0; font-size: 0.85em;">Hora: ${new Date().toLocaleTimeString()}</p>
+                        <p style="margin: 2px 0; font-size: 1em;"><strong>FACTURA #${venta.numero.toString().padStart(6, '0')}</strong></p>
+                        <p style="margin: 2px 0; font-size: 0.8em;">Fecha: ${venta.fecha}</p>
+                        <p style="margin: 2px 0; font-size: 0.8em;">Hora: ${new Date().toLocaleTimeString()}</p>
                     </div>
                     
                     <div style="margin: 10px 0; padding: 5px 0; border-bottom: 1px dashed #000;">
-                        <p style="margin: 2px 0; font-size: 0.9em;"><strong>CLIENTE:</strong></p>
-                        <p style="margin: 2px 0; font-size: 0.85em;">${cliente}</p>
-                        ${telefono && telefono !== 'N/A' ? `<p style="margin: 2px 0; font-size: 0.85em;">Tel: ${telefono}</p>` : ''}
+                        <p style="margin: 2px 0; font-size: 0.85em;"><strong>CLIENTE:</strong></p>
+                        <p style="margin: 2px 0; font-size: 0.8em;">${cliente}</p>
+                        ${telefono && telefono !== 'N/A' ? `<p style="margin: 2px 0; font-size: 0.8em;">Tel: ${telefono}</p>` : ''}
                     </div>
                     
-                    <table style="width: 100%; margin: 10px 0; border-collapse: collapse; font-size: 1em; table-layout: fixed;">
-                        <colgroup>
-                            <col style="width: 40%;">
-                            <col style="width: 30%;">
-                            <col style="width: 30%;">
-                        </colgroup>
-                        <thead>
-                            <tr style="border-bottom: 2px solid #000;">
-                                <th style="padding: 5px 3px; text-align: left; width: 40%; font-size: 1em;">PRODUCTO</th>
-                                <th style="padding: 5px 3px; text-align: center; width: 30%; font-size: 1em;">CANT</th>
-                                <th style="padding: 5px 3px; text-align: right; width: 30%; font-size: 1em;">TOTAL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${productos.map(producto => `
-                                <tr style="border-bottom: 1px dashed #ccc;">
-                                    <td style="padding: 5px 3px; text-align: left; width: 40%; font-size: 1em; font-weight: bold;">${producto.tipo}</td>
-                                    <td style="padding: 5px 3px; text-align: center; width: 30%; font-size: 1em;">${producto.cantidad.toFixed(3)} kg</td>
-                                    <td style="padding: 5px 3px; text-align: right; width: 30%; font-size: 1em;"><strong>${formatearPesos(producto.subtotal)}</strong></td>
-                                </tr>
-                                <tr style="border-bottom: 1px dashed #ccc;">
-                                    <td colspan="3" style="padding: 2px 3px 5px 10px; font-size: 0.9em; text-align: left;">@ ${formatearPesos(producto.precio)}/kg</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                    <div style="margin: 10px 0; padding-bottom: 10px; border-bottom: 1px dashed #000;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: bold; font-size: 0.85em; border-bottom: 2px solid #000; padding-bottom: 3px;">
+                            <div style="width: 45%;">PRODUCTO</div>
+                            <div style="width: 25%; text-align: center;">CANT</div>
+                            <div style="width: 30%; text-align: right;">TOTAL</div>
+                        </div>
+                        
+                        ${productos.map(producto => {
+                            let html = `
+                            <div style="margin: 8px 0;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                                    <div style="width: 45%; font-weight: bold;">${producto.tipo}</div>
+                                    <div style="width: 25%; text-align: center;">${producto.cantidad.toFixed(3)} kg</div>
+                                    <div style="width: 30%; text-align: right; font-weight: bold;">${formatearPesos(producto.subtotal)}</div>
+                                </div>
+                                <div style="font-size: 0.75em; color: #666; margin-top: 2px; padding-left: 5px;">
+                                    @ ${formatearPesos(producto.precio)}/kg
+                                </div>`;
+                            
+                            // Agregar descuento individual si existe
+                            if (producto.descuentoProducto > 0) {
+                                if (producto.tipoDescuento === 'porcentaje') {
+                                    html += `<div style="font-size: 0.75em; color: #d32f2f; margin-top: 2px; padding-left: 5px;">Descuento ${producto.valorDescuento}%: -${formatearPesos(producto.descuentoProducto)}</div>`;
+                                } else {
+                                    html += `<div style="font-size: 0.75em; color: #d32f2f; margin-top: 2px; padding-left: 5px;">Descuento: -${formatearPesos(producto.descuentoProducto)}</div>`;
+                                }
+                            }
+                            
+                            html += `</div>`;
+                            return html;
+                        }).join('')}
+                    </div>
                     
-                    <div style="text-align: right; padding: 10px 0; margin-top: 10px; border-top: 1px dashed #000;">
-                        ${descuentoTotal > 0 ? `
-                            <div style="font-size: 0.95em; margin: 5px 0;">
-                                <span>Subtotal:</span> <strong>${formatearPesos(subtotalSinDescuento)}</strong>
+                    <div style="text-align: right; padding: 10px 0;">
+                        ${venta.montoDescuentoGlobal > 0 ? `
+                            <div style="font-size: 0.9em; margin: 5px 0;">
+                                <span>Subtotal:</span> <strong>${formatearPesos(venta.subtotalProductos)}</strong>
                             </div>
-                            <div style="font-size: 0.95em; margin: 5px 0;">
-                                <span>Descuento (${formatearPesos(descuentoPorLibra)}/kg × ${totalLibras.toFixed(3)} kg):</span> <strong>-${formatearPesos(descuentoTotal)}</strong>
+                            <div style="font-size: 0.9em; margin: 5px 0; color: #d32f2f;">
+                                <span>Descuento ${venta.tipoDescuentoGlobal === 'porcentaje' ? venta.valorDescuentoGlobal + '%' : 'Global'}:</span> <strong>-${formatearPesos(venta.montoDescuentoGlobal)}</strong>
                             </div>
                             <div style="border-top: 2px solid #000; margin: 8px 0; padding-top: 8px;">
                         ` : '<div style="border-top: 2px solid #000; padding-top: 8px;">'}
-                            <div style="font-size: 1.4em; font-weight: bold;">
+                            <div style="font-size: 1.3em; font-weight: bold;">
                                 TOTAL A PAGAR: ${formatearPesos(venta.total)}
                             </div>
                         </div>
                     </div>
                     
                     <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #000;">
-                        <p style="margin: 5px 0; font-size: 0.85em;">¡Gracias por su compra!</p>
-                        <p style="margin: 5px 0; font-size: 0.8em;">Pescado fresco del día</p>
+                        <p style="margin: 5px 0; font-size: 0.8em;">¡Gracias por su compra!</p>
+                        <p style="margin: 5px 0; font-size: 0.75em;">Pescado fresco del día</p>
                     </div>
                     
                     <div class="no-print" style="text-align: center; margin-top: 20px;">
@@ -1498,7 +1836,12 @@
             ventaActual = [];
             document.getElementById('nombreCliente').value = '';
             document.getElementById('telefonoCliente').value = '';
-            document.getElementById('descuentoPorLibra').value = '0';
+            document.getElementById('tipoDescuentoIndividual').value = 'ninguno';
+            document.getElementById('descuentoIndividual').value = '0';
+            document.getElementById('tipoDescuentoGlobal').value = 'ninguno';
+            document.getElementById('descuentoGlobal').value = '0';
+            toggleDescuentoIndividual();
+            toggleDescuentoGlobal();
             document.getElementById('efectivoRecibido').value = '';
             document.getElementById('cambioDevolver').textContent = '0';
             document.getElementById('alertaCambio').style.display = 'none';
@@ -1550,6 +1893,11 @@
                         const venta = ventasData[i];
                         if (venta[1] && venta[4]) {
                             const fechaVenta = venta[1];
+// Normalizar fecha para reportes (soporta 'dd/m/yyyy' y 'dd/m/yyyy, hh:mm:ss a. m./p. m.')
+const _fechaSolo = String(fechaVenta).split(',')[0].trim();
+const _parts = _fechaSolo.split('/');
+const _fechaObj = (_parts.length === 3) ? new Date(`${_parts[2]}-${String(_parts[1]).padStart(2,'0')}-${String(_parts[0]).padStart(2,'0')}T00:00:00`) : new Date(_fechaSolo);
+const _fechaKey = (!isNaN(_fechaObj.getTime())) ? _fechaObj.toLocaleDateString() : _fechaSolo;
                             const totalVenta = parseFloat(venta[4]) || 0;
                             const productosTexto = venta[3] || '';
                             const cliente = venta[2] || 'N/A';
@@ -1575,7 +1923,7 @@
                             }
 
                             // Extraer productos únicos
-                            const productos = productosTexto.split(', ');
+                            const productos = _normalizeProductosField(productosTexto);
                             for (const productoStr of productos) {
                                 const producto = parsearProducto(productoStr);
                                 if (producto) {
@@ -1584,7 +1932,7 @@
                             }
 
                             // Ventas de hoy
-                            if (fechaVenta === hoy) {
+                            if (_fechaKey === hoy) {
                                 totalHoy += totalVenta;
                             }
 
@@ -1593,7 +1941,7 @@
 
                             // Calcular ganancias para TODAS las ventas (totales)
                             let gananciaVentaTotal = 0;
-                            const productosVenta = productosTexto.split(', ');
+                            const productosVenta = _normalizeProductosField(productosTexto);
                             for (const productoStr of productosVenta) {
                                 const producto = parsearProducto(productoStr);
                                 if (producto && preciosData[producto.tipo]) {
@@ -1615,8 +1963,12 @@
 
                             // Ventas del mes y ganancias del mes
                             try {
-                                const fecha = new Date(fechaVenta.split('/').reverse().join('-'));
-                                if (fecha.getMonth() === mesActual && fecha.getFullYear() === añoActual) {
+                                // Normalizar fecha para comparación (soporta 'dd/m/yyyy' y 'dd/m/yyyy, hh:mm:ss a. m./p. m.')
+                                const fechaSolo = String(fechaVenta).split(',')[0].trim();
+                                const parts = fechaSolo.split('/');
+                                const fecha = (parts.length === 3) ? new Date(`${parts[2]}-${String(parts[1]).padStart(2,'0')}-${String(parts[0]).padStart(2,'0')}T00:00:00`) : new Date(fechaSolo);
+                                
+                                if (!isNaN(fecha.getTime()) && fecha.getMonth() === mesActual && fecha.getFullYear() === añoActual) {
                                     totalMes += totalVenta;
 
                                     // Calcular ganancias del mes (incluye descuentos)
@@ -1677,14 +2029,29 @@
                     mostrarAlerta('Reportes actualizados correctamente', 'success');
 
                 } else {
+                    // No hay ventas aún: igual debemos mostrar el valor del inventario.
+                    ventasCompletasData = [];
+                    poblarFiltrosReportes(new Set(), new Set());
+
+                    let totalInventario = 0;
+                    for (const tipo in inventarioData) {
+                        totalInventario += inventarioData[tipo].valorTotal;
+                    }
+
                     document.getElementById('totalVentasHoy').textContent = '$0.00';
                     document.getElementById('totalVentasMes').textContent = '$0.00';
                     document.getElementById('totalVentasHistorico').textContent = '$0.00';
                     document.getElementById('gananciasMes').textContent = '$0.00';
                     document.getElementById('gananciasTotal').textContent = '$0.00';
+                    document.getElementById('totalInventario').textContent = formatearPesos(totalInventario);
                     // document.getElementById('numeroFacturas').textContent = '0'; // Removido del diseño
 
-                    mostrarAlerta('No hay datos de ventas disponibles', 'warning');
+                    // Tablas en estado vacío
+                    actualizarTablaUltimasVentas([]);
+                    actualizarTablaStockBajo();
+
+                    updateConnectionStatus('connected', 'Reportes listos (sin ventas registradas)');
+                    mostrarAlerta('Aún no hay ventas registradas. Mostrando el valor del inventario.', 'info');
                 }
 
             } catch (error) {
@@ -1718,7 +2085,7 @@
                     <td style="text-align: center;">
                         <button 
                             class="btn-small" 
-                            onclick="regenerarFactura('${venta.numero}', '${venta.fecha}', '${venta.cliente.replace(/'/g, "\\'")}', \`${venta.productos}\`, ${venta.total}, ${venta.descuentoPorLibra || 0}, ${venta.descuentoTotal || 0}, ${venta.subtotalSinDescuento || venta.total})"
+                            onclick="regenerarFactura('${venta.numero}', '${venta.fecha}', '${venta.cliente.replace(/'/g, "\\'")}', \`${venta.productos}\`, ${venta.total}, ${(venta.descuentoPorKg || venta.descuentoPorLibra) || 0}, ${venta.descuentoTotal || 0}, ${venta.subtotalSinDescuento || venta.total})"
                             style="background: #17a2b8; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; margin-right: 5px;"
                             title="Ver/Imprimir Factura"
                         >
@@ -1800,11 +2167,11 @@
                         const fila = historicoData[i];
                         if (fila[0]) {
                             datosHistoricoCompletos.push({
-                                tipo: fila[0],
-                                cantidad: parseFloat(fila[1]) || 0,
-                                precioCompra: parseFloat(fila[2]) || 0,
-                                proveedor: fila[3] || 'No especificado',
-                                fecha: fila[4] || '',
+                                fecha: fila[0] || '',
+                                tipo: fila[1] || '',
+                                cantidad: parseFloat(fila[2]) || 0,
+                                precioCompra: parseFloat(fila[3]) || 0,
+                                proveedor: (fila[4] && String(fila[4]).trim()) ? fila[4] : 'No especificado',
                                 valorTotal: parseFloat(fila[5]) || 0
                             });
                         }
@@ -1828,7 +2195,7 @@
                         '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #999;">📦 No hay entradas registradas en el histórico</td></tr>';
                     
                     document.getElementById('totalEntradasHistorico').textContent = '0';
-                    document.getElementById('totalLibrasHistorico').textContent = '0';
+                    document.getElementById('totalKilosHistorico').textContent = '0 kg';
                     document.getElementById('totalInversionHistorico').textContent = '$0';
 
                     mostrarAlerta('No hay datos en el histórico', 'warning');
@@ -1858,7 +2225,7 @@
             const filtroMes = document.getElementById('filtroMesHistorico');
             const meses = [...new Set(datosHistoricoCompletos.map(d => {
                 try {
-                    const fecha = new Date(d.fecha.split('/').reverse().join('-'));
+                    const fecha = new Date(d.fecha);
                     return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
                 } catch (e) {
                     return '';
@@ -1889,7 +2256,7 @@
             if (filtroMes) {
                 datosFiltrados = datosFiltrados.filter(d => {
                     try {
-                        const fecha = new Date(d.fecha.split('/').reverse().join('-'));
+                        const fecha = new Date(d.fecha);
                         const mesFecha = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
                         return mesFecha === filtroMes;
                     } catch (e) {
@@ -1915,8 +2282,8 @@
             // Ordenar por fecha descendente (más reciente primero)
             datos.sort((a, b) => {
                 try {
-                    const fechaA = new Date(a.fecha.split('/').reverse().join('-'));
-                    const fechaB = new Date(b.fecha.split('/').reverse().join('-'));
+                    const fechaA = new Date(a.fecha);
+                    const fechaB = new Date(b.fecha);
                     return fechaB - fechaA;
                 } catch (e) {
                     return 0;
@@ -1926,9 +2293,9 @@
             datos.forEach(entrada => {
                 const fila = tbody.insertRow();
                 fila.innerHTML = `
-                    <td>${entrada.fecha}</td>
+                    <td>${_formatFecha(entrada.fecha)}</td>
                     <td><strong>${entrada.tipo}</strong></td>
-                    <td style="text-align: center;">${entrada.cantidad.toFixed(1)} lbs</td>
+                    <td style="text-align: center;">${entrada.cantidad.toFixed(2)} kg</td>
                     <td style="text-align: right;">${formatearPesos(entrada.precioCompra)}</td>
                     <td>${entrada.proveedor}</td>
                     <td style="text-align: right;"><strong>${formatearPesos(entrada.valorTotal)}</strong></td>
@@ -1939,28 +2306,232 @@
         // Actualizar estadísticas del histórico
         function actualizarEstadisticasHistorico(datos) {
             const totalEntradas = datos.length;
-            const totalLibras = datos.reduce((sum, d) => sum + d.cantidad, 0);
+            const totalKilos = datos.reduce((sum, d) => sum + d.cantidad, 0);
             const totalInversion = datos.reduce((sum, d) => sum + d.valorTotal, 0);
 
             document.getElementById('totalEntradasHistorico').textContent = totalEntradas;
-            document.getElementById('totalLibrasHistorico').textContent = totalLibras.toFixed(1) + ' lbs';
+            document.getElementById('totalKilosHistorico').textContent = totalKilos.toFixed(2) + ' kg';
             document.getElementById('totalInversionHistorico').textContent = formatearPesos(totalInversion);
         }
 
         // =================== INICIALIZACIÓN ===================
 
         // Cargar configuración guardada al iniciar
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎯 DOM cargado, inicializando sistema...');
-            verificarSesion();
+        
 
-            // Cargar configuración guardada
-            if (spreadsheetId) {
-                document.getElementById('spreadsheetId').value = spreadsheetId;
-                updateConnectionStatus('connected', 'Configuración cargada desde localStorage');
-                //cargarTodosLosDatos();
+// =================== GASTOS ===================
+
+// Asegura valores por defecto de fechas (mes actual)
+function prepararGastosUI() {
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dd = String(hoy.getDate()).padStart(2, '0');
+
+    const gastoFecha = document.getElementById('gastoFecha');
+    if (gastoFecha && !gastoFecha.value) {
+        gastoFecha.value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    const desde = document.getElementById('gastosDesde');
+    const hasta = document.getElementById('gastosHasta');
+
+    // Primer día del mes
+    const firstDay = `${yyyy}-${mm}-01`;
+
+    if (desde && !desde.value) desde.value = firstDay;
+    if (hasta && !hasta.value) hasta.value = `${yyyy}-${mm}-${dd}`;
+}
+
+// Convierte YYYY-MM-DD a ISO inicio/fin del día (para filtrar en Supabase)
+function _dateToISOStart(dateStr) {
+    if (!dateStr) return null;
+    const d = new Date(`${dateStr}T00:00:00`);
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString();
+}
+function _dateToISOEnd(dateStr) {
+    if (!dateStr) return null;
+    const d = new Date(`${dateStr}T23:59:59.999`);
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString();
+}
+
+window.agregarGasto = async function() {
+    if (!isConfigured) {
+        mostrarAlerta('Configure el sistema primero', 'warning');
+        return;
+    }
+
+    const concepto = (document.getElementById('gastoConcepto')?.value || '').trim();
+    const valor = parseFloat(document.getElementById('gastoValor')?.value || '');
+    const fechaStr = document.getElementById('gastoFecha')?.value || '';
+
+    if (!concepto || !valor || valor <= 0) {
+        mostrarAlerta('Complete concepto y valor del gasto', 'warning');
+        return;
+    }
+
+    const btn = document.getElementById('btnAgregarGasto');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading"></span> REGISTRANDO...';
+    }
+
+    try {
+        const sb = _ensureSupabase();
+
+        const payload = {
+            concepto,
+            valor,
+            // si no hay fecha, usamos now()
+            fecha: fechaStr ? _dateToISOStart(fechaStr) : new Date().toISOString()
+        };
+
+        const { error } = await sb.from('gastos').insert(payload);
+        if (error) throw error;
+
+        // Limpiar inputs
+        const c = document.getElementById('gastoConcepto');
+        const v = document.getElementById('gastoValor');
+        if (c) c.value = '';
+        if (v) v.value = '';
+
+        mostrarAlerta('✅ Gasto registrado', 'success');
+        await cargarGastos();
+    } catch (error) {
+        console.error('❌ Error registrando gasto:', error);
+        mostrarAlerta('❌ No se pudo registrar el gasto: ' + (error.message || error), 'danger');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = 'REGISTRAR';
+        }
+    }
+};
+
+window.filtrarGastos = function() {
+    if (!isConfigured) {
+        mostrarAlerta('Configure el sistema primero', 'warning');
+        return;
+    }
+    cargarGastos();
+};
+
+window.limpiarFiltroGastos = function() {
+    const desde = document.getElementById('gastosDesde');
+    const hasta = document.getElementById('gastosHasta');
+    if (desde) desde.value = '';
+    if (hasta) hasta.value = '';
+    prepararGastosUI();
+    cargarGastos();
+};
+
+window.cargarGastos = async function() {
+    try {
+        const sb = _ensureSupabase();
+
+        const desdeStr = document.getElementById('gastosDesde')?.value || '';
+        const hastaStr = document.getElementById('gastosHasta')?.value || '';
+
+        let query = sb.from('gastos').select('*');
+
+        const desdeISO = _dateToISOStart(desdeStr);
+        const hastaISO = _dateToISOEnd(hastaStr);
+
+        if (desdeISO) query = query.gte('fecha', desdeISO);
+        if (hastaISO) query = query.lte('fecha', hastaISO);
+
+        query = query.order('fecha', { ascending: false });
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        gastosData = data || [];
+        actualizarTablaGastos();
+    } catch (error) {
+        console.error('❌ Error cargando gastos:', error);
+        mostrarAlerta('❌ Error cargando gastos: ' + (error.message || error), 'danger');
+    }
+};
+
+function actualizarTablaGastos() {
+    const tbody = document.querySelector('#tablaGastos tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    let total = 0;
+
+    for (const g of (gastosData || [])) {
+        const fecha = _formatFecha(g.fecha);
+        const concepto = g.concepto || '';
+        const valor = parseFloat(g.valor) || 0;
+        total += valor;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${fecha}</td>
+            <td>${concepto}</td>
+            <td>${formatearPesos(valor)}</td>
+            <td>
+                <button class="btn btn-danger" style="padding: 8px 12px; font-size: 12px;" onclick="eliminarGasto('${g.id}')">ELIMINAR</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    const totalEl = document.getElementById('totalGastos');
+    if (totalEl) totalEl.textContent = formatearPesos(total);
+
+    // estado visual de conexión en la pestaña
+    const status = document.getElementById('gastosStatus');
+    if (status) {
+        status.className = 'connection-status status-connected';
+        status.innerHTML = `<span>✅</span><span>Gastos cargados (${(gastosData || []).length})</span>`;
+    }
+}
+
+window.eliminarGasto = async function(id) {
+    if (!isConfigured) {
+        mostrarAlerta('Configure el sistema primero', 'warning');
+        return;
+    }
+    if (!id) return;
+
+    if (!confirm('¿Eliminar este gasto?')) return;
+
+    try {
+        const sb = _ensureSupabase();
+        const { error } = await sb.from('gastos').delete().eq('id', id);
+        if (error) throw error;
+
+        mostrarAlerta('✅ Gasto eliminado', 'success');
+        await cargarGastos();
+    } catch (error) {
+        console.error('❌ Error eliminando gasto:', error);
+        mostrarAlerta('❌ No se pudo eliminar el gasto: ' + (error.message || error), 'danger');
+    }
+};
+
+document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🎯 DOM cargado, inicializando sistema...');
+            await verificarSesion();
+            // Inicializar pestaña de gastos
+            prepararGastosUI();
+
+            // Cargar configuración guardada (Supabase)
+            if (supabaseUrl && supabaseAnonKey) {
+                const urlInput = document.getElementById('supabaseUrl');
+                const keyInput = document.getElementById('supabaseAnonKey');
+                if (urlInput) urlInput.value = supabaseUrl;
+                if (keyInput) keyInput.value = supabaseAnonKey;
+
+                updateConnectionStatus('connected', 'Configuración Supabase cargada');
+                isConfigured = true;
+                // Nota: el usuario puede presionar "ACTUALIZAR" en cada pestaña cuando quiera, pero cargamos al iniciar
+                cargarTodosLosDatos().catch(err => console.error('Error cargando datos iniciales:', err));
             } else {
-                updateConnectionStatus('disconnected', 'Configure el sistema para comenzar');
+                updateConnectionStatus('disconnected', 'Configure Supabase para comenzar');
             }
 
             // Cargar datos de empresa
@@ -1973,14 +2544,46 @@
 
         console.log('🎯 Todas las funciones definidas correctamente');
 
-        // =================== FUNCIONES DE AUTENTICACIÓN ===================
+        // =================== FUNCIONES DE AUTENTICACIÓN (SUPABASE AUTH) ===================
 
-        // Credenciales del sistema
-        const USUARIO_VALIDO = 'pesquera';
-        const CONTRASEÑA_VALIDA = 'gloria11';
+        /**
+         * Usuarios permitidos (1:1 con usuarios creados en Supabase Auth).
+         * Mantiene compatibilidad con el login de "usuario + clave".
+         *
+         * - Si el usuario escribe un EMAIL, se usa tal cual.
+         * - Si escribe un alias, se traduce al email correspondiente.
+         */
+        const USUARIOS_PERMITIDOS = [
+            {
+                alias: 'leiner',
+                email: 'leinerparra@outlook.es',
+            },
+            {
+                alias: 'gloria',
+                email: 'gloriae1021@gmail.com',
+                // Por si el usuario fue creado con .con por error, intentamos también esa variante
+                altEmails: ['gloriae1021@gmail.con']
+            },
+            // Compatibilidad con el usuario anterior "pesquera" (lo tratamos como alias de gloria)
+            {
+                alias: 'pesquera',
+                email: 'gloriae1021@gmail.com',
+                altEmails: ['gloriae1021@gmail.con']
+            }
+        ];
 
-        // Variables de sesión
-        let sesionActiva = localStorage.getItem('sesionPesquera') === 'true';
+        function _resolverEmailDesdeUsuario(inputUsuario) {
+            const u = String(inputUsuario || '').trim();
+            if (!u) return null;
+
+            // Si parece email, úsalo tal cual
+            if (u.includes('@')) return { primary: u, alts: [] };
+
+            const key = u.toLowerCase();
+            const found = USUARIOS_PERMITIDOS.find(x => x.alias.toLowerCase() === key);
+            if (!found) return null;
+            return { primary: found.email, alts: Array.isArray(found.altEmails) ? found.altEmails : [] };
+        }
 
         // Función para alternar visibilidad de contraseña
         function togglePassword() {
@@ -1994,8 +2597,8 @@
             }
         }
 
-        // Función para iniciar sesión
-        function iniciarSesion(event) {
+        // Función para iniciar sesión (contra Supabase Auth)
+        async function iniciarSesion(event) {
             event.preventDefault();
 
             const usuario = document.getElementById('username').value.trim();
@@ -2003,39 +2606,55 @@
             const loginBtn = document.getElementById('loginBtn');
             const errorDiv = document.getElementById('loginError');
 
+            errorDiv.style.display = 'none';
+
             // Deshabilitar botón y mostrar carga
             loginBtn.disabled = true;
-            loginBtn.innerHTML = '<span class="loading"></span> VERIFICANDO...';
+            loginBtn.innerHTML = '<span class="loading"></span> INICIANDO...';
 
-            // Simular verificación
-            setTimeout(() => {
-                if (usuario === USUARIO_VALIDO && contraseña === CONTRASEÑA_VALIDA) {
-                    // Login exitoso
-                    localStorage.setItem('sesionPesquera', 'true');
-                    localStorage.setItem('ultimoLogin', new Date().toISOString());
-
-                    mostrarSistema();
-
-                    // Limpiar formulario
-                    document.getElementById('username').value = '';
-                    document.getElementById('password').value = '';
-                    errorDiv.style.display = 'none';
-
-                } else {
-                    // Login fallido
-                    errorDiv.textContent = '❌ Usuario o contraseña incorrectos';
-                    errorDiv.style.display = 'block';
-
-                    // Limpiar contraseña
-                    document.getElementById('password').value = '';
-                    document.getElementById('password').focus();
+            try {
+                const resolved = _resolverEmailDesdeUsuario(usuario);
+                if (!resolved) {
+                    throw new Error('Usuario no permitido. Use: leiner o gloria (o su email).');
                 }
 
-                // Restaurar botón
+                const sb = _ensureSupabase();
+
+                // Intentamos con email principal y alternos (por el caso .con)
+                const emailsToTry = [resolved.primary, ...(resolved.alts || [])].filter(Boolean);
+                let lastError = null;
+
+                for (const email of emailsToTry) {
+                    const { data, error } = await sb.auth.signInWithPassword({
+                        email,
+                        password: contraseña
+                    });
+
+                    if (!error && data && data.session) {
+                        // Login exitoso
+                        localStorage.setItem('ultimoLogin', new Date().toISOString());
+                        mostrarSistema();
+
+                        // Limpiar formulario
+                        document.getElementById('username').value = '';
+                        document.getElementById('password').value = '';
+                        return;
+                    }
+
+                    lastError = error || new Error('No se pudo iniciar sesión');
+                }
+
+                throw lastError || new Error('Usuario o contraseña incorrectos');
+            } catch (e) {
+                console.error('❌ Error de inicio de sesión:', e);
+                errorDiv.textContent = '❌ ' + (e.message || 'No se pudo iniciar sesión');
+                errorDiv.style.display = 'block';
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+            } finally {
                 loginBtn.disabled = false;
                 loginBtn.innerHTML = '🔑 INICIAR SESIÓN';
-
-            }, 1000);
+            }
         }
 
         // Función para mostrar el sistema principal
@@ -2045,47 +2664,47 @@
 
             console.log('✅ Sesión iniciada correctamente');
 
-            // Cargar datos si ya está configurado
-            if (spreadsheetId) {
+            // Cargar datos si ya está configurado (Supabase)
+            if (supabaseUrl && supabaseAnonKey) {
                 cargarTodosLosDatos();
             }
         }
 
         // Función para cerrar sesión
-        function cerrarSesion() {
-            if (confirm('¿Está seguro que desea cerrar sesión?')) {
-                localStorage.removeItem('sesionPesquera');
-                localStorage.removeItem('ultimoLogin');
+        async function cerrarSesion() {
+            if (!confirm('¿Está seguro que desea cerrar sesión?')) return;
 
-                document.getElementById('sistemaPrincipal').style.display = 'none';
-                document.getElementById('loginScreen').style.display = 'flex';
-
-                // Limpiar datos sensibles
-                ventaActual = [];
-
-                console.log('🚪 Sesión cerrada correctamente');
+            try {
+                const sb = _ensureSupabase();
+                await sb.auth.signOut();
+            } catch (e) {
+                console.warn('⚠️ No se pudo cerrar sesión en Supabase (continuando):', e);
             }
+
+            localStorage.removeItem('ultimoLogin');
+
+            document.getElementById('sistemaPrincipal').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+
+            // Limpiar datos sensibles
+            ventaActual = [];
+
+            console.log('🚪 Sesión cerrada correctamente');
         }
 
-        // Función para verificar sesión al cargar la página (8 horas de duración)
-        function verificarSesion() {
-            const sesionGuardada = localStorage.getItem('sesionPesquera') === 'true';
-            const ultimoLogin = localStorage.getItem('ultimoLogin');
+        // Verificar sesión al cargar la página (manejado por Supabase, persistente)
+        async function verificarSesion() {
+            try {
+                const sb = _ensureSupabase();
+                const { data } = await sb.auth.getSession();
+                const session = data && data.session;
 
-            if (sesionGuardada && ultimoLogin) {
-                const tiempoLogin = new Date(ultimoLogin);
-                const ahora = new Date();
-                const diferenciaHoras = (ahora - tiempoLogin) / (1000 * 60 * 60);
-
-                // Sesión válida por 8 horas
-                if (diferenciaHoras < 8) {
+                if (session) {
                     mostrarSistema();
                     return;
-                } else {
-                    // Sesión expirada
-                    localStorage.removeItem('sesionPesquera');
-                    localStorage.removeItem('ultimoLogin');
                 }
+            } catch (e) {
+                console.warn('⚠️ No se pudo verificar sesión (mostrando login):', e);
             }
 
             // Mostrar login por defecto
@@ -2124,7 +2743,10 @@
 
         // Aplicar filtros a los reportes
         function aplicarFiltrosReportes() {
+            // Si no hay ventas, igual actualizamos el valor del inventario y dejamos la tabla vacía.
             if (ventasCompletasData.length === 0) {
+                actualizarTablaUltimasVentas([]);
+                actualizarEstadisticasFiltradas([]);
                 return;
             }
 
@@ -2139,17 +2761,24 @@
                 // Filtro por fecha
                 if (filtroFechaDesde || filtroFechaHasta) {
                     try {
-                        const fechaVenta = new Date(venta.fecha.split('/').reverse().join('-'));
+                        // Normalizar fecha (soporta 'dd/m/yyyy' y 'dd/m/yyyy, hh:mm:ss a. m./p. m.')
+                        const fechaSolo = String(venta.fecha).split(',')[0].trim();
+                        const parts = fechaSolo.split('/');
+                        const fechaVenta = (parts.length === 3) ? new Date(`${parts[2]}-${String(parts[1]).padStart(2,'0')}-${String(parts[0]).padStart(2,'0')}T00:00:00`) : new Date(fechaSolo);
                         
-                        if (filtroFechaDesde) {
-                            const fechaDesde = new Date(filtroFechaDesde);
-                            if (fechaVenta < fechaDesde) return false;
-                        }
-                        
-                        if (filtroFechaHasta) {
-                            const fechaHasta = new Date(filtroFechaHasta);
-                            fechaHasta.setHours(23, 59, 59, 999); // Incluir todo el día
-                            if (fechaVenta > fechaHasta) return false;
+                        if (!isNaN(fechaVenta.getTime())) {
+                            if (filtroFechaDesde) {
+                                const fechaDesde = new Date(filtroFechaDesde);
+                                if (fechaVenta < fechaDesde) return false;
+                            }
+                            
+                            if (filtroFechaHasta) {
+                                const fechaHasta = new Date(filtroFechaHasta);
+                                fechaHasta.setHours(23, 59, 59, 999); // Incluir todo el día
+                                if (fechaVenta > fechaHasta) return false;
+                            }
+                        } else {
+                            return false;
                         }
                     } catch (e) {
                         console.log('Error al filtrar por fecha:', venta.fecha);
@@ -2209,24 +2838,35 @@
 
                 // Ventas del mes
                 try {
-                    const fecha = new Date(venta.fecha.split('/').reverse().join('-'));
-                    if (fecha.getMonth() === mesActual && fecha.getFullYear() === añoActual) {
+                    // Normalizar fecha (soporta 'dd/m/yyyy' y 'dd/m/yyyy, hh:mm:ss a. m./p. m.')
+                    const fechaSolo = String(venta.fecha).split(',')[0].trim();
+                    const parts = fechaSolo.split('/');
+                    const fecha = (parts.length === 3) ? new Date(`${parts[2]}-${String(parts[1]).padStart(2,'0')}-${String(parts[0]).padStart(2,'0')}T00:00:00`) : new Date(fechaSolo);
+                    
+                    if (!isNaN(fecha.getTime()) && fecha.getMonth() === mesActual && fecha.getFullYear() === añoActual) {
                         totalMes += venta.total;
-                        
-                        // Calcular ganancias
-                        const productos = venta.productos.split(', ');
-                        for (const productoStr of productos) {
-                            const match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs\)$/);
-                            if (match) {
-                                const tipoPescado = match[1].trim();
-                                const cantidad = parseFloat(match[2]);
-                                
-                                if (preciosData[tipoPescado]) {
-                                    const gananciaPorLibra = preciosData[tipoPescado].ganancia || 0;
-                                    gananciasMes += (cantidad * gananciaPorLibra);
-                                }
-                            }
-                        }
+	                        // Calcular ganancia del mes (la ganancia SI debe bajar si hay descuento)
+	                        let gananciaVentaMes = 0;
+	                        const productosVenta = _normalizeProductosField(venta.productos);
+	                        for (const productoStr of productosVenta) {
+	                            const producto = parsearProducto(productoStr);
+	                            if (producto && preciosData[producto.tipo]) {
+	                                const gananciaPorKilo = preciosData[producto.tipo].ganancia || 0;
+	
+	                                if (producto.unidad === 'lbs') {
+	                                    // Datos antiguos en libras: dividir entre 2.20462 para pasar ganancia a libra
+	                                    const gananciaPorLibra = gananciaPorKilo / KILOS_A_LIBRAS;
+	                                    gananciaVentaMes += (producto.cantidad * gananciaPorLibra);
+	                                } else {
+	                                    // Datos nuevos en kilos: usar la ganancia por kilo tal cual
+	                                    gananciaVentaMes += (producto.cantidad * gananciaPorKilo);
+	                                }
+	                            }
+	                        }
+	
+	                        // Descuento (global) reduce directamente la ganancia
+	                        gananciaVentaMes -= (Number(venta.descuentoTotal) || 0);
+	                        gananciasMes += gananciaVentaMes;
                     }
                 } catch (e) {
                     console.log('Error al procesar fecha:', venta.fecha);
@@ -2254,12 +2894,10 @@
             document.getElementById('filtroCliente').value = '';
             document.getElementById('filtroProducto').value = '';
 
-            // Volver a mostrar todos los datos
-            if (ventasCompletasData.length > 0) {
-                actualizarTablaUltimasVentas(ventasCompletasData.slice(-10).reverse());
-                aplicarFiltrosReportes(); // Recalcular estadísticas
-                mostrarAlerta('Filtros limpiados', 'success');
-            }
+            // Volver a mostrar todos los datos (aun si no hay ventas)
+            actualizarTablaUltimasVentas(ventasCompletasData.slice(-10).reverse());
+            aplicarFiltrosReportes(); // Recalcular estadísticas (incluye totalInventario)
+            mostrarAlerta('Filtros limpiados', 'success');
         }
 
         // =================== REGENERAR FACTURA ===================
@@ -2269,8 +2907,8 @@
             // Parsear los productos del texto
             // Formato esperado: "Pargo (2.500 kg)" o "Pargo (2.5 lbs)" para históricos
             const productosArray = [];
-            const productos = productosTexto.split(', ');
-            let totalLibrasCalculado = 0;
+            const productos = _normalizeProductosField(productosTexto);
+            let totalKilosCalculado = 0;
             
             for (const productoStr of productos) {
                 // Intentar primero con kilogramos (formato nuevo)
@@ -2286,7 +2924,7 @@
                 if (match) {
                     const tipoPescado = match[1].trim();
                     const cantidad = parseFloat(match[2]);
-                    totalLibrasCalculado += cantidad;
+                    totalKilosCalculado += cantidad;
                     
                     // Obtener precio del producto (si existe en preciosData)
                     let precioUnitario = 0;
@@ -2304,9 +2942,25 @@
                 }
             }
 
-            // Si no hay subtotal guardado, usar el total
-            if (subtotalSinDescuento === 0 || subtotalSinDescuento === total) {
-                subtotalSinDescuento = total + descuentoTotal;
+            // =================== RECONSTRUIR DESCUENTOS SI NO VIENEN GUARDADOS ===================
+            // En algunas ventas antiguas (o si por algún motivo no se guardó el descuento),
+            // el total ya viene con descuento pero los campos descuento_total/subtotal_sin_descuento pueden venir en 0.
+            // Aquí lo reconstruimos desde el subtotal calculado por producto.
+            const subtotalCalculado = productosArray.reduce((sum, p) => sum + (p.subtotal || 0), 0);
+
+            // Si descuentoTotal no viene, pero el subtotal calculado es mayor que el total, inferimos el descuento.
+            if ((Number(descuentoTotal) || 0) <= 0 && subtotalCalculado > 0 && Number(total) < subtotalCalculado) {
+                descuentoTotal = subtotalCalculado - Number(total);
+            }
+
+            // Si no hay subtotal guardado, lo inferimos.
+            if ((Number(subtotalSinDescuento) || 0) <= 0) {
+                subtotalSinDescuento = (subtotalCalculado > 0) ? subtotalCalculado : (Number(total) + Number(descuentoTotal || 0));
+            }
+
+            // Si no hay descuento por kg (antes llamado por libra), lo inferimos.
+            if ((Number(descuentoPorLibra) || 0) <= 0 && (Number(descuentoTotal) || 0) > 0 && totalKilosCalculado > 0) {
+                descuentoPorLibra = Number(descuentoTotal) / totalKilosCalculado;
             }
 
             // Crear objeto de venta
@@ -2369,7 +3023,12 @@
                                 <span>Subtotal:</span> <strong>${formatearPesos(subtotalSinDescuento)}</strong>
                             </div>
                             <div style="font-size: 0.95em; margin: 5px 0;">
-                                <span>Descuento (${formatearPesos(descuentoPorLibra)}/${productosArray[0]?.unidad || 'kg'} × ${totalLibrasCalculado.toFixed(productosArray[0]?.unidad === 'kg' ? 3 : 1)} ${productosArray[0]?.unidad || 'kg'}):</span> <strong>-${formatearPesos(descuentoTotal)}</strong>
+                                ${Number(descuentoPorLibra) > 0 ? `
+                                    <span>Descuento (${formatearPesos(descuentoPorLibra)}/${productosArray[0]?.unidad || 'kg'} × ${totalKilosCalculado.toFixed(productosArray[0]?.unidad === 'kg' ? 3 : 1)} ${productosArray[0]?.unidad || 'kg'}):</span>
+                                ` : `
+                                    <span>Descuento:</span>
+                                `}
+                                <strong>-${formatearPesos(descuentoTotal)}</strong>
                             </div>
                             <div style="border-top: 2px solid #000; margin: 8px 0; padding-top: 8px;">
                         ` : '<div style="border-top: 2px solid #000; padding-top: 8px;">'}
@@ -2643,9 +3302,9 @@
                 
                 // Mensajes más específicos según el tipo de error
                 let mensajeUsuario = error.message;
-                if (error.message.includes('JSONP')) {
-                    mensajeUsuario = '❌ Error de conexión con Google Sheets. Verifique:\n' +
-                                   '1. La URL del Apps Script está correcta\n' +
+                if (error.message.includes('')) {
+                    mensajeUsuario = '❌ Error de conexión con Supabase. Verifique:\n' +
+                                   '1. La URL del  está correcta\n' +
                                    '2. El script está publicado como Web App\n' +
                                    '3. Los permisos están configurados correctamente';
                 } else if (error.message.includes('Timeout')) {
@@ -2657,107 +3316,98 @@
         }
 
         // Función principal para eliminar factura
-        async function eliminarFactura(numero, fecha, cliente, productosTexto, total, motivo) {
-            if (!isConfigured) {
-                throw new Error('Sistema no configurado');
+                async function eliminarFactura(numero, fecha, cliente, productosTexto, total, motivo) {
+            if (!isConfigured) throw new Error('Sistema no configurado');
+
+            const sb = _ensureSupabase();
+            const numeroFactura = parseInt(String(numero).replace('#',''), 10);
+            if (!Number.isFinite(numeroFactura)) throw new Error('Número de factura inválido');
+
+            console.log('🗑️ Eliminando factura #' + numeroFactura + ' (restaurando inventario)');
+
+            // 1) Leer la venta real desde Supabase (fuente de verdad)
+            const { data: ventaDB, error: errVenta } = await sb
+                .from('ventas')
+                .select('numero_factura,fecha,cliente,productos,total')
+                .eq('numero_factura', numeroFactura)
+                .maybeSingle();
+            if (errVenta) throw errVenta;
+
+            const productosField = (ventaDB && ventaDB.productos != null) ? ventaDB.productos : productosTexto;
+            const productosArr = _normalizeProductosField(productosField);
+
+            // 2) Parsear productos y cantidades (KG por defecto; si viene lbs, se convierte a KG)
+            const toNumber = (v) => {
+                if (v == null) return NaN;
+                const s = String(v).trim().replace(',', '.');
+                return parseFloat(s);
+            };
+
+            const devPorTipo = new Map(); // tipo -> cantidadKg
+            for (const p of (productosArr || [])) {
+                const str = String(p || '').trim();
+                // soporta: "Pargo (2.500 kg)", "Pargo (2.5 kgs)", "Pargo (2.5 lbs)" y variantes
+                const m = str.match(/^(.+?)\s*\(([0-9.,]+)\s*(kg|kgs|kilo|kilos|lb|lbs)\)\s*$/i);
+                if (!m) continue;
+                const tipo = m[1].trim();
+                let cantidad = toNumber(m[2]);
+                const unidad = (m[3] || 'kg').toLowerCase();
+                if (!Number.isFinite(cantidad) || cantidad <= 0) continue;
+                // Convertir a KG si viene en libras
+                if (unidad.startsWith('lb')) cantidad = cantidad * 0.45359237;
+                const prev = devPorTipo.get(tipo) || 0;
+                devPorTipo.set(tipo, prev + cantidad);
             }
 
-            console.log('🗑️ Iniciando proceso de eliminación de factura #' + numero);
+            console.log('📦 Productos a devolver (kg):', Object.fromEntries(devPorTipo));
 
-            // 1. Parsear productos para devolver al inventario
-            const productos = productosTexto.split(', ');
-            const productosDevueltos = [];
+            // 3) Restaurar inventario (sumar stock)
+            for (const [tipo, cantidadKg] of devPorTipo.entries()) {
+                const { data: invRow, error: invErr } = await sb
+                    .from('inventario')
+                    .select('tipo,stock,precio_compra')
+                    .eq('tipo', tipo)
+                    .maybeSingle();
+                if (invErr) throw invErr;
 
-            for (const productoStr of productos) {
-                const match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*lbs\)$/);
-                if (match) {
-                    const tipoPescado = match[1].trim();
-                    const cantidad = parseFloat(match[2]);
-                    productosDevueltos.push({ tipo: tipoPescado, cantidad: cantidad });
-                }
-            }
+                const stockActual = (invRow && Number.isFinite(parseFloat(invRow.stock))) ? parseFloat(invRow.stock) : 0;
+                const precioCompra = (invRow && Number.isFinite(parseFloat(invRow.precio_compra))) ? parseFloat(invRow.precio_compra) : 0;
+                const nuevoStock = stockActual + cantidadKg;
+                const valorTotal = nuevoStock * precioCompra;
 
-            console.log('📦 Productos a devolver:', productosDevueltos);
-
-            // 2. Leer inventario actual
-            console.log('📖 Leyendo inventario actual...');
-            const inventarioData = await leerHoja('Inventario');
-            const nuevasFilasInventario = [];
-
-            // Copiar encabezados
-            if (inventarioData.length > 0) {
-                nuevasFilasInventario.push(inventarioData[0]);
-            }
-
-            // Actualizar inventario devolviendo productos
-            // Estructura: Tipo, Stock, PrecioPromedio, ValorTotal, UltimaActualizacion
-            for (let i = 1; i < inventarioData.length; i++) {
-                const fila = inventarioData[i];
-                const tipo = fila[0];
-                let stock = parseFloat(fila[1]) || 0;
-                const precioPromedio = parseFloat(fila[2]) || 0;
-
-                // Buscar si este producto fue vendido en la factura
-                const productoDevuelto = productosDevueltos.find(p => p.tipo === tipo);
-                if (productoDevuelto) {
-                    // Devolver al inventario
-                    stock += productoDevuelto.cantidad;
-                    console.log(`✅ Devolviendo ${productoDevuelto.cantidad} lbs de ${tipo} al inventario (nuevo stock: ${stock})`);
-                }
-
-                // Recalcular valor total
-                const valorTotal = stock * precioPromedio;
-                const fechaActualizacion = new Date().toLocaleDateString();
-
-                nuevasFilasInventario.push([
+                const up = await sb.from('inventario').upsert({
                     tipo,
-                    stock,
-                    precioPromedio,
-                    valorTotal,
-                    fechaActualizacion
-                ]);
+                    stock: nuevoStock,
+                    precio_compra: precioCompra,
+                    valor_total: valorTotal,
+                    ultima_actualizacion: new Date().toISOString()
+                }, { onConflict: 'tipo' });
+                if (up.error) throw up.error;
+                console.log(`✅ Inventario restaurado: ${tipo} +${cantidadKg.toFixed(3)} kg (stock: ${nuevoStock.toFixed(3)})`);
             }
 
-            // 3. Preparar registro de eliminación
-            const fechaEliminacion = new Date().toLocaleDateString();
-            const horaEliminacion = new Date().toLocaleTimeString();
+            // 4) Eliminar venta
+            const delVenta = await sb.from('ventas').delete().eq('numero_factura', numeroFactura);
+            if (delVenta.error) throw delVenta.error;
 
-            const registroEliminacion = [
-                numero,
-                fecha,
-                cliente,
-                productosTexto,
-                total,
-                motivo,
-                fechaEliminacion,
-                horaEliminacion
-            ];
+            // 4.5) Si esa venta estaba marcada como "debe", también eliminar el registro en deudores
+            // (si no existe, no pasa nada; pero si existe, evita que quede "colgada" en la pestaña Deudas)
+            const delDeuda = await sb.from('deudores').delete().eq('numero_factura', numeroFactura);
+            if (delDeuda.error) throw delDeuda.error;
 
-            // 4. Usar operación combinada optimizada
-            // Esto evita enviar las 126 filas de ventas por la URL
-            try {
-                console.log('💾 Ejecutando operación combinada optimizada...');
-                console.log('📊 Tamaño de inventario:', nuevasFilasInventario.length, 'filas');
-                console.log('🎯 Factura a eliminar:', numero);
-                
-                const resultado = await llamarAPIConJSONP({
-                    action: 'actualizarInventarioYEliminarVenta',
-                    spreadsheetId: spreadsheetId,
-                    inventarioNuevo: nuevasFilasInventario,
-                    numeroFactura: numero.toString(),
-                    registroEliminacion: registroEliminacion
-                });
-                
-                console.log('✅ Resultado:', resultado);
-                
-                if (resultado.error) {
-                    throw new Error(resultado.error);
-                }
-                
-                console.log('✅ Factura eliminada exitosamente y todos los cambios guardados');
-                
-            } catch (error) {
-                console.error('❌ Error crítico durante la eliminación:', error);
-                throw new Error(`No se pudieron guardar todos los cambios: ${error.message}`);
-            }
+            // 5) Registrar eliminación (auditoría)
+            const productosTxt = (productosArr || []).join(', ');
+            const insElim = await sb.from('eliminaciones').insert({
+                fecha: new Date().toISOString(),
+                numero_factura: numeroFactura,
+                cliente: (ventaDB && ventaDB.cliente) ? ventaDB.cliente : (cliente || ''),
+                productos: productosTxt,
+                total: (ventaDB && ventaDB.total != null) ? parseFloat(ventaDB.total) : (parseFloat(total) || 0),
+                motivo: motivo || '',
+                usuario: 'admin'
+            });
+            if (insElim.error) throw insElim.error;
+
+            console.log('✅ Factura eliminada y stock restaurado');
         }
+
