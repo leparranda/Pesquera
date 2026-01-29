@@ -1687,7 +1687,7 @@ try {
                             <td>${productos}</td>
                             <td style="font-weight: bold; color: #dc3545;">${formatearPesos(montoNum)}</td>
                             <td>
-                                <button class="btn btn-success" onclick="pagarDeuda(${index + 1})" 
+                                <button class="btn btn-success" onclick="pagarDeuda(${numeroFactura})" 
                                     style="padding: 8px 15px; font-size: 0.9em;">
                                     PAGAR
                                 </button>
@@ -1720,28 +1720,31 @@ try {
         };
 
         // Pagar deuda
-        window.pagarDeuda = async function(filaIndex) {
-            if (!confirm('¿Confirmar el pago de esta deuda?')) {
-                return;
-            }
+        window.pagarDeuda = async function(numeroFactura) {
+            if (!confirm('¿Confirmar el pago de esta deuda?')) return;
 
             try {
-                const datos = await leerHoja('Deudas');
-                
-                // Actualizar el estado a 'pagado' y agregar fecha de pago
-                datos[filaIndex][6] = 'pagado';
-                datos[filaIndex][7] = new Date().toLocaleDateString(); // FechaPago
-                
-                // Reescribir toda la hoja con los datos actualizados
-                await escribirHoja('Deudas', datos);
-                
-                mostrarAlerta('Deuda marcada como pagada correctamente', 'success');
-                
-                // Recargar la lista de deudores
+                const sb = _ensureSupabase();
+                const num = parseInt(numeroFactura) || 0;
+                if (!num) throw new Error('Número de factura inválido');
+
+                // Guardar timestamp real (fecha + hora)
+                const fechaPagoISO = new Date().toISOString();
+
+                // Actualizar SOLO la fila correspondiente (no reinsertar todo)
+                const { error } = await sb
+                    .from('deudores')
+                    .update({ estado: 'pagado', fecha_pago: fechaPagoISO })
+                    .eq('numero_factura', num)
+                    .eq('estado', 'pendiente');
+
+                if (error) throw error;
+
+                mostrarAlerta('✅ Deuda marcada como pagada', 'success');
                 await cargarDeudores();
-                
             } catch (error) {
-                mostrarAlerta(`Error al marcar deuda como pagada: ${error.message}`, 'danger');
+                console.error('❌ Error pagando deuda:', error);
+                mostrarAlerta(`Error al marcar deuda como pagada: ${error.message || error}`, 'danger');
             }
         };
 
