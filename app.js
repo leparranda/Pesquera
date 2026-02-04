@@ -66,14 +66,27 @@ let isConfigured = false;
 
         // Función para parsear productos (compatible con lbs y kg)
         function parsearProducto(productoStr) {
-            // Intentar primero con kilogramos (formato nuevo)
-            let match = productoStr.match(/^(.+?)\s*\(([0-9.]+)\s*kg\)$/);
+            // Soporta: "Pargo (2.500 kg)" y "Pargo (2.5 lbs)" (históricos)
+            let match = String(productoStr || '').match(/^(.+?)\s*\(([0-9.]+)\s*kg\)$/i);
             if (match) {
                 return {
                     tipo: match[1].trim(),
                     cantidad: parseFloat(match[2]),
                     unidad: 'kg'
                 };
+            }
+
+            match = String(productoStr || '').match(/^(.+?)\s*\(([0-9.]+)\s*lbs?\)$/i);
+            if (match) {
+                return {
+                    tipo: match[1].trim(),
+                    cantidad: parseFloat(match[2]),
+                    unidad: 'lbs'
+                };
+            }
+
+            return null;
+        };
             }
             
             return null;
@@ -261,6 +274,40 @@ function _formatFecha(value) {
         return String(value || '');
     }
 }
+
+// Parseo robusto de fechas para reportes/filtros.
+// Acepta: ISO, "dd/mm/yyyy", o "dd/mm/yyyy, hh:mm:ss a. m./p. m."
+function _parseFechaParaReportes(value) {
+    const raw = String(value || '').trim();
+    const fechaSolo = raw.split(',')[0].trim();
+
+    // 1) Intentar parseo directo (ISO u otros formatos válidos)
+    const d = new Date(raw);
+    if (!isNaN(d.getTime())) {
+        return { date: d, key: d.toLocaleDateString() };
+    }
+
+    // 2) Intentar dd/mm/yyyy
+    const parts = fechaSolo.split('/');
+    if (parts.length === 3) {
+        const dd = String(parts[0]).padStart(2, '0');
+        const mm = String(parts[1]).padStart(2, '0');
+        const yyyy = String(parts[2]).trim();
+        const d2 = new Date(`${yyyy}-${mm}-${dd}T00:00:00`);
+        if (!isNaN(d2.getTime())) {
+            return { date: d2, key: d2.toLocaleDateString() };
+        }
+    }
+
+    // 3) Intentar yyyy-mm-dd
+    const d3 = new Date(`${fechaSolo}T00:00:00`);
+    if (!isNaN(d3.getTime())) {
+        return { date: d3, key: d3.toLocaleDateString() };
+    }
+
+    return { date: null, key: fechaSolo || raw };
+}
+
 
 async function _cargarConfiguracionDesdeDB() {
     const sb = _ensureSupabase();
@@ -2834,10 +2881,56 @@ document.addEventListener('DOMContentLoaded', async function() {
             let numeroFacturas = datosFiltrados.length;
 
             datosFiltrados.forEach(venta => {
-                // Ventas de hoy
-                if (venta.fecha === hoy) {
-                    totalHoy += venta.total;
+                // Normalizar fecha (venta.fecha puede venir con hora: "dd/m/yyyy, hh:mm:ss a. m./p. m.")
+                const { date: fechaObj, key: fechaKey } = _parseFechaParaReportes(venta.fecha);
+
+                // Ventas de hoy (comparación por fecha sin hora)
+                if (fechaKey === hoy) {
+                    totalHoy += Number(venta.total) || 0;
                 }
+
+                // Ventas del mes (comparación por objeto Date)
+                if (fechaObj && !isNaN(fechaObj.getTime()) && fechaObj.getMonth() === mesActual && fechaObj.getFullYear() === añoActual) {
+                    totalMes += Number(venta.total) || 0;
+
+                    // Calcular ganancia del mes (la ganancia SI debe bajar si hay descuento)
+                    let gananciaVentaMes = 0;
+                    const productosVenta = _normalizeProductosField(venta.productos);
+                    for (const productoStr of productosVenta) {
+                        const producto = parsearProducto(productoStr);
+                        if (producto && preciosData[producto.tipo]) {
+                            const gananciaPorKilo = preciosData[producto.tipo].ganancia || 0;
+
+                            if (producto.unidad === 'lbs') {
+                                // Datos antiguos en libras: dividir entre 2.20462 para pasar ganancia a libra
+                                const gananciaPorLibra = gananciaPorKilo / KILOS_A_LIBRAS;
+                                gananciaVentaMes += (producto.cantidad * gananciaPorLibra);
+                            } else {
+                                // Datos nuevos en kilos: usar la ganancia por kilo tal cual
+                                gananciaVentaMes += (producto.cantidad * gananciaPorKilo);
+                            }
+                        }
+                    }
+
+                    // Descuento (global) reduce directamente la ganancia
+                    gananciaVentaMes -= (Number(venta.descuentoTotal) || 0);
+                    gananciasMes += gananciaVentaMes;
+                }
+            });
+
+            // Calcular valor total del inventario (no afectado por filtros)
+            let totalInventario = 0;
+            for (const tipo in inventarioData) {
+                totalInventario += inventarioData[tipo].valorTotal;
+            }
+
+            // Actualizar estadísticas en la UI
+            document.getElementById('totalVentasHoy').textContent = formatearPesos(totalHoy);
+            document.getElementById('totalVentasMes').textContent = formatearPesos(totalMes);
+            document.getElementById('gananciasMes').textContent = formatearPesos(gananciasMes);
+            document.getElementById('totalInventario').textContent = formatearPesos(totalInventario);
+            document.getElementById('numeroFacturas').textContent = numeroFacturas;
+        }
 
                 // Ventas del mes
                 try {
@@ -3413,4 +3506,3 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             console.log('✅ Factura eliminada y stock restaurado');
         }
-
