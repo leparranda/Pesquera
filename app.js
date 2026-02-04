@@ -3413,4 +3413,3 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             console.log('✅ Factura eliminada y stock restaurado');
         }
-
