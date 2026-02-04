@@ -904,7 +904,7 @@ try {
                 // Precio de compra NO es promedio: guardamos el último precio pagado al recibir
                 inventarioData[tipo].precioCompra = precio;
                 inventarioData[tipo].valorTotal = valorAnterior + (kilos * precio);
-                inventarioData[tipo].ultimaActualizacion = new Date().toLocaleDateString();
+                inventarioData[tipo].ultimaActualizacion = new Date().toISOString();
 
                 // Preparar datos para escribir en Inventario
                 const datosInventario = [
@@ -1509,7 +1509,7 @@ try {
                 // Guardar venta con nueva estructura de descuentos
                 const venta = {
                     numero: numeroFactura,
-                    fecha: new Date().toLocaleDateString(),
+                    fecha: new Date().toISOString(),
                     cliente: cliente,
                     telefono: telefono,
                     productosArray: ventaActual.map(p => `${p.tipo} (${p.cantidad.toFixed(3)} kg)`),
