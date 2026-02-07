@@ -397,7 +397,9 @@ async function leerHoja(nombreHoja) {
     if (table === 'historico') {
         const header = ['Fecha', 'Tipo', 'Cantidad', 'PrecioCompra', 'Proveedor', 'ValorTotal'];
         const rows = (data || []).map(r => [
-            _formatFecha(r.fecha),
+            // CORRECCION: Devolver fecha cruda (ISO) para evitar problemas de formateo al re-guardar
+            // La conversion a legible se hara solo en la tabla visual (actualizarTablaHistorico)
+            r.fecha || new Date().toISOString(),
             r.tipo ?? '',
             r.cantidad ?? 0,
             r.precio_compra ?? 0,
@@ -891,24 +893,16 @@ window.agregarInventario = async function() {
         const valorTotal = kilos * precio;
         const proveedorFinal = proveedor || 'No especificado';
 
-        // Leer histórico actual
-        let datosHistorico = [];
-        try {
-            datosHistorico = await leerHoja('Historico');
-            if (datosHistorico.length === 0) {
-                // Si está vacío, crear con encabezados
-                datosHistorico = [['Fecha', 'Tipo', 'CantidadKg', 'PrecioCompra', 'Proveedor', 'ValorTotal']];
-            }
-        } catch (error) {
-            console.log('Creando nueva hoja de histórico');
-            datosHistorico = [['Fecha', 'Tipo', 'CantidadKg', 'PrecioCompra', 'Proveedor', 'ValorTotal']];
-        }
-
-        // Agregar nueva entrada al histórico
-        datosHistorico.push([new Date().toISOString(), tipo, kilos, precio, proveedorFinal, valorTotal]);
-
-        // Escribir histórico actualizado
-        await escribirHoja('Historico', datosHistorico);
+        // FIX: Usar agregarFilaHoja en lugar de reescribir toda la tabla
+        // Esto evita que se sobrescriban las fechas de registros antiguos
+        await agregarFilaHoja('Historico', [
+            new Date().toISOString(),
+            tipo,
+            kilos,
+            precio,
+            proveedorFinal,
+            valorTotal
+        ]);
         console.log('✅ Entrada registrada en histórico');
         // =================== FIN REGISTRO HISTÓRICO ===================
 
