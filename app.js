@@ -1445,11 +1445,32 @@ window.generarFactura = async function() {
         // Obtener número de factura
         const numeroFactura = await obtenerSiguienteNumeroFactura();
 
-        // Actualizar inventario
+        // =================== ACTUALIZACIÓN DE STOCK CORREGIDA ===================
+        // Solo actualizamos la fecha de los productos que se vendieron, sin sobrescribir los demás.
+        const itemsParaActualizarDB = [];
+        const fechaISO = new Date().toISOString();
+        const fechaLegible = new Date().toLocaleDateString('es-CO'); // Fecha legible para la memoria local
+
         ventaActual.forEach(producto => {
+            // 1. Actualizar memoria local
             inventarioData[producto.tipo].stock -= producto.cantidad;
             inventarioData[producto.tipo].valorTotal = inventarioData[producto.tipo].stock * inventarioData[producto.tipo].precioCompra;
+            inventarioData[producto.tipo].ultimaActualizacion = fechaLegible; // Actualizar fecha solo para este producto
+
+            // 2. Preparar payload para Supabase
+            itemsParaActualizarDB.push({
+                tipo: producto.tipo,
+                stock: inventarioData[producto.tipo].stock,
+                precio_compra: inventarioData[producto.tipo].precioCompra,
+                valor_total: inventarioData[producto.tipo].valorTotal,
+                ultima_actualizacion: fechaISO
+            });
         });
+
+        // Enviar solo los cambios a Supabase (Upsert parcial)
+        const sb = _ensureSupabase();
+        const { error: errorUpdate } = await sb.from('inventario').upsert(itemsParaActualizarDB, { onConflict: 'tipo' });
+        if (errorUpdate) throw errorUpdate;
 
         // Guardar venta con nueva estructura de descuentos
         const venta = {
@@ -1476,10 +1497,12 @@ window.generarFactura = async function() {
 
         await Promise.all([
             guardarVenta(venta),
-            actualizarInventarioEnSheets(),
             actualizarNumeroFactura(numeroFactura + 1),
             ...(tipoPago === 'adeuda' ? [guardarDeuda(venta)] : [])
         ]);
+        
+        // Actualizar visualmente la tabla de inventario
+        actualizarTablaInventario();
 
         // Generar HTML de factura
         generarHTMLFactura(venta, ventaActual, cliente, telefono);
