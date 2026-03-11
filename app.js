@@ -2712,17 +2712,16 @@ function aplicarFiltrosReportes() {
             if (isNaN(fechaVenta.getTime())) return false;
             
             if (filtroFechaDesde) {
-                const fechaDesde = new Date(filtroFechaDesde);
-                // Resetear horas para comparar solo fechas
-                fechaDesde.setHours(0,0,0,0);
+                // CORRECCIÓN: Agregar hora local para evitar el desfase UTC
+                const fechaDesde = new Date(`${filtroFechaDesde}T00:00:00`);
                 const fechaComp = new Date(fechaVenta);
                 fechaComp.setHours(0,0,0,0);
                 if (fechaComp < fechaDesde) return false;
             }
             
             if (filtroFechaHasta) {
-                const fechaHasta = new Date(filtroFechaHasta);
-                fechaHasta.setHours(23, 59, 59, 999);
+                // CORRECCIÓN: Tomar hasta el último segundo del día local
+                const fechaHasta = new Date(`${filtroFechaHasta}T23:59:59.999`);
                 if (fechaVenta > fechaHasta) return false;
             }
         }
