@@ -12,7 +12,6 @@ if (urlParams.get('reset') === 'true') {
     window.history.replaceState({}, document.title, window.location.pathname);
 }
 
-
 // Variables globales Supabase (embebidas en el código)
 const SUPABASE_URL = 'https://dhkxczscyoahwjeatxku.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_gGt-6YDxdZnWAVoDFEeBvw_V0Cctg8J';
@@ -1863,10 +1862,8 @@ window.cargarReportes = async function() {
                 const venta = ventasData[i];
                 if (venta[1] && venta[4]) {
                     // CORRECCIÓN: Parsear fecha de la venta de forma robusta
-                    // Soporta tanto ISO como texto legacy
                     let d = new Date(venta[1]);
                     if (isNaN(d.getTime())) {
-                         // Fallback para fechas antiguas en texto (dd/mm/yyyy)
                          const parts = String(venta[1]).split(',')[0].trim().split('/');
                          if (parts.length === 3) {
                              d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
@@ -1877,7 +1874,7 @@ window.cargarReportes = async function() {
                         ? (d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'))
                         : '';
 
-                    const fechaVenta = _formatFecha(venta[1]); // Para mostrar en tabla
+                    const fechaVenta = _formatFecha(venta[1]); 
                     const totalVenta = parseFloat(venta[4]) || 0;
                     const productosTexto = venta[3] || '';
                     const cliente = venta[2] || 'N/A';
@@ -2611,6 +2608,10 @@ function mostrarSistema() {
     if (supabaseUrl && supabaseAnonKey) {
         cargarTodosLosDatos();
     }
+    
+    // Mostrar botón flotante de liquidación
+    const btnLiq = document.getElementById('btnFloatingLiq');
+    if(btnLiq) btnLiq.style.display = 'block';
 }
 
 // Función para cerrar sesión
@@ -2628,6 +2629,10 @@ async function cerrarSesion() {
 
     document.getElementById('sistemaPrincipal').style.display = 'none';
     document.getElementById('loginScreen').style.display = 'flex';
+    
+    // Ocultar botón flotante
+    const btnLiq = document.getElementById('btnFloatingLiq');
+    if(btnLiq) btnLiq.style.display = 'none';
 
     // Limpiar datos sensibles
     ventaActual = [];
@@ -2755,70 +2760,47 @@ function aplicarFiltrosReportes() {
     }
 }
 
-// Actualizar estadísticas con datos filtrados
+// Actualizar estadísticas con datos filtrados (MODIFICADO PARA CALCULOS DIRECTOS)
 function actualizarEstadisticasFiltradas(datosFiltrados) {
-    // CORRECCIÓN: Usar fecha segura para estadísticas filtradas
-    const now = new Date();
-    const hoyKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-    const mesActual = now.getMonth();
-    const añoActual = now.getFullYear();
-
-    let totalHoy = 0;
-    let totalMes = 0;
-    let gananciasMes = 0;
+    let totalVentasPeriodo = 0;
+    let gananciasPeriodo = 0;
     let numeroFacturas = datosFiltrados.length;
 
     datosFiltrados.forEach(venta => {
-        const d = venta.fechaObj;
-        const fechaKey = !isNaN(d.getTime()) 
-            ? (d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'))
-            : '';
+        totalVentasPeriodo += (Number(venta.total) || 0);
 
-        // Ventas de hoy
-        if (fechaKey === hoyKey) {
-            totalHoy += venta.total;
-        }
-
-        // Ventas del mes
-        if (!isNaN(d.getTime()) && d.getMonth() === mesActual && d.getFullYear() === añoActual) {
-            totalMes += venta.total;
-            // Calcular ganancia del mes (la ganancia SI debe bajar si hay descuento)
-            let gananciaVentaMes = 0;
-            const productosVenta = _normalizeProductosField(venta.productos);
-            for (const productoStr of productosVenta) {
-                const producto = parsearProducto(productoStr);
-                if (producto && preciosData[producto.tipo]) {
-                    const gananciaPorKilo = preciosData[producto.tipo].ganancia || 0;
-
-                    if (producto.unidad === 'lbs') {
-                        // Datos antiguos en libras: dividir entre 2.20462 para pasar ganancia a libra
-                        const gananciaPorLibra = gananciaPorKilo / KILOS_A_LIBRAS;
-                        gananciaVentaMes += (producto.cantidad * gananciaPorLibra);
-                    } else {
-                        // Datos nuevos en kilos: usar la ganancia por kilo tal cual
-                        gananciaVentaMes += (producto.cantidad * gananciaPorKilo);
-                    }
+        let gananciaVenta = 0;
+        const productosVenta = _normalizeProductosField(venta.productos);
+        
+        for (const productoStr of productosVenta) {
+            const producto = parsearProducto(productoStr);
+            if (producto && preciosData[producto.tipo]) {
+                const gananciaPorKilo = preciosData[producto.tipo].ganancia || 0;
+                
+                if (producto.unidad === 'lbs') {
+                    const gananciaPorLibra = gananciaPorKilo / KILOS_A_LIBRAS;
+                    gananciaVenta += (producto.cantidad * gananciaPorLibra);
+                } else {
+                    gananciaVenta += (producto.cantidad * gananciaPorKilo);
                 }
             }
-
-            // Descuento (global) reduce directamente la ganancia
-            gananciaVentaMes -= (Number(venta.descuentoTotal) || 0);
-            gananciasMes += gananciaVentaMes;
         }
+
+        gananciaVenta -= (Number(venta.descuentoTotal) || 0);
+        gananciasPeriodo += gananciaVenta;
     });
 
-    // Calcular valor total del inventario (no afectado por filtros)
     let totalInventario = 0;
     for (const tipo in inventarioData) {
         totalInventario += inventarioData[tipo].valorTotal;
     }
 
-    // Actualizar estadísticas en la UI
-    document.getElementById('totalVentasHoy').textContent = formatearPesos(totalHoy);
-    document.getElementById('totalVentasMes').textContent = formatearPesos(totalMes);
-    document.getElementById('gananciasMes').textContent = formatearPesos(gananciasMes);
+    document.getElementById('totalVentasMes').textContent = formatearPesos(totalVentasPeriodo);
+    document.getElementById('gananciasMes').textContent = formatearPesos(gananciasPeriodo);
     document.getElementById('totalInventario').textContent = formatearPesos(totalInventario);
-    document.getElementById('numeroFacturas').textContent = numeroFacturas;
+    
+    const countFacturasEl = document.getElementById('numeroFacturas');
+    if(countFacturasEl) countFacturasEl.textContent = numeroFacturas;
 }
 
 // Limpiar todos los filtros
@@ -3334,3 +3316,114 @@ async function eliminarFactura(numero, fecha, cliente, productosTexto, total, mo
 
     console.log('✅ Factura eliminada y stock restaurado');
 }
+
+// =================== MÓDULO DE LIQUIDACIÓN ===================
+
+window.abrirModalLiquidacion = function() {
+    const modal = document.getElementById('modalLiquidacion');
+    if(modal) modal.style.display = 'flex';
+};
+
+window.cerrarModalLiquidacion = function() {
+    const modal = document.getElementById('modalLiquidacion');
+    if(modal) {
+        modal.style.display = 'none';
+        // Resetear visualización
+        document.getElementById('resultadosLiquidacion').style.display = 'none';
+        document.getElementById('btnCalcularLiq').innerHTML = 'CALCULAR';
+    }
+};
+
+window.calcularLiquidacion = async function() {
+    const desdeStr = document.getElementById('liqDesde').value;
+    const hastaStr = document.getElementById('liqHasta').value;
+
+    if(!desdeStr || !hastaStr) {
+        alert('Por favor seleccione ambas fechas.');
+        return;
+    }
+
+    const btn = document.getElementById('btnCalcularLiq');
+    btn.innerHTML = '⏳ CALCULANDO...';
+    btn.disabled = true;
+
+    try {
+        const fechaDesdeISO = _dateToISOStart(desdeStr);
+        const fechaHastaISO = _dateToISOEnd(hastaStr);
+        const sb = _ensureSupabase();
+
+        // 1. Obtener Ventas de ese rango
+        const { data: ventas, error: errVentas } = await sb
+            .from('ventas')
+            .select('*')
+            .gte('fecha', fechaDesdeISO)
+            .lte('fecha', fechaHastaISO);
+
+        if (errVentas) throw errVentas;
+
+        let totalVendido = 0;
+        let gananciaBruta = 0;
+        let facturasCount = ventas.length;
+
+        ventas.forEach(venta => {
+            totalVendido += parseFloat(venta.total) || 0;
+
+            let gananciaVenta = 0;
+            const productosVenta = _normalizeProductosField(venta.productos);
+            for (const productoStr of productosVenta) {
+                const producto = parsearProducto(productoStr);
+                if (producto && preciosData[producto.tipo]) {
+                    const gananciaPorKilo = preciosData[producto.tipo].ganancia || 0;
+                    if (producto.unidad === 'lbs') {
+                        gananciaVenta += (producto.cantidad * (gananciaPorKilo / KILOS_A_LIBRAS));
+                    } else {
+                        gananciaVenta += (producto.cantidad * gananciaPorKilo);
+                    }
+                }
+            }
+            gananciaVenta -= (parseFloat(venta.descuento_total) || 0);
+            gananciaBruta += gananciaVenta;
+        });
+
+        // 2. Obtener Gastos de ese rango
+        const { data: gastos, error: errGastos } = await sb
+            .from('gastos')
+            .select('valor')
+            .gte('fecha', fechaDesdeISO)
+            .lte('fecha', fechaHastaISO);
+
+        if (errGastos) throw errGastos;
+
+        let totalGastos = 0;
+        gastos.forEach(g => { totalGastos += parseFloat(g.valor) || 0; });
+
+        // 3. Calcular Ganancia Neta
+        const gananciaNeta = gananciaBruta - totalGastos;
+
+        // 4. Mostrar Resultados
+        document.getElementById('resLiqFacturas').textContent = facturasCount;
+        document.getElementById('resLiqVentas').textContent = formatearPesos(totalVendido);
+        document.getElementById('resLiqGananciaBruta').textContent = formatearPesos(gananciaBruta);
+        document.getElementById('resLiqGastos').textContent = formatearPesos(totalGastos);
+        document.getElementById('resLiqGananciaNeta').textContent = formatearPesos(gananciaNeta);
+
+        // Si la ganancia neta es negativa, ponerla roja
+        const netaEl = document.getElementById('resLiqGananciaNeta');
+        if (gananciaNeta < 0) {
+            netaEl.style.color = '#dc3545'; 
+            netaEl.style.background = '#f8d7da';
+        } else {
+            netaEl.style.color = '#28a745';
+            netaEl.style.background = '#d4edda';
+        }
+
+        document.getElementById('resultadosLiquidacion').style.display = 'block';
+
+    } catch (error) {
+        console.error('Error calculando liquidación:', error);
+        alert('Ocurrió un error al calcular: ' + error.message);
+    } finally {
+        btn.innerHTML = 'CALCULAR';
+        btn.disabled = false;
+    }
+};
