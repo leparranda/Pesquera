@@ -3080,6 +3080,42 @@ function regenerarFactura(numero, fecha, cliente, productosTexto, total, descuen
     ventanaFactura.document.close();
 }
 
+// =================== MARCADO DE FACTURAS PROVEEDOR ===================
+// Estas funciones se definen aquí para garantizar que estén en el scope global
+// independientemente del orden de carga de cierre-caja.js
+
+window.marcarFacturaProveedorPagada = async function(id, proveedor, valor) {
+    if (!id) return;
+    if (!confirm('Marcar como pagada la factura ' + (proveedor ? 'de ' + proveedor : '') + ' por ' + _fmt(valor) + '?\n\nEsta factura quedara excluida del calculo de deuda pendiente.')) return;
+    try {
+        var ids = await _getHistoricoPagadoIds();
+        ids.add(String(id));
+        await _saveConfigCaja({ historico_pagadas: JSON.stringify([...ids]) });
+        _cachedPagadas = ids;
+        if (typeof actualizarTablaHistorico === 'function' && window.datosHistoricoCompletos) {
+            actualizarTablaHistorico(window.datosHistoricoCompletos);
+        }
+        await _actualizarTablaDeudaProveedores();
+        _alertCaja('Factura marcada como pagada.', 'success');
+    } catch(err) { _alertCaja('Error: ' + err.message, 'danger'); }
+};
+
+window.desmarcarFacturaProveedorPagada = async function(id) {
+    if (!id) return;
+    if (!confirm('Desmarcar esta factura? Volvera a contar como deuda pendiente con el proveedor.')) return;
+    try {
+        var ids = await _getHistoricoPagadoIds();
+        ids.delete(String(id));
+        await _saveConfigCaja({ historico_pagadas: JSON.stringify([...ids]) });
+        _cachedPagadas = ids;
+        if (typeof actualizarTablaHistorico === 'function' && window.datosHistoricoCompletos) {
+            actualizarTablaHistorico(window.datosHistoricoCompletos);
+        }
+        await _actualizarTablaDeudaProveedores();
+        _alertCaja('Factura desmarcada.', 'success');
+    } catch(err) { _alertCaja('Error: ' + err.message, 'danger'); }
+};
+
 // =================== ELIMINACIÓN DE FACTURAS ===================
 
 // Contraseña para eliminar facturas
