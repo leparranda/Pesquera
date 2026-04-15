@@ -3090,7 +3090,7 @@ window.marcarFacturaProveedorPagada = async function(id, proveedor, valor) {
     try {
         var ids = await _getHistoricoPagadoIds();
         ids.add(String(id));
-        await _saveConfigCaja({ historico_pagadas: JSON.stringify([...ids]) });
+        await _saveConfigCaja({ historico_pagadas: [...ids] });
         _cachedPagadas = ids;
         if (typeof actualizarTablaHistorico === 'function' && window.datosHistoricoCompletos) {
             actualizarTablaHistorico(window.datosHistoricoCompletos);
@@ -3106,7 +3106,7 @@ window.desmarcarFacturaProveedorPagada = async function(id) {
     try {
         var ids = await _getHistoricoPagadoIds();
         ids.delete(String(id));
-        await _saveConfigCaja({ historico_pagadas: JSON.stringify([...ids]) });
+        await _saveConfigCaja({ historico_pagadas: [...ids] });
         _cachedPagadas = ids;
         if (typeof actualizarTablaHistorico === 'function' && window.datosHistoricoCompletos) {
             actualizarTablaHistorico(window.datosHistoricoCompletos);
@@ -3541,7 +3541,8 @@ async function _saveConfigCaja(patch) {
 async function _getHistoricoPagadoIds() {
     try {
         var cfg = await _getConfigCaja();
-        var arr = Array.isArray(cfg.historico_pagadas) ? cfg.historico_pagadas : JSON.parse(cfg.historico_pagadas || '[]');
+        var raw = cfg.historico_pagadas;
+        var arr = Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
         return new Set(arr.map(String));
     } catch(e) { return new Set(); }
 }
@@ -3567,7 +3568,8 @@ window.iniciarCierreCaja = async function() {
         var inputSaldo = document.getElementById('cajaSaldoInicial');
         if (inputSaldo) inputSaldo.value = cfg.saldo_inicial || '';
         // Cargar caché de pagadas
-        var arr = Array.isArray(cfg.historico_pagadas) ? cfg.historico_pagadas : JSON.parse(cfg.historico_pagadas || '[]');
+        var raw = cfg.historico_pagadas;
+        var arr = Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
         _cachedPagadas = new Set(arr.map(String));
     } catch(e) {}
     _cargarProveedoresHistorico();
