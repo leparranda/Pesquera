@@ -69,6 +69,7 @@
                 <div class="tab" onclick="showSection('deudores')">DEUDORES</div>
                 <div class="tab" onclick="showSection('historico')">HISTÓRICO</div>
                 <div class="tab" onclick="showSection('reportes')">REPORTES</div>
+                <div class="tab" onclick="showSection('cierre-caja')">CAJA</div>
             </div>
 
             <div class="content">
@@ -160,6 +161,10 @@
                         <div class="form-group">
                             <label>Proveedor (opcional):</label>
                             <input type="text" id="proveedorInventario" placeholder="Nombre del proveedor">
+                        </div>
+                        <div class="form-group">
+                            <label>N° Factura Proveedor:</label>
+                            <input type="text" id="numeroFacturaProveedor" placeholder="Ej: FP-2024-001" oninput="this.value=this.value.toUpperCase()">
                         </div>
                         <div class="form-group">
                             <label>&nbsp;</label>
@@ -539,12 +544,14 @@
                                     <th>Cantidad (kg)</th>
                                     <th>Precio Compra ($/kg)</th>
                                     <th>Proveedor</th>
+                                    <th>N° Factura</th>
                                     <th>Valor Total</th>
+                                    <th>Estado Pago</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colspan="6" style="text-align: center; padding: 30px; color: #999;">
+                                    <td colspan="8" style="text-align: center; padding: 30px; color: #999;">
                                         Haga clic en "ACTUALIZAR HISTÓRICO" para cargar los datos
                                     </td>
                                 </tr>
@@ -657,6 +664,156 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- =================== SECCIÓN CIERRE DE CAJA =================== -->
+                <div id="cierre-caja" class="section">
+                    <h2>Cierre de Caja</h2>
+
+                    <div class="config-section" style="border-left: 5px solid #3498db;">
+                        <h3>Saldo Inicial de Caja</h3>
+                        <p style="color:#666; margin-bottom:15px; font-size:0.95em;">Este valor requiere la contraseña de autorización para ser modificado.</p>
+                        <div class="form-row">
+                            <div class="form-group" style="flex:2">
+                                <label>Saldo Inicial (COP):</label>
+                                <input type="number" id="cajaSaldoInicial" min="0" step="1000" placeholder="Ej: 500000" style="font-size:1.1em;">
+                            </div>
+                            <div class="form-group" style="flex:2">
+                                <label>Contraseña de autorización:</label>
+                                <input type="password" id="cajaSaldoPassword" placeholder="Contraseña">
+                            </div>
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button class="btn btn-success" onclick="guardarSaldoInicial()">GUARDAR SALDO</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-section" style="border-left: 5px solid #9b59b6;">
+                        <h3>Pago a Proveedor</h3>
+                        <div class="form-row">
+                            <div class="form-group" style="flex:2">
+                                <label>Proveedor:</label>
+                                <input list="listaProveedoresCaja" id="cajaProveedor" placeholder="Nombre del proveedor" autocomplete="off">
+                                <datalist id="listaProveedoresCaja"></datalist>
+                            </div>
+                            <div class="form-group" style="flex:1">
+                                <label>Monto a Abonar (COP):</label>
+                                <input type="number" id="cajaMontoProveedor" min="0" step="1000" placeholder="Ej: 200000">
+                            </div>
+                            <div class="form-group" style="flex:1">
+                                <label>Fecha:</label>
+                                <input type="date" id="cajaFechaProveedor">
+                            </div>
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button class="btn" style="background: linear-gradient(45deg,#9b59b6,#8e44ad);" onclick="registrarPagoProveedor()">REGISTRAR PAGO</button>
+                            </div>
+                        </div>
+
+                        <h4 style="margin-top:15px; color:#6c757d;">Deuda acumulada con proveedores (según histórico de entradas)</h4>
+                        <div class="table-container">
+                            <table id="tablaDeudaProveedores">
+                                <thead>
+                                    <tr>
+                                        <th>N° Factura</th>
+                                        <th>Fecha</th>
+                                        <th>Detalle</th>
+                                        <th>Valor</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="5" style="text-align:center;color:#999;padding:20px;">Cargue la caja para ver deudas con proveedores</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="config-section" style="border-left: 5px solid #28a745;">
+                        <h3>Ingreso Extra a Caja</h3>
+                        <p style="color:#666; font-size:0.9em; margin-bottom:12px;">Use esto cuando un deudor paga o cuando hay un ingreso que no viene de una venta directa.</p>
+                        <div class="form-row">
+                            <div class="form-group" style="flex:2">
+                                <label>Concepto:</label>
+                                <input type="text" id="cajaIngresoConcepto" placeholder="Ej: Pago deuda Juan, Consignación, etc.">
+                            </div>
+                            <div class="form-group" style="flex:1">
+                                <label>Monto (COP):</label>
+                                <input type="number" id="cajaIngresoMonto" min="0" step="1000" placeholder="Ej: 150000">
+                            </div>
+                            <div class="form-group" style="flex:1">
+                                <label>Fecha:</label>
+                                <input type="date" id="cajaIngresoFecha">
+                            </div>
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button class="btn btn-success" onclick="registrarIngresoCaja()">REGISTRAR INGRESO</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:20px; align-items:center;">
+                        <div class="form-group" style="margin:0; flex:1; min-width:140px;">
+                            <label>Fecha de Cierre:</label>
+                            <input type="date" id="cajaFecha">
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:flex-end;">
+                            <button class="btn btn-success" onclick="calcularCierreCaja()" style="min-width:180px; font-size:1em;">
+                                CALCULAR CIERRE DE CAJA
+                            </button>
+                            <button class="btn" style="background:#6c757d;" onclick="imprimirCierreCaja()">IMPRIMIR</button>
+                        </div>
+                    </div>
+
+                    <div id="resumenCajaDia" style="display:none;">
+                        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:20px;">
+                            <div class="stat-card" style="background:linear-gradient(135deg,#e3f2fd,#bbdefb);">
+                                <div class="stat-value" id="cajaSaldoInicialDisplay" style="color:#1565c0; font-size:1.5em;">$0</div>
+                                <div class="stat-label">SALDO INICIAL</div>
+                            </div>
+                            <div class="stat-card" style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9);">
+                                <div class="stat-value" id="cajaVentasDia" style="color:#2e7d32; font-size:1.5em;">$0</div>
+                                <div class="stat-label">VENTAS DEL DÍA (pagadas)</div>
+                            </div>
+                            <div class="stat-card" style="background:linear-gradient(135deg,#f3e5f5,#e1bee7);">
+                                <div class="stat-value" id="cajaIngresosDia" style="color:#6a1b9a; font-size:1.5em;">$0</div>
+                                <div class="stat-label">INGRESOS EXTRA</div>
+                            </div>
+                            <div class="stat-card" style="background:linear-gradient(135deg,#fff8e1,#ffecb3);">
+                                <div class="stat-value" id="cajaFiadoDia" style="color:#e65100; font-size:1.5em;">$0</div>
+                                <div class="stat-label">FIADO (ventas adeudadas)</div>
+                            </div>
+                            <div class="stat-card" style="background:linear-gradient(135deg,#fce4ec,#f8bbd0);">
+                                <div class="stat-value" id="cajaGastosDia" style="color:#c62828; font-size:1.5em;">$0</div>
+                                <div class="stat-label">GASTOS DEL DÍA</div>
+                            </div>
+                            <div class="stat-card" style="background:linear-gradient(135deg,#f3e5f5,#ce93d8);">
+                                <div class="stat-value" id="cajaPagoProveedoresDia" style="color:#4a148c; font-size:1.5em;">$0</div>
+                                <div class="stat-label">PAGOS A PROVEEDORES</div>
+                            </div>
+                            <div class="stat-card" style="background:linear-gradient(135deg,#e0f2f1,#b2dfdb); border: 3px solid #00897b; grid-column: span 2;">
+                                <div class="stat-value" id="cajaSaldoFinal" style="color:#004d40; font-size:2em;">$0</div>
+                                <div class="stat-label" style="font-size:1em; font-weight:bold;">EFECTIVO EN CAJA</div>
+                                <div id="cajaFormula" style="font-size:0.75em; color:#555; margin-top:6px;"></div>
+                            </div>
+                        </div>
+
+                        <h3 style="margin-bottom:10px;">Movimientos del Día</h3>
+                        <div class="table-container" id="cajaMovimientosWrap">
+                            <table id="tablaMovimientosCaja">
+                                <thead>
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Concepto</th>
+                                        <th>Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- =================== FIN CIERRE DE CAJA =================== -->
             </div>
         </div>
     </div>
@@ -713,5 +870,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js" defer></script>
+    <script src="cierre-caja.js" defer></script>
 </body>
 </html>
