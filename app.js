@@ -3530,23 +3530,22 @@ function _alertCaja(msg, tipo) {
 async function _getConfigCaja() {
     var r = await _sb().from('configuracion_caja').select('*').eq('id',1).maybeSingle();
     if (r.error) throw r.error;
-    return r.data || { id: 1, saldo_inicial: 0, historico_pagadas: [] };
+    return r.data || { id: 1, saldo_inicial: 0 };
 }
 async function _saveConfigCaja(patch) {
     var r = await _sb().from('configuracion_caja').upsert(Object.assign({ id: 1 }, patch), { onConflict: 'id' });
     if (r.error) throw r.error;
 }
 
-// ─── IDs de facturas de historico marcadas como pagadas ─────────
+// ─── IDs de facturas marcadas como pagadas (tabla historico_pagadas) ─
 async function _getHistoricoPagadoIds() {
     try {
-        var cfg = await _getConfigCaja();
-        var raw = cfg.historico_pagadas;
-        var arr = Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
-        return new Set(arr.map(String));
+        var r = await _sb().from('historico_pagadas').select('historico_id');
+        if (r.error) throw r.error;
+        return new Set((r.data||[]).map(function(x){ return String(x.historico_id); }));
     } catch(e) { return new Set(); }
 }
-// Versión síncrona en caché para el render de tablas (se actualiza al abrir pestaña)
+
 var _cachedPagadas = new Set();
 window.getHistoricoPagadoIds = function() { return _cachedPagadas; };
 
@@ -3554,7 +3553,35 @@ async function _recargarPagadas() {
     _cachedPagadas = await _getHistoricoPagadoIds();
 }
 
-// marcarFacturaProveedorPagada y desmarcarFacturaProveedorPagada estan definidas en app.js
+window.marcarFacturaProveedorPagada = async function(id, proveedor, valor) {
+    if (!id) return;
+    if (!confirm('Marcar como pagada la factura ' + (proveedor ? 'de ' + proveedor : '') + ' por ' + _fmt(valor) + '?\n\nEsta factura quedara excluida del calculo de deuda pendiente.')) return;
+    try {
+        var r = await _sb().from('historico_pagadas').insert({ historico_id: id });
+        if (r.error) throw r.error;
+        _cachedPagadas.add(String(id));
+        if (typeof actualizarTablaHistorico === 'function' && window.datosHistoricoCompletos) {
+            actualizarTablaHistorico(window.datosHistoricoCompletos);
+        }
+        await _actualizarTablaDeudaProveedores();
+        _alertCaja('Factura marcada como pagada.', 'success');
+    } catch(err) { _alertCaja('Error: ' + err.message, 'danger'); }
+};
+
+window.desmarcarFacturaProveedorPagada = async function(id) {
+    if (!id) return;
+    if (!confirm('Desmarcar esta factura? Volvera a contar como deuda pendiente con el proveedor.')) return;
+    try {
+        var r = await _sb().from('historico_pagadas').delete().eq('historico_id', id);
+        if (r.error) throw r.error;
+        _cachedPagadas.delete(String(id));
+        if (typeof actualizarTablaHistorico === 'function' && window.datosHistoricoCompletos) {
+            actualizarTablaHistorico(window.datosHistoricoCompletos);
+        }
+        await _actualizarTablaDeudaProveedores();
+        _alertCaja('Factura desmarcada.', 'success');
+    } catch(err) { _alertCaja('Error: ' + err.message, 'danger'); }
+};
 
 // ─── Inicializar pestana ────────────────────────────────────────
 window.iniciarCierreCaja = async function() {
@@ -3567,10 +3594,8 @@ window.iniciarCierreCaja = async function() {
         var cfg = await _getConfigCaja();
         var inputSaldo = document.getElementById('cajaSaldoInicial');
         if (inputSaldo) inputSaldo.value = cfg.saldo_inicial || '';
-        // Cargar caché de pagadas
-        var raw = cfg.historico_pagadas;
-        var arr = Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
-        _cachedPagadas = new Set(arr.map(String));
+        // Cargar caché de pagadas desde tabla dedicada
+        _cachedPagadas = await _getHistoricoPagadoIds();
     } catch(e) {}
     _cargarProveedoresHistorico();
     _actualizarTablaDeudaProveedores();
