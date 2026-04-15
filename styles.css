@@ -751,3 +751,29 @@ tr:hover {
         font-size: 1.3em;
     }
 }
+
+/* =================== MÓDULO CIERRE DE CAJA =================== */
+#cierre-caja .config-section {
+    transition: box-shadow 0.2s;
+}
+#cierre-caja .config-section:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+#resumenCajaDia .stat-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 0.2s;
+}
+#resumenCajaDia .stat-card:hover {
+    transform: translateY(-3px);
+}
+#cajaFormula {
+    margin-top: 8px;
+    font-size: 0.78em;
+    color: #546e7a;
+    line-height: 1.4;
+}
+.alert-caja-msg {
+    margin-bottom: 15px;
+    font-size: 0.95em;
+}
