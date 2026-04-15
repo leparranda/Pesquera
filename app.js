@@ -192,6 +192,9 @@ window.showSection = function(seccionId) {
         prepararGastosUI();
         cargarGastos(); // async, no bloqueante
     }
+    if (seccionId === 'cierre-caja' && isConfigured) {
+        if (window.iniciarCierreCaja) window.iniciarCierreCaja();
+    }
 };
 
 // =================== FUNCIONES DE API (SUPABASE) ===================
@@ -394,16 +397,16 @@ async function leerHoja(nombreHoja) {
     }
 
     if (table === 'historico') {
-        const header = ['Fecha', 'Tipo', 'Cantidad', 'PrecioCompra', 'Proveedor', 'ValorTotal'];
+        const header = ['Fecha', 'Tipo', 'Cantidad', 'PrecioCompra', 'Proveedor', 'ValorTotal', 'ID', 'NumeroFacturaProveedor'];
         const rows = (data || []).map(r => [
-            // CORRECCION: Devolver fecha cruda (ISO) para evitar problemas de formateo al re-guardar
-            // La conversion a legible se hara solo en la tabla visual (actualizarTablaHistorico)
             r.fecha || new Date().toISOString(),
             r.tipo ?? '',
             r.cantidad ?? 0,
             r.precio_compra ?? 0,
             r.proveedor ?? '',
-            r.valor_total ?? 0
+            r.valor_total ?? 0,
+            r.id ?? '',
+            r.numero_factura_proveedor ?? ''
         ]);
         return [header, ...rows];
     }
@@ -586,6 +589,7 @@ async function agregarFilaHoja(nombreHoja, fila) {
         payload.precio_compra = parseFloat(fila[3]) || 0;
         payload.proveedor = fila[4] || '';
         payload.valor_total = parseFloat(fila[5]) || 0;
+        payload.numero_factura_proveedor = fila[7] || '';
     } else if (table === 'ventas') {
         payload.numero_factura = parseInt(fila[0]) || 0;
         payload.fecha = _toISO(fila[1]);
@@ -850,6 +854,8 @@ window.agregarInventario = async function() {
     // Soportar distintos IDs por compatibilidad
     const proveedorEl = document.getElementById('proveedorInventario') || document.getElementById('proveedor');
     const proveedor = (proveedorEl && proveedorEl.value ? proveedorEl.value : '').trim();
+    const numFactProvEl = document.getElementById('numeroFacturaProveedor');
+    const numeroFacturaProveedor = (numFactProvEl && numFactProvEl.value ? numFactProvEl.value : '').trim();
 
     if (!tipo || !kilos || !precio) {
         mostrarAlerta('Complete todos los campos obligatorios', 'warning');
@@ -892,6 +898,14 @@ window.agregarInventario = async function() {
         const valorTotal = kilos * precio;
         const proveedorFinal = proveedor || 'No especificado';
 
+        // Auto-generar numero de factura proveedor si no se ingresó
+        const now = new Date();
+        const yyyymm = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0');
+        const randomSuffix = Math.floor(Math.random() * 900 + 100);
+        const numFactFinal = numeroFacturaProveedor || ('FP-' + yyyymm + '-' + randomSuffix);
+        // Limpiar campo
+        if (numFactProvEl) numFactProvEl.value = '';
+
         // FIX: Usar agregarFilaHoja en lugar de reescribir toda la tabla
         // Esto evita que se sobrescriban las fechas de registros antiguos
         await agregarFilaHoja('Historico', [
@@ -900,7 +914,9 @@ window.agregarInventario = async function() {
             kilos,
             precio,
             proveedorFinal,
-            valorTotal
+            valorTotal,
+            '',            // fila[6] = id (lo asigna Supabase)
+            numFactFinal   // fila[7] = numero_factura_proveedor
         ]);
         console.log('✅ Entrada registrada en histórico');
         // =================== FIN REGISTRO HISTÓRICO ===================
@@ -2117,7 +2133,9 @@ window.cargarHistorico = async function() {
                         cantidad: parseFloat(fila[2]) || 0,
                         precioCompra: parseFloat(fila[3]) || 0,
                         proveedor: (fila[4] && String(fila[4]).trim()) ? fila[4] : 'No especificado',
-                        valorTotal: parseFloat(fila[5]) || 0
+                        valorTotal: parseFloat(fila[5]) || 0,
+                        id: fila[6] || '',
+                        numeroFacturaProveedor: fila[7] || ''
                     });
                 }
             }
@@ -2220,9 +2238,11 @@ function actualizarTablaHistorico(datos) {
     tbody.innerHTML = '';
 
     if (datos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #999;">🔍 No hay registros que coincidan con los filtros</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color: #999;">No hay registros que coincidan con los filtros</td></tr>';
         return;
     }
+    // Obtener facturas ya marcadas como pagadas al proveedor
+    const pagadasProv = window.getHistoricoPagadoIds ? window.getHistoricoPagadoIds() : new Set();
 
     // Ordenar por fecha descendente (más reciente primero)
     datos.sort((a, b) => {
@@ -2237,13 +2257,24 @@ function actualizarTablaHistorico(datos) {
 
     datos.forEach(entrada => {
         const fila = tbody.insertRow();
+        const entradaId = entrada.id || '';
+        const yaPagada = entradaId && pagadasProv.has(entradaId);
+        const btnPago = entradaId
+            ? (yaPagada
+                ? `<button onclick="desmarcarFacturaProveedorPagada('${entradaId}')" style="background:#6c757d;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:12px;">Desmarcar</button>`
+                : `<button onclick="marcarFacturaProveedorPagada('${entradaId}', '${entrada.proveedor.replace(/'/g,"\'")}', ${entrada.valorTotal})" style="background:#28a745;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:12px;">Marcar pagada</button>`)
+            : '';
+        const estadoStyle = yaPagada ? 'text-decoration:line-through;opacity:0.5;' : '';
+        const numFact = entrada.numeroFacturaProveedor || '<span style="color:#aaa;font-size:11px;">Sin número</span>';
         fila.innerHTML = `
-            <td>${_formatFecha(entrada.fecha)}</td>
-            <td><strong>${entrada.tipo}</strong></td>
-            <td style="text-align: center;">${entrada.cantidad.toFixed(2)} kg</td>
-            <td style="text-align: right;">${formatearPesos(entrada.precioCompra)}</td>
-            <td>${entrada.proveedor}</td>
-            <td style="text-align: right;"><strong>${formatearPesos(entrada.valorTotal)}</strong></td>
+            <td style="${estadoStyle}">${_formatFecha(entrada.fecha)}</td>
+            <td style="${estadoStyle}"><strong>${entrada.tipo}</strong></td>
+            <td style="text-align:center;${estadoStyle}">${entrada.cantidad.toFixed(2)} kg</td>
+            <td style="text-align:right;${estadoStyle}">${formatearPesos(entrada.precioCompra)}</td>
+            <td style="${estadoStyle}">${entrada.proveedor}</td>
+            <td style="${estadoStyle};font-family:monospace;">${numFact}</td>
+            <td style="text-align:right;${estadoStyle}"><strong>${formatearPesos(entrada.valorTotal)}</strong></td>
+            <td>${yaPagada ? '<span style="color:#28a745;font-size:12px;font-weight:bold;">Pagada</span>' : ''} ${btnPago}</td>
         `;
     });
 }
