@@ -3722,8 +3722,9 @@ async function _actualizarTablaDeudaProveedores() {
                 try { fechaStr = new Date(f.fecha).toLocaleDateString('es-CO'); } catch(e) { fechaStr = f.fecha||''; }
                 var numFact = f.numero_factura_proveedor || '<span style="color:#aaa;font-size:11px;">Sin numero</span>';
                 var detalle = (f.tipo||'') + (f.cantidad > 0 ? ' — ' + parseFloat(f.cantidad).toFixed(2) + ' kg' : '');
+                var provEsc = String(proveedor).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
                 var btnPago = f.id
-                    ? '<button onclick="marcarFacturaProveedorPagada(''+f.id+'',''+String(proveedor).replace(/'/g,"\\'")+ '','+f.valor_total+')" style="background:#28a745;color:white;border:none;padding:4px 9px;border-radius:4px;cursor:pointer;font-size:11px;">Marcar pagada</button>'
+                    ? '<button onclick="marcarFacturaProveedorPagada(\'' + f.id + '\',\'' + provEsc + '\',' + f.valor_total + ')" style="background:#28a745;color:white;border:none;padding:4px 9px;border-radius:4px;cursor:pointer;font-size:11px;">Marcar pagada</button>'
                     : '';
                 html += '<tr>' +
                     '<td style="padding-left:18px;font-family:monospace;font-size:12px;">' + numFact + '</td>' +
