@@ -2144,7 +2144,7 @@ window.cargarHistorico = async function() {
             llenarFiltrosHistorico();
 
             // Mostrar todos los datos
-            actualizarTablaHistorico(datosHistoricoCompletos);
+            await actualizarTablaHistorico(datosHistoricoCompletos);
 
             // Actualizar estadísticas
             actualizarEstadisticasHistorico(datosHistoricoCompletos);
@@ -2204,7 +2204,7 @@ function llenarFiltrosHistorico() {
 }
 
 // Filtrar histórico
-function filtrarHistorico() {
+async function filtrarHistorico() {
     const filtroTipo = document.getElementById('filtroTipoHistorico').value;
     const filtroMes = document.getElementById('filtroMesHistorico').value;
 
@@ -2228,7 +2228,7 @@ function filtrarHistorico() {
         });
     }
 
-    actualizarTablaHistorico(datosFiltrados);
+    await actualizarTablaHistorico(datosFiltrados);
     actualizarEstadisticasHistorico(datosFiltrados);
 }
 
@@ -3103,7 +3103,7 @@ window.marcarFacturaProveedorPagada = async function(id, proveedor, valor) {
         await _saveConfigCaja({ historico_pagadas: [...ids] });
         _cachedPagadas = ids;
         if (typeof actualizarTablaHistorico === 'function' && window.datosHistoricoCompletos) {
-            actualizarTablaHistorico(window.datosHistoricoCompletos);
+            await actualizarTablaHistorico(window.datosHistoricoCompletos);
         }
         await _actualizarTablaDeudaProveedores();
         _alertCaja('Factura marcada como pagada.', 'success');
@@ -3119,7 +3119,7 @@ window.desmarcarFacturaProveedorPagada = async function(id) {
         await _saveConfigCaja({ historico_pagadas: [...ids] });
         _cachedPagadas = ids;
         if (typeof actualizarTablaHistorico === 'function' && window.datosHistoricoCompletos) {
-            actualizarTablaHistorico(window.datosHistoricoCompletos);
+            await actualizarTablaHistorico(window.datosHistoricoCompletos);
         }
         await _actualizarTablaDeudaProveedores();
         _alertCaja('Factura desmarcada.', 'success');
@@ -3571,7 +3571,7 @@ window.marcarFacturaProveedorPagada = async function(id, proveedor, valor) {
         if (r.error) throw r.error;
         _cachedPagadas.add(String(id));
         if (typeof actualizarTablaHistorico === 'function' && window.datosHistoricoCompletos) {
-            actualizarTablaHistorico(window.datosHistoricoCompletos);
+            await actualizarTablaHistorico(window.datosHistoricoCompletos);
         }
         await _actualizarTablaDeudaProveedores();
         _alertCaja('Factura marcada como pagada.', 'success');
@@ -3586,7 +3586,7 @@ window.desmarcarFacturaProveedorPagada = async function(id) {
         if (r.error) throw r.error;
         _cachedPagadas.delete(String(id));
         if (typeof actualizarTablaHistorico === 'function' && window.datosHistoricoCompletos) {
-            actualizarTablaHistorico(window.datosHistoricoCompletos);
+            await actualizarTablaHistorico(window.datosHistoricoCompletos);
         }
         await _actualizarTablaDeudaProveedores();
         _alertCaja('Factura desmarcada.', 'success');
