@@ -1702,8 +1702,18 @@ window.pagarDeuda = async function(numeroFactura) {
         const num = parseInt(numeroFactura) || 0;
         if (!num) throw new Error('Número de factura inválido');
 
+        // Leer datos de la deuda antes de marcarla (para registrar ingreso en caja)
+        const { data: deudaData, error: errLeer } = await sb
+            .from('deudores')
+            .select('cliente, total, fecha')
+            .eq('numero_factura', num)
+            .eq('estado', 'pendiente')
+            .maybeSingle();
+        if (errLeer) throw errLeer;
+
         // Guardar timestamp real (fecha + hora)
         const fechaPagoISO = new Date().toISOString();
+        const fechaSolo = fechaPagoISO.slice(0, 10); // YYYY-MM-DD
 
         // Actualizar SOLO la fila correspondiente (no reinsertar todo)
         const { error } = await sb
@@ -1714,7 +1724,17 @@ window.pagarDeuda = async function(numeroFactura) {
 
         if (error) throw error;
 
-        mostrarAlerta('✅ Deuda marcada como pagada', 'success');
+        // Registrar automáticamente en ingresos_caja
+        if (deudaData) {
+            const concepto = 'Pago deuda - ' + (deudaData.cliente || 'Cliente') + ' (Fact. #' + String(num).padStart(6, '0') + ')';
+            await sb.from('ingresos_caja').insert({
+                concepto: concepto,
+                monto: parseFloat(deudaData.total) || 0,
+                fecha: fechaSolo
+            });
+        }
+
+        mostrarAlerta('✅ Deuda marcada como pagada e ingreso registrado en caja', 'success');
         await cargarDeudores();
     } catch (error) {
         console.error('❌ Error pagando deuda:', error);
