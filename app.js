@@ -2233,7 +2233,7 @@ function filtrarHistorico() {
 }
 
 // Actualizar tabla de histórico
-function actualizarTablaHistorico(datos) {
+async function actualizarTablaHistorico(datos) {
     const tbody = document.querySelector('#tablaHistorico tbody');
     tbody.innerHTML = '';
 
@@ -2241,8 +2241,18 @@ function actualizarTablaHistorico(datos) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color: #999;">No hay registros que coincidan con los filtros</td></tr>';
         return;
     }
-    // Obtener facturas ya marcadas como pagadas al proveedor
-    const pagadasProv = window.getHistoricoPagadoIds ? window.getHistoricoPagadoIds() : new Set();
+    // Siempre consultar Supabase para tener las pagadas actualizadas
+    let pagadasProv = new Set();
+    try {
+        if (window.__pesqueraSupabaseClient) {
+            const r = await window.__pesqueraSupabaseClient.from('historico_pagadas').select('historico_id');
+            if (!r.error) {
+                pagadasProv = new Set((r.data||[]).map(x => String(x.historico_id)));
+                // Actualizar caché global también
+                if (window._cachedPagadas !== undefined) window._cachedPagadas = pagadasProv;
+            }
+        }
+    } catch(e) {}
 
     // Ordenar por fecha descendente (más reciente primero)
     datos.sort((a, b) => {
@@ -3081,7 +3091,40 @@ function regenerarFactura(numero, fecha, cliente, productosTexto, total, descuen
 }
 
 // =================== MARCADO DE FACTURAS PROVEEDOR ===================
-// (funciones definidas en el módulo cierre de caja más abajo)
+// Estas funciones se definen aquí para garantizar que estén en el scope global
+// independientemente del orden de carga de cierre-caja.js
+
+window.marcarFacturaProveedorPagada = async function(id, proveedor, valor) {
+    if (!id) return;
+    if (!confirm('Marcar como pagada la factura ' + (proveedor ? 'de ' + proveedor : '') + ' por ' + _fmt(valor) + '?\n\nEsta factura quedara excluida del calculo de deuda pendiente.')) return;
+    try {
+        var ids = await _getHistoricoPagadoIds();
+        ids.add(String(id));
+        await _saveConfigCaja({ historico_pagadas: [...ids] });
+        _cachedPagadas = ids;
+        if (typeof actualizarTablaHistorico === 'function' && window.datosHistoricoCompletos) {
+            actualizarTablaHistorico(window.datosHistoricoCompletos);
+        }
+        await _actualizarTablaDeudaProveedores();
+        _alertCaja('Factura marcada como pagada.', 'success');
+    } catch(err) { _alertCaja('Error: ' + err.message, 'danger'); }
+};
+
+window.desmarcarFacturaProveedorPagada = async function(id) {
+    if (!id) return;
+    if (!confirm('Desmarcar esta factura? Volvera a contar como deuda pendiente con el proveedor.')) return;
+    try {
+        var ids = await _getHistoricoPagadoIds();
+        ids.delete(String(id));
+        await _saveConfigCaja({ historico_pagadas: [...ids] });
+        _cachedPagadas = ids;
+        if (typeof actualizarTablaHistorico === 'function' && window.datosHistoricoCompletos) {
+            actualizarTablaHistorico(window.datosHistoricoCompletos);
+        }
+        await _actualizarTablaDeudaProveedores();
+        _alertCaja('Factura desmarcada.', 'success');
+    } catch(err) { _alertCaja('Error: ' + err.message, 'danger'); }
+};
 
 // =================== ELIMINACIÓN DE FACTURAS ===================
 
