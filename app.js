@@ -3859,7 +3859,6 @@ window.calcularCierreCaja = async function() {
         // Mostrar tarjetas
         document.getElementById('cajaSaldoInicialDisplay').textContent  = _fmt(saldoInicial);
         document.getElementById('cajaVentasDia').textContent            = _fmt(ventasPagadas);
-        document.getElementById('cajaIngresosDia').textContent          = _fmt(ingresosDia);
         document.getElementById('cajaFiadoDia').textContent             = _fmt(ventasFiado);
         document.getElementById('cajaGastosDia').textContent            = _fmt(totalGastos);
         document.getElementById('cajaPagoProveedoresDia').textContent   = _fmt(pagosProv);
