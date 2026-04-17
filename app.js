@@ -3856,18 +3856,20 @@ window.calcularCierreCaja = async function() {
         var saldoInicial = parseFloat(cfg.saldo_inicial) || 0;
         var saldoFinal   = saldoInicial + ventasPagadas + ingresosDia - totalGastos - pagosProv;
 
-        // Mostrar tarjetas
-        document.getElementById('cajaSaldoInicialDisplay').textContent  = _fmt(saldoInicial);
-        document.getElementById('cajaVentasDia').textContent            = _fmt(ventasPagadas);
-        document.getElementById('cajaFiadoDia').textContent             = _fmt(ventasFiado);
-        document.getElementById('cajaGastosDia').textContent            = _fmt(totalGastos);
-        document.getElementById('cajaPagoProveedoresDia').textContent   = _fmt(pagosProv);
-        document.getElementById('cajaSaldoFinal').textContent           = _fmt(saldoFinal);
-        document.getElementById('cajaSaldoFinal').style.color           = saldoFinal >= 0 ? '#004d40' : '#b71c1c';
-        document.getElementById('cajaFormula').textContent =
+        // Mostrar tarjetas (con verificación para evitar errores si el elemento no existe)
+        var _set = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+        _set('cajaSaldoInicialDisplay', _fmt(saldoInicial));
+        _set('cajaVentasDia',          _fmt(ventasPagadas));
+        _set('cajaFiadoDia',           _fmt(ventasFiado));
+        _set('cajaGastosDia',          _fmt(totalGastos));
+        _set('cajaPagoProveedoresDia', _fmt(pagosProv));
+        _set('cajaSaldoFinal',         _fmt(saldoFinal));
+        _set('cajaFormula',
             'Saldo inicial ' + _fmt(saldoInicial) + ' + Ventas ' + _fmt(ventasPagadas) +
             ' + Ingresos ' + _fmt(ingresosDia) + ' - Gastos ' + _fmt(totalGastos) +
-            ' - Proveedores ' + _fmt(pagosProv);
+            ' - Proveedores ' + _fmt(pagosProv));
+        var saldoEl = document.getElementById('cajaSaldoFinal');
+        if (saldoEl) saldoEl.style.color = saldoFinal >= 0 ? '#004d40' : '#b71c1c';
 
         _construirTablaMovimientos(ventas, gastos, ingresosLista, pagosProvLista, saldoInicial);
         await _actualizarTablaDeudaProveedores();
