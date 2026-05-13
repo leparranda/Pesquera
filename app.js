@@ -3537,8 +3537,8 @@ function _hoy() {
     var n = new Date();
     return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
 }
-function _isoStart(d) { return new Date(d+'T00:00:00').toISOString(); }
-function _isoEnd(d)   { return new Date(d+'T23:59:59').toISOString(); }
+function _isoStart(d) { return d + 'T00:00:00'; }
+function _isoEnd(d)   { return d + 'T23:59:59'; }
 function _fmt(n) {
     if (!n && n !== 0) return '$0';
     return '$' + Math.round(n).toLocaleString('es-CO');
@@ -3880,6 +3880,34 @@ window.calcularCierreCaja = async function() {
         _alertCaja('Error al calcular: ' + err.message, 'danger');
     } finally {
         if (btn) { btn.textContent = 'CALCULAR CIERRE DE CAJA'; btn.disabled = false; }
+    }
+};
+
+// ─── CONFIRMAR CIERRE DE CAJA (guarda saldo final como nuevo saldo inicial) ───
+window.confirmarCierreCaja = async function() {
+    var resumen = document.getElementById('resumenCajaDia');
+    var saldoFinalEl = document.getElementById('cajaSaldoFinal');
+    if (!resumen || resumen.style.display === 'none') {
+        _alertCaja('Primero calcule el cierre de caja.', 'warning'); return;
+    }
+    // Extraer el número del texto formateado (ej: "$1.234.567" -> 1234567)
+    var saldoTexto = saldoFinalEl ? (saldoFinalEl.textContent || '0') : '0';
+    var saldoFinal = parseFloat(saldoTexto.replace(/[^0-9\-]/g, '')) || 0;
+
+    if (!confirm('¿Confirmar cierre de caja?\n\nEl saldo final de ' + saldoTexto + ' quedará guardado como el saldo inicial del día siguiente.\n\nEsta acción no se puede deshacer.')) return;
+
+    var btn = document.querySelector('button[onclick="confirmarCierreCaja()"]');
+    if (btn) { btn.textContent = 'GUARDANDO...'; btn.disabled = true; }
+
+    try {
+        await _saveConfigCaja({ saldo_inicial: saldoFinal });
+        var inputSaldo = document.getElementById('cajaSaldoInicial');
+        if (inputSaldo) inputSaldo.value = saldoFinal;
+        _alertCaja('✅ Cierre confirmado. Nuevo saldo inicial: ' + _fmt(saldoFinal), 'success');
+    } catch(err) {
+        _alertCaja('Error al confirmar cierre: ' + err.message, 'danger');
+    } finally {
+        if (btn) { btn.textContent = 'CONFIRMAR Y CERRAR CAJA'; btn.disabled = false; }
     }
 };
 
