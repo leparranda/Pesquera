@@ -195,6 +195,12 @@ window.showSection = function(seccionId) {
     if (seccionId === 'cierre-caja' && isConfigured) {
         if (window.iniciarCierreCaja) window.iniciarCierreCaja();
     }
+    if (seccionId === 'reportes' && isConfigured) {
+        // Aplicar restricciones cuando se abre reportes
+        setTimeout(() => {
+            aplicarRestriccionesPerfil();
+        }, 100);
+    }
 };
 
 // =================== FUNCIONES DE API (SUPABASE) ===================
@@ -2012,6 +2018,9 @@ window.cargarReportes = async function() {
             updateConnectionStatus('connected', 'Reportes cargados correctamente');
             mostrarAlerta('Reportes actualizados correctamente', 'success');
 
+            // Aplicar restricciones de perfil después de cargar
+            aplicarRestriccionesPerfil();
+
         } else {
             ventasCompletasData = [];
             poblarFiltrosReportes(new Set(), new Set());
@@ -2033,6 +2042,9 @@ window.cargarReportes = async function() {
 
             updateConnectionStatus('connected', 'Reportes listos (sin ventas registradas)');
             mostrarAlerta('Aún no hay ventas registradas. Mostrando el valor del inventario.', 'info');
+
+            // Aplicar restricciones de perfil después de cargar
+            aplicarRestriccionesPerfil();
         }
 
     } catch (error) {
@@ -2669,11 +2681,16 @@ function mostrarSistema() {
 
     console.log('✅ Sesión iniciada correctamente');
 
+    // Aplicar restricciones de perfil al iniciar sesión
+    setTimeout(() => {
+        aplicarRestriccionesPerfil();
+    }, 300);
+
     // Cargar datos si ya está configurado (Supabase)
     if (supabaseUrl && supabaseAnonKey) {
         cargarTodosLosDatos();
     }
-    
+
     // Mostrar botón flotante de liquidación
     const btnLiq = document.getElementById('btnFloatingLiq');
     if(btnLiq) btnLiq.style.display = 'block';
@@ -2723,6 +2740,101 @@ async function verificarSesion() {
     // Mostrar login por defecto
     document.getElementById('loginScreen').style.display = 'flex';
     document.getElementById('sistemaPrincipal').style.display = 'none';
+}
+
+// =================== CONTROL DE PERFILES ===================
+
+// Obtener el usuario actual desde sesión
+async function obtenerUsuarioActual() {
+    try {
+        const sb = _ensureSupabase();
+        const { data } = await sb.auth.getSession();
+        const session = data && data.session;
+
+        if (session && session.user && session.user.email) {
+            // Encontrar qué usuario es basado en el email
+            const email = session.user.email;
+
+            // Buscar en USUARIOS_PERMITIDOS
+            for (const usuario of USUARIOS_PERMITIDOS) {
+                if (usuario.email === email || (usuario.altEmails && usuario.altEmails.includes(email))) {
+                    return usuario.alias;
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('⚠️ No se pudo obtener usuario actual:', e);
+    }
+    return null;
+}
+
+// Restaurar todas las tarjetas a su estado normal
+function restaurarTodasTarjetas() {
+    const idsATarjetas = [
+        'totalVentasHoy',       // Ventas de hoy
+        'totalVentasMes',       // Ventas filtradas
+        'totalVentasHistorico', // Ventas totales
+        'gananciasMes',         // Ganancias filtradas
+        'gananciasTotal',       // Ganancias totales
+        'totalInventario'       // Valor Inventario
+    ];
+
+    idsATarjetas.forEach(id => {
+        const element = document.getElementById(id);
+        if (element && element.parentElement) {
+            const tarjeta = element.closest('.stat-card');
+            if (tarjeta) {
+                tarjeta.style.display = 'block';
+            }
+        }
+    });
+
+    console.log('✅ Todas las tarjetas restauradas');
+}
+
+// Aplicar restricciones según el perfil del usuario
+async function aplicarRestriccionesPerfil() {
+    const usuarioActual = await obtenerUsuarioActual();
+
+    console.log('👤 Usuario actual:', usuarioActual);
+
+    // Primero restaurar todas las tarjetas
+    restaurarTodasTarjetas();
+
+    // Si es usuario "manga", aplicar restricciones
+    if (usuarioActual === 'manga') {
+        console.log('🔒 Aplicando perfil restringido para usuario MANGA');
+        aplicarRestriccionesManga();
+    } else {
+        console.log('👤 Usuario: ' + usuarioActual + ' - Acceso completo a reportes');
+    }
+}
+
+// Aplicar restricciones específicas para usuario manga
+function aplicarRestriccionesManga() {
+    // El usuario manga ve todo EXCEPTO solo ciertos campos en reportes
+    // Ocultar las tarjetas de resumen que no debe ver usando IDs específicos
+
+    const idsAOcultar = [
+        'totalVentasMes',      // Ventas filtradas
+        'totalVentasHistorico', // Ventas totales
+        'gananciasMes',        // Ganancias filtradas
+        'gananciasTotal'       // Ganancias totales
+    ];
+
+    // Ocultar cada tarjeta por su ID padre
+    idsAOcultar.forEach(id => {
+        const element = document.getElementById(id);
+        if (element && element.parentElement) {
+            // Subir hasta encontrar la tarjeta (.stat-card)
+            const tarjeta = element.closest('.stat-card');
+            if (tarjeta) {
+                tarjeta.style.display = 'none';
+            }
+        }
+    });
+
+    console.log('✅ Restricciones manga aplicadas: ocultadas tarjetas innecesarias');
 }
 
 // =================== FUNCIONES DE FILTRADO DE REPORTES ===================
