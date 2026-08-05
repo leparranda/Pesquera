@@ -2560,6 +2560,10 @@ const USUARIOS_PERMITIDOS = [
         email: 'leinerparra@outlook.es',
     },
     {
+        alias: 'manga',
+        email: 'javierasprilla2024@gmail.com',
+    },
+    {
         alias: 'gloria',
         email: 'gloriae1021@gmail.com',
         // Por si el usuario fue creado con .con por error, intentamos también esa variante
@@ -2616,7 +2620,7 @@ async function iniciarSesion(event) {
     try {
         const resolved = _resolverEmailDesdeUsuario(usuario);
         if (!resolved) {
-            throw new Error('Usuario no permitido. Use: leiner o gloria (o su email).');
+            throw new Error('Usuario no permitido. Use: leiner o manga (o su email).');
         }
 
         const sb = _ensureSupabase();
