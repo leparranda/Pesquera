@@ -1719,7 +1719,9 @@ window.pagarDeuda = async function(numeroFactura) {
 
         // Guardar timestamp real (fecha + hora)
         const fechaPagoISO = new Date().toISOString();
-        const fechaSolo = fechaPagoISO.slice(0, 10); // YYYY-MM-DD
+        // CORRECCIÓN: usar la fecha en hora LOCAL (no UTC) para evitar que pagos
+        // nocturnos (después de las 7pm en Colombia) se registren al día siguiente.
+        const fechaSolo = _hoy(); // YYYY-MM-DD en hora local
 
         // Actualizar SOLO la fila correspondiente (no reinsertar todo)
         const { error } = await sb
